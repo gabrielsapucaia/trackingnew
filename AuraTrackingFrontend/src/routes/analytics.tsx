@@ -156,10 +156,10 @@ export default function AnalyticsPage() {
 
         {/* KPIs Grid */}
         <div class="grid gap-4" style={{ "grid-template-columns": "repeat(6, 1fr)" }}>
-          <For each={kpis}>
+          <For each={realKPIs().length > 0 ? realKPIs() : fallbackKPIs}>
             {(kpi, index) => (
-              <div 
-                class="stat-card animate-slideUp" 
+              <div
+                class="stat-card animate-slideUp"
                 style={{ "animation-delay": `${index() * 50}ms` }}
               >
                 <span class="stat-label">{kpi.label}</span>
@@ -214,12 +214,12 @@ export default function AnalyticsPage() {
               <a href="/devices" class="btn btn-ghost text-sm">Ver todos</a>
             </div>
             <div class="card-body" style={{ padding: "0" }}>
-              <For each={topDrivers}>
+              <For each={realTopDrivers().length > 0 ? realTopDrivers() : fallbackTopDrivers}>
                 {(driver, index) => (
-                  <div 
+                  <div
                     class="flex items-center justify-between p-4"
-                    style={{ 
-                      "border-bottom": index() < topDrivers.length - 1 ? "1px solid var(--color-border-primary)" : "none"
+                    style={{
+                      "border-bottom": index() < (realTopDrivers().length > 0 ? realTopDrivers() : fallbackTopDrivers).length - 1 ? "1px solid var(--color-border-primary)" : "none"
                     }}
                   >
                     <div class="flex items-center gap-3">
@@ -243,12 +243,12 @@ export default function AnalyticsPage() {
                       </div>
                     </div>
                     <div class="text-right">
-                      <div style={{ 
+                      <div style={{
                         "font-weight": "600",
-                        color: driver.score >= 90 ? "var(--color-success)" : 
+                        color: driver.score >= 90 ? "var(--color-success)" :
                                driver.score >= 80 ? "var(--color-warning)" : "var(--color-error)"
                       }}>
-                        {driver.score}
+                        {driver.score.toFixed(0)}
                       </div>
                       <div class="text-xs text-muted">Score</div>
                     </div>

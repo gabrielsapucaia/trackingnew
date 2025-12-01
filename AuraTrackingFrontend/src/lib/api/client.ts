@@ -159,56 +159,122 @@ class ApiClient {
 
   // Dispositivos (complementar ao TimescaleDB)
   async getDevicesFromSupabase(): Promise<{ devices: SupabaseDevice[]; count: number }> {
-    const { data, error, count } = await supabase
-      .from('devices')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error, count } = await supabase
+        .from('devices')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
 
-    if (error) throw new Error(`Supabase error: ${error.message}`)
-    return { devices: data || [], count: count || 0 }
+      // Se a tabela não existe, retorna lista vazia ao invés de erro
+      if (error) {
+        if (error.message.includes('Could not find the table') || error.code === 'PGRST116') {
+          console.warn('Tabela devices não encontrada no Supabase. Retornando lista vazia.');
+          return { devices: [], count: 0 }
+        }
+        throw new Error(`Supabase error: ${error.message}`)
+      }
+      return { devices: data || [], count: count || 0 }
+    } catch (err: any) {
+      // Tratamento adicional para erros de conexão ou schema
+      if (err.message?.includes('Could not find the table') || err.message?.includes('schema cache')) {
+        console.warn('Tabela devices não encontrada no Supabase. Retornando lista vazia.');
+        return { devices: [], count: 0 }
+      }
+      throw err
+    }
   }
 
   async createDevice(device: Omit<SupabaseDevice, 'id' | 'created_at' | 'updated_at'>): Promise<SupabaseDevice> {
-    const { data, error } = await supabase
-      .from('devices')
-      .insert(device)
-      .select()
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('devices')
+        .insert(device)
+        .select()
+        .single()
 
-    if (error) throw new Error(`Supabase error: ${error.message}`)
-    return data
+      if (error) {
+        if (error.message.includes('Could not find the table') || error.code === 'PGRST116') {
+          throw new Error('Tabela devices não existe no Supabase. Execute o script SQL de criação primeiro.')
+        }
+        throw new Error(`Supabase error: ${error.message}`)
+      }
+      return data
+    } catch (err: any) {
+      if (err.message?.includes('Could not find the table') || err.message?.includes('schema cache')) {
+        throw new Error('Tabela devices não existe no Supabase. Execute o script SQL de criação primeiro.')
+      }
+      throw err
+    }
   }
 
   async updateDevice(id: string, updates: Partial<SupabaseDevice>): Promise<SupabaseDevice> {
-    const { data, error } = await supabase
-      .from('devices')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('devices')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single()
 
-    if (error) throw new Error(`Supabase error: ${error.message}`)
-    return data
+      if (error) {
+        if (error.message.includes('Could not find the table') || error.code === 'PGRST116') {
+          throw new Error('Tabela devices não existe no Supabase. Execute o script SQL de criação primeiro.')
+        }
+        throw new Error(`Supabase error: ${error.message}`)
+      }
+      return data
+    } catch (err: any) {
+      if (err.message?.includes('Could not find the table') || err.message?.includes('schema cache')) {
+        throw new Error('Tabela devices não existe no Supabase. Execute o script SQL de criação primeiro.')
+      }
+      throw err
+    }
   }
 
   async deleteDevice(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('devices')
-      .delete()
-      .eq('id', id)
+    try {
+      const { error } = await supabase
+        .from('devices')
+        .delete()
+        .eq('id', id)
 
-    if (error) throw new Error(`Supabase error: ${error.message}`)
+      if (error) {
+        if (error.message.includes('Could not find the table') || error.code === 'PGRST116') {
+          throw new Error('Tabela devices não existe no Supabase. Execute o script SQL de criação primeiro.')
+        }
+        throw new Error(`Supabase error: ${error.message}`)
+      }
+    } catch (err: any) {
+      if (err.message?.includes('Could not find the table') || err.message?.includes('schema cache')) {
+        throw new Error('Tabela devices não existe no Supabase. Execute o script SQL de criação primeiro.')
+      }
+      throw err
+    }
   }
 
   // Alertas
   async getAlerts(): Promise<{ alerts: Alert[]; count: number }> {
-    const { data, error, count } = await supabase
-      .from('alerts')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error, count } = await supabase
+        .from('alerts')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
 
-    if (error) throw new Error(`Supabase error: ${error.message}`)
-    return { alerts: data || [], count: count || 0 }
+      if (error) {
+        if (error.message.includes('Could not find the table') || error.code === 'PGRST116') {
+          console.warn('Tabela alerts não encontrada no Supabase. Retornando lista vazia.');
+          return { alerts: [], count: 0 }
+        }
+        throw new Error(`Supabase error: ${error.message}`)
+      }
+      return { alerts: data || [], count: count || 0 }
+    } catch (err: any) {
+      if (err.message?.includes('Could not find the table') || err.message?.includes('schema cache')) {
+        console.warn('Tabela alerts não encontrada no Supabase. Retornando lista vazia.');
+        return { alerts: [], count: 0 }
+      }
+      throw err
+    }
   }
 
   async createAlert(alert: Omit<Alert, 'id' | 'created_at' | 'updated_at'>): Promise<Alert> {
@@ -236,13 +302,27 @@ class ApiClient {
 
   // Perfis de usuário
   async getProfiles(): Promise<{ profiles: Profile[]; count: number }> {
-    const { data, error, count } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error, count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
 
-    if (error) throw new Error(`Supabase error: ${error.message}`)
-    return { profiles: data || [], count: count || 0 }
+      if (error) {
+        if (error.message.includes('Could not find the table') || error.code === 'PGRST116') {
+          console.warn('Tabela profiles não encontrada no Supabase. Retornando lista vazia.');
+          return { profiles: [], count: 0 }
+        }
+        throw new Error(`Supabase error: ${error.message}`)
+      }
+      return { profiles: data || [], count: count || 0 }
+    } catch (err: any) {
+      if (err.message?.includes('Could not find the table') || err.message?.includes('schema cache')) {
+        console.warn('Tabela profiles não encontrada no Supabase. Retornando lista vazia.');
+        return { profiles: [], count: 0 }
+      }
+      throw err
+    }
   }
 
   async getProfile(id: string): Promise<Profile | null> {
