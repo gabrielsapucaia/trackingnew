@@ -7,3 +7,4 @@ export { supabase, supabaseAdmin, supabaseHelpers } from './client'
 export type { Database } from './types'
 export * from './auth'
 export * from './realtime'
+

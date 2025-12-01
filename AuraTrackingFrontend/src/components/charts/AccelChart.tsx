@@ -287,3 +287,4 @@ export default function AccelChart(props: AccelChartProps) {
   );
 }
 
+

@@ -254,3 +254,4 @@ class SupabaseConfigActivity : AppCompatActivity() {
         }
     }
 }
+

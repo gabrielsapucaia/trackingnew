@@ -121,7 +121,7 @@ class LoginActivity : AppCompatActivity() {
                 // Insert test config - AuraTracking Server (local intranet)
                 val testConfig = ConfigEntity(
                     id = 1,
-                    mqttHost = "192.168.0.111", // AuraTracking Server local
+                    mqttHost = "192.168.0.113", // AuraTracking Server local
                     mqttPort = 1883,
                     mqttTopic = "aura/tracking/${android.os.Build.SERIAL}",
                     fleetId = "test-fleet-001",

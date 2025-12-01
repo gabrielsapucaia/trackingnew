@@ -253,3 +253,4 @@ function sendError(error: string): void {
 // Log startup
 console.log("[AnalyticsWorker] Worker started");
 
+

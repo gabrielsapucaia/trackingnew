@@ -65,3 +65,4 @@ export const supabaseHelpers = {
 }
 
 export default supabase
+

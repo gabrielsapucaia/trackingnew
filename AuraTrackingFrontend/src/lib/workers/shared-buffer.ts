@@ -444,3 +444,4 @@ export function isAtomicsAvailable(): boolean {
   return typeof Atomics !== 'undefined';
 }
 
+

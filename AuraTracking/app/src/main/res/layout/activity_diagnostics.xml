@@ -27,33 +27,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="@dimen/spacing_medium">
 
             <!-- Service Status Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Service Status"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/text_size_title"
                         android:textStyle="bold"
                         android:textColor="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <View
@@ -66,16 +66,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
+                            android:layout_marginStart="@dimen/spacing_small"
                             android:text="Service:"
-                            android:textSize="13sp" />
+                            android:textSize="@dimen/text_size_body" />
 
                         <TextView
                             android:id="@+id/tvServiceStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="Running" />
 
@@ -88,14 +88,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="WakeLock:"
-                            android:textSize="13sp" />
+                            android:textSize="@dimen/text_size_body" />
 
                         <TextView
                             android:id="@+id/tvWakeLockStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="Held" />
                     </LinearLayout>
@@ -107,15 +107,15 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -126,7 +126,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="GPS Status"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/text_size_title"
                             android:textStyle="bold"
                             android:textColor="@color/primary" />
 
@@ -139,7 +139,7 @@
                             android:id="@+id/tvGpsStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="Active" />
                     </LinearLayout>
@@ -147,33 +147,33 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Lat: "
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvGpsLat"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             tools:text="-23.550520" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Lon: "
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvGpsLon"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             tools:text="-46.633308" />
                     </LinearLayout>
 
@@ -195,38 +195,38 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="Acc: "
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvGpsAccuracy"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             tools:text="±5.2m" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Speed: "
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvGpsSpeed"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             tools:text="45.2 km/h" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Fix: "
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvGpsLastFix"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             tools:text="14:30:25" />
                     </LinearLayout>
 
@@ -237,15 +237,15 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -256,7 +256,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="IMU Status"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/text_size_title"
                             android:textStyle="bold"
                             android:textColor="@color/primary" />
 
@@ -269,7 +269,7 @@
                             android:id="@+id/tvImuStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="Active" />
                     </LinearLayout>
@@ -277,14 +277,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:text="Accelerometer (m/s²):"
-                        android:textSize="12sp" />
+                        android:textSize="@dimen/text_size_small" />
                     <TextView
                         android:id="@+id/tvImuAccel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/text_size_small"
                         android:textStyle="bold"
                         tools:text="X:0.12 Y:-0.05 Z:9.81" />
 
@@ -293,12 +293,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Gyroscope (rad/s):"
-                        android:textSize="12sp" />
+                        android:textSize="@dimen/text_size_small" />
                     <TextView
                         android:id="@+id/tvImuGyro"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/text_size_small"
                         android:textStyle="bold"
                         tools:text="X:0.01 Y:0.02 Z:-0.01" />
 
@@ -307,12 +307,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Last sample:"
-                        android:textSize="12sp" />
+                        android:textSize="@dimen/text_size_small" />
                     <TextView
                         android:id="@+id/tvImuLastSample"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/text_size_small"
                         tools:text="14:30:25" />
 
                 </LinearLayout>
@@ -322,9 +322,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
                 app:strokeColor="@color/primary"
                 app:strokeWidth="1dp">
 
@@ -332,7 +332,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -343,7 +343,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="🛰️ GNSS Latency Diagnostics"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/text_size_title"
                             android:textStyle="bold"
                             android:textColor="@color/primary" />
 
@@ -364,7 +364,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="NORMAL" />
                     </LinearLayout>
@@ -373,21 +373,21 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="GPS Age:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvGpsAgeAvg"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="avg: 245ms" />
 
@@ -395,7 +395,7 @@
                             android:id="@+id/tvGpsAgeP95"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             tools:text="P95: 320ms" />
                     </LinearLayout>
 
@@ -410,14 +410,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Chipset:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvChipsetLatency"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="~120ms" />
 
@@ -425,13 +425,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="FusedLP:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvFusedLatency"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="~80ms" />
                     </LinearLayout>
@@ -447,14 +447,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="IMU↔GPS Lag:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvCorrelationLag"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="~200ms (corr: 0.85)" />
 
@@ -462,7 +462,7 @@
                             android:id="@+id/tvSampleCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             tools:text="(150 samples)" />
                     </LinearLayout>
 
@@ -471,7 +471,7 @@
                         android:id="@+id/tvLatencyDiagnosis"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:padding="8dp"
                         android:background="@drawable/bg_diagnosis"
                         android:textSize="11sp"
@@ -482,7 +482,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
@@ -513,28 +513,28 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="MQTT &amp; Queue"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/text_size_title"
                         android:textStyle="bold"
                         android:textColor="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <View
@@ -547,16 +547,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
+                            android:layout_marginStart="@dimen/spacing_small"
                             android:text="MQTT:"
-                            android:textSize="13sp" />
+                            android:textSize="@dimen/text_size_body" />
 
                         <TextView
                             android:id="@+id/tvMqttStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="Connected" />
 
@@ -569,14 +569,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Last publish:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
 
                         <TextView
                             android:id="@+id/tvLastPublish"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="5s ago" />
                     </LinearLayout>
@@ -597,16 +597,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
+                            android:layout_marginStart="@dimen/spacing_small"
                             android:text="Queue:"
-                            android:textSize="13sp" />
+                            android:textSize="@dimen/text_size_body" />
 
                         <TextView
                             android:id="@+id/tvQueueSize"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="0 messages" />
 
@@ -619,14 +619,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Sent:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
 
                         <TextView
                             android:id="@+id/tvPacketsSent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="1234" />
                     </LinearLayout>
@@ -638,42 +638,42 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Background Workers"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/text_size_title"
                         android:textStyle="bold"
                         android:textColor="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="FlushWorker:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvFlushWorkerStatus"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="ENQUEUED" />
                     </LinearLayout>
@@ -688,14 +688,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Watchdog:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvWatchdogStatus"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="ENQUEUED" />
                     </LinearLayout>
@@ -710,14 +710,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="ReconnectWorker:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvReconnectWorkerStatus"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="ENQUEUED" />
                     </LinearLayout>
@@ -729,28 +729,28 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Battery &amp; Power"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/text_size_title"
                         android:textStyle="bold"
                         android:textColor="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <View
@@ -763,16 +763,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
+                            android:layout_marginStart="@dimen/spacing_small"
                             android:text="Optimization:"
-                            android:textSize="13sp" />
+                            android:textSize="@dimen/text_size_body" />
 
                         <TextView
                             android:id="@+id/tvBatteryOptStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body"
                             android:textStyle="bold"
                             tools:text="Disabled (good)" />
                     </LinearLayout>
@@ -787,14 +787,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Power Save Mode:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
 
                         <TextView
                             android:id="@+id/tvPowerSaveMode"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="Inactive" />
                     </LinearLayout>
@@ -806,41 +806,41 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Configuration"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/text_size_title"
                         android:textStyle="bold"
                         android:textColor="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Device ID:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvDeviceId"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="moto g34 5g" />
                     </LinearLayout>
@@ -855,13 +855,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Operator ID:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvOperatorId"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="12345" />
                     </LinearLayout>
@@ -876,13 +876,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Equipment ID:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvEquipmentId"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="EQP-001" />
                     </LinearLayout>
@@ -897,13 +897,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Fleet:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvFleet"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="Frota A" />
                     </LinearLayout>
@@ -918,13 +918,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="MQTT Broker:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvMqttHost"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="192.168.1.100:1883" />
                     </LinearLayout>
@@ -939,13 +939,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Supabase:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvSupabaseStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="Configured" />
                     </LinearLayout>
@@ -957,41 +957,41 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="@dimen/card_content_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Device Info"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/text_size_title"
                         android:textStyle="bold"
                         android:textColor="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/spacing_small"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Model:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvDeviceModel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="moto g34 5g" />
                     </LinearLayout>
@@ -1006,13 +1006,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Android:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvAndroidVersion"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="Android 14 (API 34)" />
                     </LinearLayout>
@@ -1027,13 +1027,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Log Files:"
-                            android:textSize="12sp" />
+                            android:textSize="@dimen/text_size_small" />
                         <TextView
                             android:id="@+id/tvLogFilesCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/text_size_small"
                             android:textStyle="bold"
                             tools:text="3 files (2.4 MB)" />
                     </LinearLayout>

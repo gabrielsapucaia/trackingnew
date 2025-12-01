@@ -158,3 +158,4 @@ import { supabaseHelpers } from '@/lib/supabase'
 
 const { healthy, error } = await supabaseHelpers.healthCheck()
 ```
+

@@ -326,3 +326,4 @@ function sendError(error: string): void {
 // Log startup
 console.log("[TelemetryWorker] Worker started");
 
+

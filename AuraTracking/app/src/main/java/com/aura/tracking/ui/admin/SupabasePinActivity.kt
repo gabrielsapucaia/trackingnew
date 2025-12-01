@@ -69,3 +69,4 @@ class SupabasePinActivity : AppCompatActivity() {
         finish()
     }
 }
+

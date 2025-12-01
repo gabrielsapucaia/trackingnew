@@ -14,11 +14,11 @@
 
 | Componente | Host | Porta | Credenciais |
 |------------|------|-------|-------------|
-| MQTT (EMQX) | localhost / 192.168.0.50 | 1883 | - |
-| EMQX Dashboard | localhost / 192.168.0.50 | 18083 | admin / AuraTrack@2024! |
-| TimescaleDB | localhost / 192.168.0.50 | 5432 | aura / AuraTrack@DB2024! |
-| Ingest Health | localhost / 192.168.0.50 | 8080 | - |
-| Grafana | localhost / 192.168.0.50 | 3000 | admin / AuraTrack@2024! |
+| MQTT (EMQX) | localhost / 192.168.0.113 | 1883 | - |
+| EMQX Dashboard | localhost / 192.168.0.113 | 18083 | admin / AuraTrack@2024! |
+| TimescaleDB | localhost / 192.168.0.113 | 5432 | aura / AuraTrack@DB2024! |
+| Ingest Health | localhost / 192.168.0.113 | 8080 | - |
+| Grafana | localhost / 192.168.0.113 | 3000 | admin / AuraTrack@2024! |
 
 ---
 
@@ -424,7 +424,7 @@ adb logcat -s AuraTracking MqttManager TelemetryService
 adb shell "run-as com.aura.tracking cat shared_prefs/aura_prefs.xml"
 
 # Verificar conectividade do celular
-adb shell ping -c 3 192.168.0.50
+adb shell ping -c 3 192.168.0.113
 ```
 
 ---

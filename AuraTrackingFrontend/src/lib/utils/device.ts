@@ -146,3 +146,4 @@ export function calculateFleetStats(devices: EnrichedDevice[]) {
     movingPercentage: Math.round((moving / total) * 100)
   };
 }
+

@@ -213,3 +213,4 @@ export type Profile = Tables<'profiles'>
 export type Device = Tables<'devices'>
 export type Alert = Tables<'alerts'>
 export type AuditLog = Tables<'audit_logs'>
+
