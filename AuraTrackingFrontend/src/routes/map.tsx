@@ -1,13 +1,16 @@
 import { createSignal, createResource, onMount, onCleanup, Show, For, createEffect } from "solid-js";
 import AppLayout from "~/layouts/AppLayout";
 import { api, type Device, type TelemetryPoint } from "~/lib/api/client";
-import type { TelemetryPacket } from "~/lib/mqtt/types";
+import { realtimeManager } from "~/lib/supabase";
 import { convertDatum, type Datum, applyCoordinateOffset, getRecommendedOffset } from "~/lib/utils/geo";
+import { useMqtt } from "~/providers/MqttProvider";
+import { UI_CONFIG } from "~/lib/utils/constants";
 
 // Declare maplibregl as any for dynamic import
 let maplibregl: any = null;
 
 export default function MapPage() {
+  const { lastMessage } = useMqtt();
   const [selectedDevice, setSelectedDevice] = createSignal<string | null>(null);
   const [showTrail, setShowTrail] = createSignal(true);
   const [mapLoaded, setMapLoaded] = createSignal(false);
@@ -16,7 +19,7 @@ export default function MapPage() {
   const [coordinateOffset, setCoordinateOffset] = createSignal({ lat: 0, lon: 0 });
   const [showOffsetPanel, setShowOffsetPanel] = createSignal(false);
   const [manualOffset, setManualOffset] = createSignal({ lat: 0, lon: 0 });
-  
+
   // Real-time device data from MQTT
   const [realtimePosition, setRealtimePosition] = createSignal<{
     latitude: number;
@@ -25,15 +28,23 @@ export default function MapPage() {
     bearing: number;
     timestamp: number;
   } | null>(null);
-  
+
   let mapContainer: HTMLDivElement | undefined;
   let map: any = null;
   let deviceMarker: any = null;
   let trailSource: any = null;
-  
+
   // Fetch devices once on load (no polling!)
   const [devicesData, { refetch: refetchDevices }] = createResource(() => api.getDevices());
-  
+
+  // Stale-While-Revalidate for devices
+  const [latestDevices, setLatestDevices] = createSignal<Device[]>([]);
+
+  createEffect(() => {
+    const d = devicesData();
+    if (d?.devices) setLatestDevices(d.devices);
+  });
+
   // Fetch trail for selected device
   const [trailData, { refetch: refetchTrail }] = createResource(
     () => selectedDevice(),
@@ -43,10 +54,26 @@ export default function MapPage() {
     }
   );
 
+  // Stale-While-Revalidate for trail
+  const [latestTrail, setLatestTrail] = createSignal<TelemetryPoint[]>([]);
+
+  createEffect(() => {
+    const t = trailData();
+    if (t?.data) setLatestTrail(t.data);
+  });
+
   // Auto-select first device
-  const devices = () => devicesData()?.devices || [];
-  
+  const devices = () => latestDevices();
+
+
   onMount(() => {
+    // Subscribe to Realtime updates for 'devices' table
+    const channelName = realtimeManager.subscribeToTable('devices', {
+      onAny: () => {
+        refetchDevices();
+      }
+    });
+
     const checkDevices = setInterval(() => {
       if (devices().length > 0 && !selectedDevice()) {
         setSelectedDevice(devices()[0].device_id);
@@ -57,7 +84,11 @@ export default function MapPage() {
         clearInterval(checkDevices);
       }
     }, 500);
-    return () => clearInterval(checkDevices);
+
+    onCleanup(() => {
+      clearInterval(checkDevices);
+      realtimeManager.unsubscribe(channelName);
+    });
   });
 
   // Get current device (from API data, merged with realtime)
@@ -77,12 +108,14 @@ export default function MapPage() {
         coordinateOffset().lat,
         coordinateOffset().lon
       );
+      const mqttTimestamp = new Date(rt.timestamp).toISOString();
+      console.log('[Map] Using MQTT data for currentDevice, timestamp:', mqttTimestamp);
       return {
         ...device,
         latitude: convertedCoords.lat,
         longitude: convertedCoords.lon,
         speed_kmh: rt.speed * 3.6, // m/s to km/h
-        last_seen: new Date(rt.timestamp).toISOString()
+        last_seen: mqttTimestamp
       };
     }
 
@@ -110,54 +143,67 @@ export default function MapPage() {
     };
   };
 
-  // Listen to MQTT telemetry events for real-time updates
-  onMount(() => {
-    if (typeof window === "undefined") return;
-    
-    const handleTelemetry = (event: CustomEvent<{ topic: string; packet: TelemetryPacket }>) => {
-      const { packet } = event.detail;
-      const selected = selectedDevice();
-      
-      // Normalize device IDs for comparison (handle spaces, case, etc.)
-      const normalizeId = (id: string) => id.toLowerCase().replace(/[^a-z0-9]/g, '');
-      
-      // Only process if this is the selected device
-      if (selected && normalizeId(packet.deviceId) === normalizeId(selected)) {
-        setRealtimePosition({
-          latitude: packet.gps.latitude,
-          longitude: packet.gps.longitude,
-          speed: packet.gps.speed || 0,
-          bearing: packet.gps.bearing || 0,
-          timestamp: packet.timestamp
-        });
-      }
-    };
-    
-    window.addEventListener("telemetry", handleTelemetry as EventListener);
-    
-    return () => {
-      window.removeEventListener("telemetry", handleTelemetry as EventListener);
-    };
+  // Listen to MQTT telemetry from global provider for live updates (1 Hz+)
+  createEffect(() => {
+    const packet = lastMessage();
+    if (!packet) return;
+
+    const selected = selectedDevice();
+    if (!selected || !packet.deviceId) return;
+
+    const normalizeId = (id: string) => id.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    if (normalizeId(packet.deviceId) === normalizeId(selected)) {
+      setRealtimePosition({
+        latitude: packet.gps.latitude,
+        longitude: packet.gps.longitude,
+        speed: packet.gps.speed || 0,
+        bearing: packet.gps.bearing || 0,
+        timestamp: packet.timestamp
+      });
+
+      // Append live point to the trail so the line updates in real time
+      setLatestTrail((prev) => {
+        const next: TelemetryPoint[] = [
+          ...prev,
+          {
+            time: new Date(packet.timestamp).toISOString(),
+            device_id: packet.deviceId,
+            operator_id: packet.operatorId,
+            latitude: packet.gps.latitude,
+            longitude: packet.gps.longitude,
+            altitude: packet.gps.altitude ?? 0,
+            speed: packet.gps.speed ?? 0,
+            speed_kmh: (packet.gps.speed ?? 0) * 3.6,
+            bearing: packet.gps.bearing ?? 0,
+            gps_accuracy: packet.gps.accuracy ?? 0,
+            accel_x: packet.imu.accelX,
+            accel_y: packet.imu.accelY,
+            accel_z: packet.imu.accelZ,
+            accel_magnitude: Math.sqrt(
+              Math.pow(packet.imu.accelX, 2) +
+              Math.pow(packet.imu.accelY, 2) +
+              Math.pow(packet.imu.accelZ, 2)
+            ),
+          },
+        ];
+
+        // Keep only recent points to avoid unbounded growth
+        const max = UI_CONFIG.TRAIL_LENGTH;
+        return next.slice(Math.max(0, next.length - max));
+      });
+    }
   });
-  
-  // Refresh trail periodically (less frequently, every 30s)
-  onMount(() => {
-    const interval = setInterval(() => {
-      if (selectedDevice()) {
-        refetchTrail();
-      }
-    }, 30000);
-    return () => clearInterval(interval);
-  });
+
 
   // Initialize MapLibre GL
   onMount(async () => {
     if (typeof window === "undefined" || !mapContainer) return;
-    
+
     try {
       const maplibre = await import("maplibre-gl");
       maplibregl = maplibre.default;
-      
+
       // Add MapLibre CSS
       if (!document.getElementById("maplibre-css")) {
         const link = document.createElement("link");
@@ -166,7 +212,7 @@ export default function MapPage() {
         link.href = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
         document.head.appendChild(link);
       }
-      
+
       // Initialize map based on selected style
       const createMapStyle = (style: string) => {
         if (style === 'osm') {
@@ -255,26 +301,26 @@ export default function MapPage() {
         bearing: 0,
         attributionControl: false
       });
-      
+
       // Add navigation controls
       map.addControl(new maplibregl.NavigationControl({
         showCompass: true,
         showZoom: true,
         visualizePitch: true
       }), "bottom-right");
-      
+
       // Add scale control
       map.addControl(new maplibregl.ScaleControl({
         maxWidth: 100,
         unit: "metric"
       }), "bottom-left");
-      
+
       // Add fullscreen control
       map.addControl(new maplibregl.FullscreenControl(), "top-right");
-      
+
       map.on("load", () => {
         setMapLoaded(true);
-        
+
         // Add trail source
         map.addSource("trail", {
           type: "geojson",
@@ -283,7 +329,7 @@ export default function MapPage() {
             features: []
           }
         });
-        
+
         // Add trail line layer with gradient based on speed
         map.addLayer({
           id: "trail-line",
@@ -299,7 +345,7 @@ export default function MapPage() {
             "line-opacity": 0.8
           }
         });
-        
+
         // Add trail points layer
         map.addLayer({
           id: "trail-points",
@@ -314,12 +360,12 @@ export default function MapPage() {
           }
         });
       });
-      
+
     } catch (err) {
       console.error("Failed to initialize map:", err);
     }
   });
-  
+
   // Cleanup on unmount
   onCleanup(() => {
     if (map) {
@@ -327,7 +373,7 @@ export default function MapPage() {
       map = null;
     }
   });
-  
+
   // Update device marker smoothly when device data changes (from API or MQTT)
   createEffect(() => {
     const device = currentDevice();
@@ -338,10 +384,10 @@ export default function MapPage() {
       }
       return;
     }
-    
+
     const lngLat: [number, number] = [device.longitude, device.latitude];
     const speed = device.speed_kmh?.toFixed(0) || 0;
-    
+
     if (!deviceMarker) {
       // Create marker element
       const el = document.createElement("div");
@@ -372,14 +418,14 @@ export default function MapPage() {
         <div class="marker-speed">${speed} km/h</div>
         <div class="marker-tag">${device.device_id}</div>
       `;
-      
+
       deviceMarker = new maplibregl.Marker({
         element: el,
         anchor: "center"
       })
         .setLngLat(lngLat)
         .addTo(map);
-      
+
       // Fly to device location
       map.flyTo({
         center: lngLat,
@@ -394,37 +440,37 @@ export default function MapPage() {
       const startLat = currentPos.lat;
       const endLng = lngLat[0];
       const endLat = lngLat[1];
-      
+
       // Only animate if position changed significantly
       const distance = Math.sqrt(
         Math.pow(endLng - startLng, 2) + Math.pow(endLat - startLat, 2)
       );
-      
+
       if (distance > 0.000001) {
         // Animate over 300ms
         const duration = 300;
         const startTime = performance.now();
-        
+
         const animate = (currentTime: number) => {
           const elapsed = currentTime - startTime;
           const progress = Math.min(elapsed / duration, 1);
-          
+
           // Ease-out cubic
           const eased = 1 - Math.pow(1 - progress, 3);
-          
+
           const lng = startLng + (endLng - startLng) * eased;
           const lat = startLat + (endLat - startLat) * eased;
-          
+
           deviceMarker.setLngLat([lng, lat]);
-          
+
           if (progress < 1) {
             requestAnimationFrame(animate);
           }
         };
-        
+
         requestAnimationFrame(animate);
       }
-      
+
       // Update speed display
       const speedEl = deviceMarker.getElement().querySelector(".marker-speed");
       if (speedEl) {
@@ -432,7 +478,7 @@ export default function MapPage() {
       }
     }
   });
-  
+
   // Initialize offset on mount
   onMount(() => {
     const recommendedOffset = getRecommendedOffset(mapStyle());
@@ -523,7 +569,7 @@ export default function MapPage() {
     };
 
     map.setStyle(createMapStyle(mapStyle()));
-    
+
     // Apply recommended offset for the selected map provider
     const recommendedOffset = getRecommendedOffset(mapStyle());
     // Combine with manual offset
@@ -532,7 +578,7 @@ export default function MapPage() {
       lon: recommendedOffset.lon + manualOffset().lon
     });
   });
-  
+
   // Update coordinate offset when manual offset changes
   createEffect(() => {
     const recommendedOffset = getRecommendedOffset(mapStyle());
@@ -544,7 +590,7 @@ export default function MapPage() {
 
   // Update trail when trail data or datum changes
   createEffect(() => {
-    const trail = trailData()?.data || [];
+    const trail = latestTrail();
     if (!map || !mapLoaded() || !showTrail()) {
       if (map && mapLoaded() && map.getSource("trail")) {
         map.getSource("trail").setData({
@@ -554,7 +600,7 @@ export default function MapPage() {
       }
       return;
     }
-    
+
     if (trail.length > 0 && map.getSource("trail")) {
       // Create line from trail points, applying datum conversion and offset
       const coordinates = trail
@@ -570,7 +616,7 @@ export default function MapPage() {
           );
           return [converted.lon, converted.lat];
         });
-      
+
       const geojsonData = {
         type: "FeatureCollection" as const,
         features: [
@@ -608,11 +654,11 @@ export default function MapPage() {
             })
         ]
       };
-      
+
       map.getSource("trail").setData(geojsonData);
     }
   });
-  
+
   // Center on device
   const centerOnDevice = () => {
     const device = currentDevice();
@@ -654,6 +700,7 @@ export default function MapPage() {
               onChange={(e) => {
                 setSelectedDevice(e.target.value || null);
                 setRealtimePosition(null); // Reset realtime when changing device
+                setLatestTrail([]); // Clear old trail until new data arrives
                 // Center map on newly selected device
                 setTimeout(() => {
                   centerMapOnDevice();
@@ -696,18 +743,18 @@ export default function MapPage() {
           </div>
           <div class="flex gap-2 items-center">
             <Show when={currentDevice()}>
-              <button 
-                class="btn btn-ghost btn-icon" 
+              <button
+                class="btn btn-ghost btn-icon"
                 title="Centralizar no dispositivo"
                 onClick={centerOnDevice}
               >
                 <CenterIcon />
               </button>
               <div class="badge badge-success">
-                <span style={{ 
-                  width: "8px", 
-                  height: "8px", 
-                  background: currentDevice()?.status === 'online' ? "var(--color-success)" : "var(--color-error)", 
+                <span style={{
+                  width: "8px",
+                  height: "8px",
+                  background: currentDevice()?.status === 'online' ? "var(--color-success)" : "var(--color-error)",
                   "border-radius": "50%",
                   "margin-right": "6px"
                 }} />
@@ -721,14 +768,14 @@ export default function MapPage() {
         </div>
 
         {/* Map Container */}
-        <div class="card flex-1" style={{ 
+        <div class="card flex-1" style={{
           "min-height": "500px",
           position: "relative",
           overflow: "hidden",
           padding: 0
         }}>
           {/* MapLibre GL Container */}
-          <div 
+          <div
             ref={mapContainer}
             style={{
               width: "100%",
@@ -736,7 +783,7 @@ export default function MapPage() {
               "min-height": "500px"
             }}
           />
-          
+
           {/* Loading overlay */}
           <Show when={!mapLoaded()}>
             <div style={{
@@ -937,9 +984,9 @@ export default function MapPage() {
               </div>
             </div>
           </Show>
-          
+
           {/* Trail info */}
-          <Show when={showTrail() && trailData()?.data?.length}>
+          <Show when={showTrail() && latestTrail().length}>
             <div style={{
               position: "absolute",
               top: "16px",
@@ -954,11 +1001,11 @@ export default function MapPage() {
             }}>
               <span class="text-muted">Trilha: </span>
               <span style={{ color: "var(--color-accent-primary)", "font-weight": "600" }}>
-                {trailData()!.data.length} pontos
+                {latestTrail().length} pontos
               </span>
             </div>
           </Show>
-          
+
           {/* Realtime indicator */}
           <Show when={realtimePosition()}>
             <div style={{

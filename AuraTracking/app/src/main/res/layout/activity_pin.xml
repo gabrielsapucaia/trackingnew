@@ -30,38 +30,81 @@
         android:textStyle="bold"
         android:textColor="@color/text_primary" />
 
-    <!-- Subtitle showing operator -->
+    <!-- Operator Info -->
     <TextView
         android:id="@+id/tvOperator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:textSize="16sp"
-        android:textColor="@color/text_secondary"
-        tools:text="Operador: 12345" />
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
+        tools:text="João Silva - 1234" />
 
-    <!-- PIN Input -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilPin"
-        style="@style/Theme.AuraTracking.TextInputLayout"
-        android:layout_width="200dp"
+    <!-- PIN Input Fields -->
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
-        android:hint="@string/pin_hint"
-        app:passwordToggleEnabled="true">
+        android:orientation="horizontal"
+        android:gravity="center">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etPin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:id="@+id/etPin1"
+            android:layout_width="50dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="8dp"
             android:inputType="numberPassword"
-            android:maxLength="4"
+            android:maxLength="1"
             android:gravity="center"
             android:textSize="24sp"
-            android:letterSpacing="0.3"
-            android:imeOptions="actionDone" />
+            android:background="@drawable/pin_field_background"
+            android:textColor="@color/text_primary"
+            android:hint=""
+            android:padding="16dp" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPin2"
+            android:layout_width="50dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="8dp"
+            android:inputType="numberPassword"
+            android:maxLength="1"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:background="@drawable/pin_field_background"
+            android:textColor="@color/text_primary"
+            android:hint=""
+            android:padding="16dp" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPin3"
+            android:layout_width="50dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="8dp"
+            android:inputType="numberPassword"
+            android:maxLength="1"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:background="@drawable/pin_field_background"
+            android:textColor="@color/text_primary"
+            android:hint=""
+            android:padding="16dp" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPin4"
+            android:layout_width="50dp"
+            android:layout_height="70dp"
+            android:inputType="numberPassword"
+            android:maxLength="1"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:background="@drawable/pin_field_background"
+            android:textColor="@color/text_primary"
+            android:hint=""
+            android:padding="16dp" />
+
+    </LinearLayout>
 
     <!-- Login Button -->
     <com.google.android.material.button.MaterialButton

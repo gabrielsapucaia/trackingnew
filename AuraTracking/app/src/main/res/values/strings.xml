@@ -72,6 +72,38 @@
     <string name="permission_notification_title">Notificações</string>
     <string name="permission_notification_message">Permita notificações para ver o status do rastreamento.</string>
 
+    <!-- Supabase PIN Activity -->
+    <string name="supabase_pin_title">Acesso Supabase</string>
+    <string name="supabase_pin_subtitle">Digite o PIN para acessar as configurações do Supabase</string>
+    <string name="supabase_pin_hint">PIN (4 dígitos)</string>
+    <string name="supabase_pin_confirm">Confirmar</string>
+    <string name="supabase_pin_error_empty">Digite o PIN</string>
+    <string name="supabase_pin_error_invalid">PIN incorreto</string>
+
+    <!-- PIN Activity Errors -->
+    <string name="pin_error_registration_not_found">Matrícula não encontrada. Digite uma matrícula válida.</string>
+
+    <!-- Supabase Config Activity -->
+    <string name="supabase_config_title">Configurações Supabase</string>
+    <string name="supabase_section_title">Carregar Tabelas</string>
+    <string name="supabase_operators_title">Operadores</string>
+    <string name="supabase_operators_count">%d operadores</string>
+    <string name="supabase_load_operators">Carregar Operadores</string>
+    <string name="supabase_operators_loaded">%d operadores carregados</string>
+    <string name="supabase_equipment_types_title">Tipos de Equipamento</string>
+    <string name="supabase_equipment_types_count">%d tipos</string>
+    <string name="supabase_load_equipment_types">Carregar Tipos</string>
+    <string name="supabase_equipment_types_loaded">%d tipos carregados</string>
+    <string name="supabase_equipments_title">Equipamentos</string>
+    <string name="supabase_equipments_count">%d equipamentos</string>
+    <string name="supabase_load_equipments">Carregar Equipamentos</string>
+    <string name="supabase_equipments_loaded">%d equipamentos carregados</string>
+    <string name="supabase_load_all">Carregar Tudo</string>
+    <string name="supabase_all_loaded">Carregados: %1$d ops, %2$d tipos, %3$d eqps</string>
+    <string name="supabase_status_loaded">Carregado ✓</string>
+    <string name="supabase_status_not_loaded">Não carregado</string>
+    <string name="supabase_error_load_failed">Erro: %s</string>
+
     <!-- General -->
     <string name="loading">Carregando…</string>
     <string name="error_generic">Ocorreu um erro. Tente novamente.</string>

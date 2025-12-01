@@ -85,6 +85,20 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AuraTracking" />
 
+        <!-- Supabase PIN Activity -->
+        <activity
+            android:name=".ui.admin.SupabasePinActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AuraTracking" />
+
+        <!-- Supabase Config Activity -->
+        <activity
+            android:name=".ui.admin.SupabaseConfigActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AuraTracking" />
+
         <!-- Diagnostics Activity -->
         <activity
             android:name=".ui.diagnostics.DiagnosticsActivity"
@@ -102,6 +116,22 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location" />
+
+        <!-- ========================= -->
+        <!-- WORK MANAGERS -->
+        <!-- ========================= -->
+
+        <!-- Sync Data Worker -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
 
         <!-- ========================= -->
         <!-- BROADCAST RECEIVERS -->

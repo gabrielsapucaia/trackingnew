@@ -224,6 +224,52 @@ class SupabaseApiImpl : SupabaseApi {
     }
 
     /**
+     * Fetch all active operators.
+     */
+    override suspend fun getOperators(): Result<List<Operator>> {
+        return try {
+            Log.d(TAG, "Fetching all operators")
+
+            val operators: List<Operator> = client.get(tableUrl("operators")) {
+                parameter("status", "eq.active")
+                parameter("select", "*")
+                parameter("order", "name.asc")
+            }.body()
+
+            Log.d(TAG, "Fetched ${operators.size} operators")
+            Result.success(operators)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching operators: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Fetch operator by registration number.
+     */
+    override suspend fun getOperatorByRegistration(registration: String): Result<Operator> {
+        return try {
+            Log.d(TAG, "Fetching operator by registration: $registration")
+
+            val operators: List<Operator> = client.get(tableUrl("operators")) {
+                parameter("registration", "eq.$registration")
+                parameter("status", "eq.active")
+                parameter("select", "*")
+            }.body()
+
+            if (operators.isNotEmpty()) {
+                Log.d(TAG, "Found operator: ${operators[0].name}")
+                Result.success(operators[0])
+            } else {
+                Result.failure(Exception("Operator not found"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching operator by registration: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Validate if an operator session is still valid.
      */
     override suspend fun validateSession(operatorId: Long): Result<Boolean> {

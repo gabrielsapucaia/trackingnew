@@ -7,6 +7,9 @@ import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.work.Configuration
+import androidx.work.WorkManager
+import com.aura.tracking.background.SyncDataWorker
 import com.aura.tracking.data.room.AppDatabase
 import com.aura.tracking.data.supabase.SupabaseApi
 import com.aura.tracking.data.supabase.SupabaseApiImpl
@@ -15,7 +18,7 @@ import com.aura.tracking.logging.LogWriter
 /**
  * Application class for AuraTracking.
  * Initializes core dependencies using Manual DI pattern.
- * 
+ *
  * FASE 3: Inicialização do sistema de logging persistente.
  */
 class AuraTrackingApp : Application() {
@@ -33,13 +36,22 @@ class AuraTrackingApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        
+
         // Inicializa sistema de logging persistente
         LogWriter.getInstance(this)
         keepScreenAwake()
-        
+
         createNotificationChannel()
         createWatchdogNotificationChannel()
+
+        // Inicializa WorkManager
+        val config = Configuration.Builder()
+            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .build()
+        WorkManager.initialize(this, config)
+
+        // Agenda sincronização automática de dados
+        SyncDataWorker.schedule(this)
     }
 
     /**

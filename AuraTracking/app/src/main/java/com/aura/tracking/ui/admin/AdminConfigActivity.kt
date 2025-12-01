@@ -35,6 +35,10 @@ class AdminConfigActivity : AppCompatActivity() {
     private var selectedEquipmentType: EquipmentType? = null
     private var selectedEquipment: Equipment? = null
 
+    // Valores salvos na configuração
+    private var savedFleetId: String? = null
+    private var savedEquipmentId: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminConfigBinding.inflate(layoutInflater)
@@ -72,6 +76,10 @@ class AdminConfigActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnSupabaseConfig.setOnClickListener {
+            navigateToSupabaseConfig()
+        }
+
         // Equipment Type selection listener
         binding.actvFleet.setOnItemClickListener { _, _, position, _ ->
             selectedEquipmentType = equipmentTypes.getOrNull(position)
@@ -97,7 +105,9 @@ class AdminConfigActivity : AppCompatActivity() {
                     binding.etMqttHost.setText(it.mqttHost)
                     binding.etMqttPort.setText(it.mqttPort.toString())
 
-                    // Equipment type and equipment will be set after loading lists
+                    // Store saved values for later selection
+                    savedFleetId = it.fleetId
+                    savedEquipmentId = it.equipmentId
                 }
             } catch (e: Exception) {
                 // Use defaults
@@ -185,6 +195,20 @@ class AdminConfigActivity : AppCompatActivity() {
             typeNames
         )
         binding.actvFleet.setAdapter(adapter)
+
+        // Auto-select saved fleet if available
+        savedFleetId?.let { fleetId ->
+            val savedType = equipmentTypes.find { it.id.toString() == fleetId }
+            savedType?.let { type ->
+                val position = equipmentTypes.indexOf(type)
+                if (position >= 0) {
+                    binding.actvFleet.setText(typeNames[position], false)
+                    selectedEquipmentType = type
+                    // Load equipments for this type
+                    loadEquipmentsByType(type.id)
+                }
+            }
+        }
     }
 
     private fun updateEquipmentSpinner() {
@@ -195,6 +219,18 @@ class AdminConfigActivity : AppCompatActivity() {
             equipmentNames
         )
         binding.actvEquipment.setAdapter(adapter)
+
+        // Auto-select saved equipment if available
+        savedEquipmentId?.let { equipmentId ->
+            val savedEquipment = equipments.find { it.id.toString() == equipmentId }
+            savedEquipment?.let { equipment ->
+                val position = equipments.indexOf(equipment)
+                if (position >= 0) {
+                    binding.actvEquipment.setText(equipmentNames[position], false)
+                    selectedEquipment = equipment
+                }
+            }
+        }
     }
 
     /**
@@ -276,6 +312,14 @@ class AdminConfigActivity : AppCompatActivity() {
 
     private fun setLoading(loading: Boolean) {
         binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+    }
+
+    /**
+     * Navigate to Supabase configuration screen.
+     */
+    private fun navigateToSupabaseConfig() {
+        val intent = Intent(this, SupabaseConfigActivity::class.java)
+        startActivity(intent)
     }
 
     /**

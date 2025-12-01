@@ -50,24 +50,64 @@
                         android:textSize="14sp"
                         android:textColor="@color/text_secondary" />
 
-                    <TextView
-                        android:id="@+id/tvOperatorName"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        tools:text="João da Silva" />
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/tvOperatorMatricula"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        tools:text="Matrícula: 12345" />
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvOperatorName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                tools:text="João da Silva" />
+
+                            <TextView
+                                android:id="@+id/tvOperatorMatricula"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_secondary"
+                                tools:text="Matrícula: 12345" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <View
+                                android:id="@+id/viewStatusIndicator"
+                                android:layout_width="12dp"
+                                android:layout_height="12dp"
+                                android:background="@color/status_stopped" />
+
+                            <TextView
+                                android:id="@+id/tvStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="@string/dashboard_status_stopped"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                     <!-- Equipment Info -->
                     <View
@@ -138,55 +178,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Status Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <View
-                        android:id="@+id/viewStatusIndicator"
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:background="@color/status_stopped" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dashboard_status_label"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_secondary" />
-
-                        <TextView
-                            android:id="@+id/tvStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dashboard_status_stopped"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/text_primary" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- Telemetry Card (visible when tracking) -->
             <com.google.android.material.card.MaterialCardView
@@ -485,31 +476,6 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Tracking Buttons -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnStartTracking"
-                style="@style/Theme.AuraTracking.Button"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/dashboard_start_tracking"
-                android:textSize="18sp"
-                app:icon="@android:drawable/ic_media_play"
-                app:iconGravity="textStart" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnStopTracking"
-                style="@style/Theme.AuraTracking.Button.Outlined"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="12dp"
-                android:text="@string/dashboard_stop_tracking"
-                android:textSize="18sp"
-                android:visibility="gone"
-                app:icon="@android:drawable/ic_media_pause"
-                app:iconGravity="textStart"
-                tools:visibility="visible" />
 
             <!-- Config Button -->
             <com.google.android.material.button.MaterialButton

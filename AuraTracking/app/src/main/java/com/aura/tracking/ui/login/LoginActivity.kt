@@ -2,7 +2,10 @@ package com.aura.tracking.ui.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -62,21 +65,40 @@ class LoginActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.btnContinue.setOnClickListener {
-            val matricula = binding.etMatricula.text?.toString()?.trim()
+            performLoginAction()
+        }
 
-            if (matricula.isNullOrEmpty()) {
-                binding.tilMatricula.error = getString(com.aura.tracking.R.string.login_error_empty)
-                return@setOnClickListener
-            }
+        binding.btnSettings.setOnClickListener {
+            navigateToSettings()
+        }
 
-            binding.tilMatricula.error = null
-            
-            // Test mode bypass: If DEBUG build and "TEST" matricula, skip Supabase
-            if (BuildConfig.DEBUG && matricula.equals(TEST_MODE_MATRICULA, ignoreCase = true)) {
-                setupTestModeAndNavigate()
+        // Listener para o teclado (seta direita)
+        binding.etMatricula.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_GO ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
+                performLoginAction()
+                true
             } else {
-                navigateToPin(matricula)
+                false
             }
+        }
+    }
+
+    private fun performLoginAction() {
+        val matricula = binding.etMatricula.text?.toString()?.trim()
+
+        if (matricula.isNullOrEmpty()) {
+            binding.tilMatricula.error = getString(com.aura.tracking.R.string.login_error_empty)
+            return
+        }
+
+        binding.tilMatricula.error = null
+
+        // Test mode bypass: If DEBUG build and "TEST" matricula, skip Supabase
+        if (BuildConfig.DEBUG && matricula.equals(TEST_MODE_MATRICULA, ignoreCase = true)) {
+            setupTestModeAndNavigate()
+        } else {
+            navigateToPin(matricula)
         }
     }
     
@@ -124,6 +146,17 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToPin(registration: String) {
         val intent = Intent(this, PinActivity::class.java).apply {
             putExtra(PinActivity.EXTRA_REGISTRATION, registration)
+        }
+        startActivity(intent)
+    }
+
+    /**
+     * Navigate to Settings (AdminConfigActivity).
+     */
+    private fun navigateToSettings() {
+        val intent = Intent(this, com.aura.tracking.ui.admin.AdminConfigActivity::class.java).apply {
+            // Pass flag indicating this is accessed from login screen (not first time setup)
+            putExtra(com.aura.tracking.ui.admin.AdminConfigActivity.EXTRA_FIRST_TIME, false)
         }
         startActivity(intent)
     }

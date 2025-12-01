@@ -117,6 +117,33 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Supabase Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/supabase_section_title"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:text="Configurações avançadas do Supabase"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSupabaseConfig"
+                style="@style/Theme.AuraTracking.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginBottom="32dp"
+                android:text="@string/supabase_config_title" />
+
             <!-- Loading -->
             <ProgressBar
                 android:id="@+id/progressBar"

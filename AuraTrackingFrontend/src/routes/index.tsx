@@ -1,6 +1,7 @@
-import { createSignal, createResource, onMount, For, Show, Suspense } from "solid-js";
+import { createResource, onMount, For, Show, onCleanup, createSignal, createEffect } from "solid-js";
 import AppLayout from "~/layouts/AppLayout";
 import { api, type Device, type SystemSummary } from "~/lib/api/client";
+import { realtimeManager } from "~/lib/supabase";
 import { enrichDevicesWithMetadata, type EnrichedDevice } from "~/lib/utils/device";
 
 // Icons
@@ -43,10 +44,10 @@ const RefreshIcon = () => (
   </svg>
 );
 
-function StatCard(props: { 
-  label: string; 
-  value: string | number; 
-  icon: () => any; 
+function StatCard(props: {
+  label: string;
+  value: string | number;
+  icon: () => any;
   accent?: boolean;
   loading?: boolean;
 }) {
@@ -96,10 +97,10 @@ function DeviceRow(props: { device: EnrichedDevice }) {
   return (
     <div class="flex items-center justify-between p-4 border-b" style={{ "border-color": "var(--color-border-primary)" }}>
       <div class="flex items-center gap-3">
-        <div style={{ 
-          width: "40px", 
-          height: "40px", 
-          background: "var(--color-bg-tertiary)", 
+        <div style={{
+          width: "40px",
+          height: "40px",
+          background: "var(--color-bg-tertiary)",
           "border-radius": "var(--radius-lg)",
           display: "flex",
           "align-items": "center",
@@ -137,19 +138,19 @@ function AlertItem(props: { alert: { type: string; message: string; time: string
   const getAlertStyle = () => {
     switch (props.alert.type) {
       case "warning":
-        return { 
-          borderColor: "var(--color-warning)", 
-          iconColor: "var(--color-warning)" 
+        return {
+          borderColor: "var(--color-warning)",
+          iconColor: "var(--color-warning)"
         };
       case "error":
-        return { 
-          borderColor: "var(--color-error)", 
-          iconColor: "var(--color-error)" 
+        return {
+          borderColor: "var(--color-error)",
+          iconColor: "var(--color-error)"
         };
       default:
-        return { 
-          borderColor: "var(--color-info)", 
-          iconColor: "var(--color-info)" 
+        return {
+          borderColor: "var(--color-info)",
+          iconColor: "var(--color-info)"
         };
     }
   };
@@ -157,7 +158,7 @@ function AlertItem(props: { alert: { type: string; message: string; time: string
   const style = getAlertStyle();
 
   return (
-    <div class="flex items-center gap-3 p-3" style={{ 
+    <div class="flex items-center gap-3 p-3" style={{
       "border-left": `3px solid ${style.borderColor}`,
       background: "var(--color-bg-tertiary)",
       "border-radius": "0 var(--radius-md) var(--radius-md) 0",
@@ -179,30 +180,66 @@ export default function Dashboard() {
   const [summary, { refetch: refetchSummary }] = createResource(() => api.getSummary(1));
   const [devicesData, { refetch: refetchDevices }] = createResource(() => api.getDevices());
   const [supabaseDevices, { refetch: refetchSupabaseDevices }] = createResource(() => api.getDevicesFromSupabase());
-  
-  // Auto-refresh every 5 seconds
+
+  // Local state to hold the latest valid data (Stale-While-Revalidate pattern)
+  // This prevents the UI from flickering to empty/loading state during refetches
+  const [latestSummary, setLatestSummary] = createSignal<SystemSummary | null>(null);
+  const [latestTelemetry, setLatestTelemetry] = createSignal<Device[]>([]);
+  const [latestSupabase, setLatestSupabase] = createSignal<any[]>([]); // Using any[] for SupabaseDevice to avoid import issues if not exported
+
+  // Sync resources to local state only when data is available
+  createEffect(() => {
+    const s = summary();
+    if (s) setLatestSummary(s);
+  });
+
+  createEffect(() => {
+    const d = devicesData();
+    if (d?.devices) setLatestTelemetry(d.devices);
+  });
+
+  createEffect(() => {
+    const d = supabaseDevices();
+    if (d?.devices) setLatestSupabase(d.devices);
+  });
+
+  // Setup Realtime and Polling
   onMount(() => {
+    // 1. Subscribe to Realtime updates for 'devices' table
+    const channelName = realtimeManager.subscribeToTable('devices', {
+      onAny: () => {
+        // When any change happens in Supabase 'devices' table, refresh the local data
+        refetchSupabaseDevices();
+      }
+    });
+
+    // 2. Poll only for non-Supabase data (Telemetry/Summary)
     const interval = setInterval(() => {
       refetchSummary();
       refetchDevices();
-      refetchSupabaseDevices();
+      // Note: refetchSupabaseDevices is now handled by Realtime!
     }, 5000);
 
-    return () => clearInterval(interval);
+    onCleanup(() => {
+      clearInterval(interval);
+      realtimeManager.unsubscribe(channelName);
+    });
   });
 
-  // Combine devices with Supabase metadata
+  // Combine devices with Supabase metadata using stable local data
   const enrichedDevices = () => {
-    const telemetryDevices = devicesData()?.devices || [];
-    const supabaseDevicesList = supabaseDevices()?.devices || [];
-    return enrichDevicesWithMetadata(telemetryDevices, supabaseDevicesList);
+    return enrichDevicesWithMetadata(latestTelemetry(), latestSupabase());
   };
 
-  // Generate alerts based on real data
+  // Loading states now only matter if we have NO data at all
+  const isSummaryLoading = () => summary.loading && !latestSummary();
+  const isDevicesLoading = () => (devicesData.loading || supabaseDevices.loading) && !latestTelemetry().length;
+
+  // Generate alerts based on stable local data
   const alerts = () => {
     const alertList: { type: string; message: string; time: string }[] = [];
-    const s = summary();
-    
+    const s = latestSummary();
+
     if (s) {
       if (s.max_speed_kmh > 60) {
         alertList.push({
@@ -213,7 +250,7 @@ export default function Dashboard() {
       }
       if (s.max_acceleration > 12) {
         alertList.push({
-          type: "error", 
+          type: "error",
           message: `Aceleração alta detectada: ${s.max_acceleration.toFixed(1)} m/s²`,
           time: "última hora"
         });
@@ -226,7 +263,7 @@ export default function Dashboard() {
         });
       }
     }
-    
+
     return alertList;
   };
 
@@ -234,30 +271,30 @@ export default function Dashboard() {
     <AppLayout>
       {/* Stats Grid */}
       <div class="grid grid-cols-4 gap-4 mb-4">
-        <StatCard 
+        <StatCard
           label="Dispositivos Ativos"
-          value={summary()?.active_devices ?? "..."}
+          value={latestSummary()?.active_devices ?? "..."}
           icon={TruckIcon}
           accent
-          loading={summary.loading}
+          loading={isSummaryLoading()}
         />
-        <StatCard 
+        <StatCard
           label="Telemetrias (1h)"
-          value={summary()?.total_telemetries?.toLocaleString() ?? "..."}
+          value={latestSummary()?.total_telemetries?.toLocaleString() ?? "..."}
           icon={DatabaseIcon}
-          loading={summary.loading}
+          loading={isSummaryLoading()}
         />
-        <StatCard 
+        <StatCard
           label="Velocidade Média"
-          value={summary() ? `${summary()!.avg_speed_kmh.toFixed(1)} km/h` : "..."}
+          value={latestSummary() ? `${latestSummary()!.avg_speed_kmh.toFixed(1)} km/h` : "..."}
           icon={SpeedIcon}
-          loading={summary.loading}
+          loading={isSummaryLoading()}
         />
-        <StatCard 
+        <StatCard
           label="Aceleração Máxima"
-          value={summary() ? `${summary()!.max_acceleration.toFixed(1)} m/s²` : "..."}
+          value={latestSummary() ? `${latestSummary()!.max_acceleration.toFixed(1)} m/s²` : "..."}
           icon={ActivityIcon}
-          loading={summary.loading}
+          loading={isSummaryLoading()}
         />
       </div>
 
@@ -282,7 +319,9 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <Show when={!devicesData.loading && !supabaseDevices.loading} fallback={
+            {/* Optimized Show: Only show fallback if we have NO data AND are pending. 
+                If we have data, keep showing it even if refreshing. */}
+            <Show when={!(isDevicesLoading() && !enrichedDevices()?.length)} fallback={
               <div class="p-4 text-center text-muted">Carregando dispositivos...</div>
             }>
               <Show when={enrichedDevices()?.length} fallback={
@@ -300,7 +339,7 @@ export default function Dashboard() {
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">Status do Sistema</h3>
-            <Show when={summary()?.ingest_stats.mqtt_connected}>
+            <Show when={latestSummary()?.ingest_stats.mqtt_connected}>
               <span class="badge badge-success">MQTT OK</span>
             </Show>
           </div>
@@ -314,40 +353,40 @@ export default function Dashboard() {
                 {(alert) => <AlertItem alert={alert} />}
               </For>
             </Show>
-            
+
             {/* Ingest Stats */}
-            <Show when={summary()}>
-              <div class="mt-4 p-3" style={{ 
-                background: "var(--color-bg-tertiary)", 
-                "border-radius": "var(--radius-md)" 
+            <Show when={latestSummary()}>
+              <div class="mt-4 p-3" style={{
+                background: "var(--color-bg-tertiary)",
+                "border-radius": "var(--radius-md)"
               }}>
                 <div class="text-xs text-muted mb-2">Estatísticas do Ingest</div>
                 <div class="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span class="text-muted">Recebidas:</span>
                     <span style={{ "margin-left": "4px", color: "var(--color-text-primary)" }}>
-                      {summary()!.ingest_stats.messages_received}
+                      {latestSummary()!.ingest_stats.messages_received}
                     </span>
                   </div>
                   <div>
                     <span class="text-muted">Inseridas:</span>
                     <span style={{ "margin-left": "4px", color: "var(--color-text-primary)" }}>
-                      {summary()!.ingest_stats.messages_inserted}
+                      {latestSummary()!.ingest_stats.messages_inserted}
                     </span>
                   </div>
                   <div>
                     <span class="text-muted">Uptime:</span>
                     <span style={{ "margin-left": "4px", color: "var(--color-text-primary)" }}>
-                      {Math.floor(summary()!.ingest_stats.uptime_seconds / 60)}min
+                      {Math.floor(latestSummary()!.ingest_stats.uptime_seconds / 60)}min
                     </span>
                   </div>
                   <div>
                     <span class="text-muted">DB:</span>
-                    <span style={{ 
-                      "margin-left": "4px", 
-                      color: summary()!.ingest_stats.db_connected ? "var(--color-success)" : "var(--color-error)" 
+                    <span style={{
+                      "margin-left": "4px",
+                      color: latestSummary()!.ingest_stats.db_connected ? "var(--color-success)" : "var(--color-error)"
                     }}>
-                      {summary()!.ingest_stats.db_connected ? "OK" : "OFF"}
+                      {latestSummary()!.ingest_stats.db_connected ? "OK" : "OFF"}
                     </span>
                   </div>
                 </div>

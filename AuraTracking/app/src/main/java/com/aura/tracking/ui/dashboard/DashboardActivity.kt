@@ -32,7 +32,6 @@ import java.util.Locale
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDashboardBinding
-    private var isTracking = false
     private var currentOperator: OperatorEntity? = null
     private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
@@ -46,14 +45,7 @@ class DashboardActivity : AppCompatActivity() {
         observeOperator()
         loadEquipmentInfo()
         observeTelemetry()
-        checkTrackingStatus()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        checkTrackingStatus()
-        loadEquipmentInfo()
-        checkBatteryOptimization()
+        startTrackingAutomatically()
     }
 
     /**
@@ -83,17 +75,17 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        binding.btnStartTracking.setOnClickListener {
-            startTracking()
-        }
-
-        binding.btnStopTracking.setOnClickListener {
-            stopTracking()
-        }
-
         binding.btnConfig.setOnClickListener {
             navigateToConfig()
         }
+    }
+
+    /**
+     * Start tracking automatically when dashboard opens.
+     */
+    private fun startTrackingAutomatically() {
+        ServiceStarter.startTrackingService(this)
+        updateTrackingUI(true)
     }
 
     /**
@@ -217,68 +209,20 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkTrackingStatus() {
-        isTracking = TrackingForegroundService.isRunning
-        updateTrackingUI()
-    }
-
-    private fun updateTrackingUI() {
+    private fun updateTrackingUI(isTracking: Boolean) {
         if (isTracking) {
             binding.tvStatus.text = getString(R.string.dashboard_status_tracking)
             binding.viewStatusIndicator.setBackgroundColor(
                 ContextCompat.getColor(this, R.color.status_tracking)
             )
-            binding.btnStartTracking.visibility = View.GONE
-            binding.btnStopTracking.visibility = View.VISIBLE
             binding.cardTelemetry.visibility = View.VISIBLE
         } else {
             binding.tvStatus.text = getString(R.string.dashboard_status_stopped)
             binding.viewStatusIndicator.setBackgroundColor(
                 ContextCompat.getColor(this, R.color.status_stopped)
             )
-            binding.btnStartTracking.visibility = View.VISIBLE
-            binding.btnStopTracking.visibility = View.GONE
             binding.cardTelemetry.visibility = View.GONE
         }
-    }
-
-    private fun startTracking() {
-        // Verifica permissões de localização
-        if (!PermissionHelper.hasLocationPermissions(this)) {
-            PermissionHelper.requestLocationPermissions(this)
-            return
-        }
-
-        // Verifica permissão de notificação
-        if (!PermissionHelper.hasNotificationPermission(this)) {
-            PermissionHelper.requestNotificationPermission(this)
-            return
-        }
-
-        // Verifica otimização de bateria - CRÍTICO para operação contínua
-        if (!BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)) {
-            BatteryOptimizationHelper.checkAndRequestOptimization(this) { isConfigured ->
-                if (isConfigured) {
-                    // Usuário configurou, agora pode iniciar
-                    doStartTracking()
-                }
-            }
-            return
-        }
-
-        doStartTracking()
-    }
-
-    private fun doStartTracking() {
-        ServiceStarter.startTrackingService(this)
-        isTracking = true
-        updateTrackingUI()
-    }
-
-    private fun stopTracking() {
-        ServiceStarter.stopTrackingService(this)
-        isTracking = false
-        updateTrackingUI()
     }
 
     private fun navigateToConfig() {
@@ -292,9 +236,8 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun logout() {
-        if (isTracking) {
-            stopTracking()
-        }
+        // Para o tracking automaticamente no logout
+        ServiceStarter.stopTrackingService(this)
 
         lifecycleScope.launch {
             AuraTrackingApp.database.operatorDao().clearAllOperators()
@@ -320,11 +263,13 @@ class DashboardActivity : AppCompatActivity() {
         when (requestCode) {
             PermissionHelper.REQUEST_LOCATION_PERMISSIONS -> {
                 if (PermissionHelper.hasLocationPermissions(this)) {
-                    startTracking()
+                    // Permissões concedidas, tracking já foi iniciado automaticamente
+                    updateTrackingUI(true)
                 }
             }
             PermissionHelper.REQUEST_NOTIFICATION_PERMISSION -> {
-                startTracking()
+                // Permissões concedidas, tracking já foi iniciado automaticamente
+                updateTrackingUI(true)
             }
         }
     }

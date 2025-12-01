@@ -6,6 +6,21 @@ export default defineConfig({
   },
   vite: {
     server: {
+      proxy: {
+        // Proxy API requests to backend
+        '/api': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
+        '/health': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
+        '/stats': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
+      },
       headers: {
         // Required for SharedArrayBuffer support
         "Cross-Origin-Opener-Policy": "same-origin",
@@ -19,4 +34,5 @@ export default defineConfig({
     },
   },
 });
+
 

@@ -133,7 +133,7 @@ class TelemetryAggregator(
         val packet = TelemetryPacket(
             messageId = messageId,
             deviceId = deviceId,
-            operatorId = operatorId,
+            matricula = operatorId,
             timestamp = System.currentTimeMillis(),
             gps = GpsPayload(
                 lat = gps.latitude,
@@ -252,7 +252,7 @@ class TelemetryAggregator(
     fun sendEvent(eventType: String, data: Map<String, String> = emptyMap()) {
         val event = EventPacket(
             deviceId = deviceId,
-            operatorId = operatorId,
+            matricula = operatorId,
             timestamp = System.currentTimeMillis(),
             eventType = eventType,
             data = data
@@ -287,7 +287,7 @@ class TelemetryAggregator(
 data class TelemetryPacket(
     val messageId: String,  // UUID único para deduplicação
     val deviceId: String,
-    val operatorId: String,
+    val matricula: String,  // Matrícula do operador
     val timestamp: Long,
     val gps: GpsPayload,
     val imu: ImuPayload? = null
@@ -316,7 +316,7 @@ data class ImuPayload(
 @Serializable
 data class EventPacket(
     val deviceId: String,
-    val operatorId: String,
+    val matricula: String,  // Matrícula do operador
     val timestamp: Long,
     val eventType: String,
     val data: Map<String, String> = emptyMap()

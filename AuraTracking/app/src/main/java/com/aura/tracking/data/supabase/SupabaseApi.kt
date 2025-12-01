@@ -52,6 +52,25 @@ interface SupabaseApi {
     suspend fun getEquipmentByType(typeId: Long): Result<List<Equipment>>
 
     /**
+     * Fetch all active operators.
+     * @return Result containing list of Operators on success.
+     */
+    suspend fun getOperators(): Result<List<Operator>>
+
+    /**
+     * Fetch operator by registration number.
+     * @param registration The operator's registration number.
+     * @return Result containing the Operator on success.
+     */
+    suspend fun getOperatorByRegistration(registration: String): Result<Operator>
+
+    /**
+     * Fetch all active equipment (alias for getAllEquipment).
+     * @return Result containing list of all Equipment on success.
+     */
+    suspend fun getEquipments(): Result<List<Equipment>> = getAllEquipment()
+
+    /**
      * Validate if the operator session is still valid.
      * @param operatorId The operator's ID to validate.
      * @return Result containing Boolean (true if valid).

@@ -10,7 +10,7 @@
 import { supabase } from '../supabase'
 import type { Device as SupabaseDevice, Alert, Profile } from '../supabase/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export interface Device {
   device_id: string;

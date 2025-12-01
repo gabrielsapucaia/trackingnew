@@ -161,9 +161,13 @@ class QueueFlushWorker(
 
             // Cria agregador para flush
             val configDao = database.configDao()
+            val operatorDao = database.operatorDao()
             val config = configDao.getConfig()
-            val deviceId = config?.deviceId ?: "unknown"
-            val operatorId = config?.operatorId ?: "unknown"
+            // Usa equipmentName como deviceId (tag do equipamento, ex: TRK-101)
+            val deviceId = config?.equipmentName ?: "unknown"
+            // Obtém operatorId da matrícula do operador logado
+            val currentOperator = operatorDao.getCurrentOperator()
+            val operatorId = currentOperator?.registration?.takeIf { it.isNotEmpty() } ?: "TEST"
 
             val aggregator = TelemetryAggregator(
                 mqttClient = mqttClient,

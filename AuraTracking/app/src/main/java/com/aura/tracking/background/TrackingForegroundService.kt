@@ -286,8 +286,11 @@ class TrackingForegroundService : Service() {
         serviceScope.launch {
             // Carrega configuração inicial
             val config = database.configDao().getConfig()
-            val deviceId = config?.deviceId ?: android.os.Build.MODEL
-            val operatorId = config?.operatorId ?: "unknown"
+            // Usa equipmentName como deviceId (tag do equipamento, ex: TRK-101)
+            val deviceId = config?.equipmentName ?: android.os.Build.MODEL
+            // Obtém operatorId da matrícula do operador logado
+            val currentOperator = database.operatorDao().getCurrentOperator()
+            val operatorId = currentOperator?.registration?.takeIf { it.isNotEmpty() } ?: "TEST"
             var currentMqttHost = config?.mqttHost ?: "localhost"
             var currentMqttPort = config?.mqttPort ?: 1883
 
