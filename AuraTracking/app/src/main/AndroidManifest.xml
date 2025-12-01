@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ========================= -->
+    <!-- PERMISSIONS -->
+    <!-- ========================= -->
+
+    <!-- Internet access for Supabase and MQTT -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Location permissions -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Foreground service permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <!-- Wake lock to keep service running -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Notifications (required for Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Boot completed to restart service after reboot -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Request ignore battery optimizations -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!-- High sampling rate sensors (for IMU at 1Hz+) -->
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+
+    <!-- ========================= -->
+    <!-- APPLICATION -->
+    <!-- ========================= -->
+
+    <application
+        android:name=".AuraTrackingApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AuraTracking"
+        tools:targetApi="34">
+
+        <!-- ========================= -->
+        <!-- ACTIVITIES -->
+        <!-- ========================= -->
+
+        <!-- Login Activity - Entry point -->
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AuraTracking">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- PIN Activity -->
+        <activity
+            android:name=".ui.pin.PinActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AuraTracking" />
+
+        <!-- Dashboard Activity -->
+        <activity
+            android:name=".ui.dashboard.DashboardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AuraTracking" />
+
+        <!-- Admin Config Activity -->
+        <activity
+            android:name=".ui.admin.AdminConfigActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AuraTracking" />
+
+        <!-- Diagnostics Activity -->
+        <activity
+            android:name=".ui.diagnostics.DiagnosticsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AuraTracking" />
+
+        <!-- ========================= -->
+        <!-- SERVICES -->
+        <!-- ========================= -->
+
+        <!-- Tracking Foreground Service -->
+        <service
+            android:name=".background.TrackingForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <!-- ========================= -->
+        <!-- BROADCAST RECEIVERS -->
+        <!-- ========================= -->
+
+        <!-- Boot Completed Receiver to restart tracking after device reboot -->
+        <receiver
+            android:name=".background.BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Power Save Mode Receiver -->
+        <receiver
+            android:name=".background.PowerSaveModeReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

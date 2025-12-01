@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="@color/background"
+    tools:context=".ui.pin.PinActivity">
+
+    <!-- Back Arrow -->
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="start"
+        android:layout_marginBottom="24dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_revert"
+        android:contentDescription="@string/cancel" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pin_title"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary" />
+
+    <!-- Subtitle showing operator -->
+    <TextView
+        android:id="@+id/tvOperator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"
+        android:textColor="@color/text_secondary"
+        tools:text="Operador: 12345" />
+
+    <!-- PIN Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPin"
+        style="@style/Theme.AuraTracking.TextInputLayout"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:hint="@string/pin_hint"
+        app:passwordToggleEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberPassword"
+            android:maxLength="4"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:letterSpacing="0.3"
+            android:imeOptions="actionDone" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Login Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogin"
+        style="@style/Theme.AuraTracking.Button"
+        android:layout_width="200dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/pin_login"
+        android:textSize="16sp" />
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
+
+    <!-- Error Message -->
+    <TextView
+        android:id="@+id/tvError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="@color/error"
+        android:textSize="14sp"
+        android:visibility="gone"
+        tools:text="PIN incorreto"
+        tools:visibility="visible" />
+
+</LinearLayout>

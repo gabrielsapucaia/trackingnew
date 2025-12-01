@@ -1,0 +1,300 @@
+# ============================================================
+# AuraTracking Server Stack - Industrial Telemetry Platform
+# ============================================================
+# Infraestrutura completa para ingestão de telemetria GPS/IMU
+# em ambiente de mineração (intranet isolada)
+#
+# Componentes:
+#   - EMQX 5.x: Broker MQTT industrial
+#   - TimescaleDB: Banco de séries temporais
+#   - Ingest Worker: Subscriber Python com fila offline
+#   - Grafana: Dashboards de monitoramento
+#
+# Deploy:
+#   docker compose up -d
+#
+# ============================================================
+
+version: "3.8"
+
+networks:
+  intranet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+          gateway: 10.10.10.1
+
+volumes:
+  emqx_data:
+    driver: local
+  emqx_log:
+    driver: local
+  timescale_data:
+    driver: local
+  grafana_data:
+    driver: local
+  ingest_queue:
+    driver: local
+  ingest_logs:
+    driver: local
+
+services:
+  # ============================================================
+  # EMQX 5.x - Industrial MQTT Broker
+  # ============================================================
+  # Dashboard: http://10.10.10.10:18083 (admin/public)
+  # MQTT: tcp://10.10.10.10:1883
+  # WebSocket: ws://10.10.10.10:8083/mqtt
+  # ============================================================
+  emqx:
+    image: emqx/emqx:5.8.3
+    container_name: aura_emqx
+    hostname: emqx
+    restart: always
+    networks:
+      intranet:
+        ipv4_address: 10.10.10.10
+    ports:
+      - "1883:1883"      # MQTT TCP
+      - "8083:8083"      # MQTT WebSocket
+      - "8084:8084"      # MQTT WebSocket SSL
+      - "8883:8883"      # MQTT SSL
+      - "18083:18083"    # Dashboard Web
+    environment:
+      - EMQX_NAME=aura_emqx
+      - EMQX_HOST=10.10.10.10
+      # Permitir conexões anônimas (ambiente intranet)
+      - EMQX_ALLOW_ANONYMOUS=true
+      # Configurações de performance
+      - EMQX_LISTENER__TCP__EXTERNAL__MAX_CONNECTIONS=1000
+      - EMQX_LISTENER__TCP__EXTERNAL__MAX_CONN_RATE=500
+      # Sessão persistente para QoS1
+      - EMQX_MQTT__SESSION__MAX_INFLIGHT=100
+      - EMQX_MQTT__SESSION__RETRY_INTERVAL=30s
+      - EMQX_MQTT__SESSION__AWAIT_REL_TIMEOUT=300s
+      # Mensagens QoS1/2 persistentes
+      - EMQX_MQTT__MAX_MQUEUE_LEN=10000
+      - EMQX_MQTT__MQUEUE_STORE_QOS0=false
+      # Keep-alive
+      - EMQX_MQTT__KEEPALIVE_MULTIPLIER=1.5
+      # Dashboard admin
+      - EMQX_DASHBOARD__DEFAULT_USERNAME=admin
+      - EMQX_DASHBOARD__DEFAULT_PASSWORD=aura2025
+    volumes:
+      - emqx_data:/opt/emqx/data
+      - emqx_log:/opt/emqx/log
+      - ./emqx/config/acl.conf:/opt/emqx/etc/acl.conf:ro
+    healthcheck:
+      test: ["CMD", "emqx", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ============================================================
+  # TimescaleDB - Time Series Database
+  # ============================================================
+  # PostgreSQL 15 + TimescaleDB 2.x
+  # Porta: 5432
+  # ============================================================
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: aura_timescaledb
+    hostname: timescaledb
+    restart: always
+    networks:
+      intranet:
+        ipv4_address: 10.10.10.20
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=aura
+      - POSTGRES_PASSWORD=aura2025
+      - POSTGRES_DB=auratracking
+      - TIMESCALEDB_TELEMETRY=off
+      # Performance tuning para time-series
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./timescale/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aura -d auratracking"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "work_mem=64MB"
+      - "-c"
+      - "maintenance_work_mem=256MB"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "log_statement=none"
+      - "-c"
+      - "log_min_duration_statement=1000"
+
+  # ============================================================
+  # Ingest Worker - MQTT to TimescaleDB
+  # ============================================================
+  # Subscriber Python com:
+  #   - Batch insert
+  #   - Fila offline SQLite
+  #   - Reconexão automática
+  #   - Health monitoring
+  # ============================================================
+  ingest:
+    build:
+      context: ./ingest
+      dockerfile: Dockerfile
+    container_name: aura_ingest
+    hostname: ingest
+    restart: always
+    networks:
+      intranet:
+        ipv4_address: 10.10.10.30
+    ports:
+      - "8080:8080"    # REST API + Health
+    depends_on:
+      emqx:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    environment:
+      # MQTT Configuration
+      - MQTT_HOST=10.10.10.10
+      - MQTT_PORT=1883
+      - MQTT_TOPIC=aura/tracking/#
+      - MQTT_CLIENT_ID=aura_ingest_worker
+      - MQTT_QOS=1
+      - MQTT_KEEPALIVE=60
+      # TimescaleDB Configuration
+      - DB_HOST=10.10.10.20
+      - DB_PORT=5432
+      - DB_NAME=auratracking
+      - DB_USER=aura
+      - DB_PASSWORD=aura2025
+      # Ingest Configuration
+      - BATCH_SIZE=100
+      - BATCH_TIMEOUT_MS=5000
+      - OFFLINE_QUEUE_PATH=/app/queue/offline.db
+      - LOG_LEVEL=INFO
+      - LOG_PATH=/app/logs
+      # Health check endpoint
+      - HEALTH_PORT=8080
+    volumes:
+      - ingest_queue:/app/queue
+      - ingest_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ============================================================
+  # Grafana - Visualization & Dashboards
+  # ============================================================
+  # Dashboard: http://10.10.10.10:3000 (admin/aura2025)
+  # ============================================================
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: aura_grafana
+    hostname: grafana
+    restart: always
+    networks:
+      intranet:
+        ipv4_address: 10.10.10.40
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=aura2025
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://10.10.10.40:3000
+      # Plugins
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-worldmap-panel,marcusolsson-treemap-panel
+      # Database
+      - GF_DATABASE_TYPE=sqlite3
+      # Anonymous access for dashboard TVs
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      # Performance
+      - GF_RENDERING_SERVER_URL=
+      - GF_RENDERING_CALLBACK_URL=
+      - GF_LOG_MODE=console file
+      - GF_LOG_LEVEL=warn
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ============================================================
+  # Watchdog - Service Monitor (Optional)
+  # ============================================================
+  # Monitora todos os serviços e reinicia se necessário
+  # ============================================================
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: aura_autoheal
+    restart: always
+    networks:
+      intranet:
+        ipv4_address: 10.10.10.50
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+      - AUTOHEAL_INTERVAL=60
+      - AUTOHEAL_START_PERIOD=300
+      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

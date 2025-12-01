@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mosquitto:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aura-mqtt-broker
+    restart: unless-stopped
+    ports:
+      # MQTT standard port
+      - "1883:1883"
+      # MQTT over WebSocket (optional, for web clients)
+      - "9001:9001"
+    volumes:
+      # Configuration file
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      # Persistent data storage
+      - mosquitto_data:/mosquitto/data
+      # Logs
+      - mosquitto_logs:/mosquitto/log
+    networks:
+      - aura-network
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mosquitto_data:
+    name: aura-mosquitto-data
+  mosquitto_logs:
+    name: aura-mosquitto-logs
+
+networks:
+  aura-network:
+    name: aura-tracking-network
+    driver: bridge

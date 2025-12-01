@@ -1,0 +1,35 @@
+{
+  "name": "aura-tracking-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev --port 4000 --host",
+    "build": "vinxi build",
+    "start": "vinxi start --port 4000",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deck.gl/aggregation-layers": "^9.0.35",
+    "@deck.gl/core": "^9.0.35",
+    "@deck.gl/geo-layers": "^9.0.35",
+    "@deck.gl/layers": "^9.0.35",
+    "@luma.gl/core": "^9.0.27",
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.15.4",
+    "@solidjs/start": "^1.1.0",
+    "@supabase/supabase-js": "^2.86.0",
+    "maplibre-gl": "^4.7.1",
+    "mqtt": "^5.14.1",
+    "solid-js": "^1.9.5",
+    "uplot": "^1.6.31",
+    "vinxi": "^0.5.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

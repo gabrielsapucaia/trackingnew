@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="primary_light">#42A5F5</color>
+    <color name="primary_variant">#0D47A1</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#26A69A</color>
+    <color name="secondary_dark">#00897B</color>
+    <color name="secondary_light">#4DB6AC</color>
+    <color name="secondary_variant">#00796B</color>
+
+    <!-- Background Colors -->
+    <color name="background">#FAFAFA</color>
+    <color name="surface">#FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_background">#212121</color>
+    <color name="on_surface">#212121</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#9E9E9E</color>
+
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+    <color name="info">#2196F3</color>
+
+    <!-- Tracking Status -->
+    <color name="status_tracking">#4CAF50</color>
+    <color name="status_warning">#FF9800</color>
+    <color name="status_stopped">#9E9E9E</color>
+
+    <!-- Divider -->
+    <color name="divider">#E0E0E0</color>
+
+    <!-- Standard Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>

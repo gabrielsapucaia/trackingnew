@@ -1,0 +1,40 @@
+# ============================================================
+# AuraTracking Ingest Worker - Dependencies
+# ============================================================
+# Versões fixas para reprodutibilidade
+# ============================================================
+
+# MQTT Client
+paho-mqtt==2.1.0
+
+# PostgreSQL / TimescaleDB
+psycopg2-binary==2.9.10
+asyncpg==0.30.0
+
+# Async support
+aiohttp==3.11.9
+
+# JSON validation
+pydantic==2.10.2
+
+# SQLite for offline queue (built-in, but we need aiosqlite)
+aiosqlite==0.20.0
+
+# HTTP server for health check
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# Logging structured
+structlog==24.4.0
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Retry logic
+tenacity==9.0.0
+
+# Date handling
+python-dateutil==2.9.0
+
+# Metrics (optional)
+prometheus-client==0.21.0

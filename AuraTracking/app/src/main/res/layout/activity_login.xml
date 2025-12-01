@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="@color/background"
+    tools:context=".ui.login.LoginActivity">
+
+    <!-- Logo/Title -->
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_launcher_foreground"
+        android:background="@color/primary"
+        android:contentDescription="@string/app_name" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/login_title"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/login_subtitle"
+        android:textSize="16sp"
+        android:textColor="@color/text_secondary" />
+
+    <!-- Matricula Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilMatricula"
+        style="@style/Theme.AuraTracking.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:hint="@string/login_matricula_hint"
+        app:startIconDrawable="@android:drawable/ic_menu_myplaces">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etMatricula"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1"
+            android:imeOptions="actionNext" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Continue Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnContinue"
+        style="@style/Theme.AuraTracking.Button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/login_continue"
+        android:textSize="16sp" />
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
+
+</LinearLayout>

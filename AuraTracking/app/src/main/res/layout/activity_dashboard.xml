@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true"
+    tools:context=".ui.dashboard.DashboardActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary"
+            app:title="@string/dashboard_title"
+            app:titleTextColor="@color/white"
+            app:menu="@menu/menu_dashboard" />
+
+        <!-- Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Operator Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dashboard_operator_label"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary" />
+
+                    <TextView
+                        android:id="@+id/tvOperatorName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        tools:text="João da Silva" />
+
+                    <TextView
+                        android:id="@+id/tvOperatorMatricula"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        tools:text="Matrícula: 12345" />
+
+                    <!-- Equipment Info -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@color/divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tipo Equipamento"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvEquipmentType"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                tools:text="Truck" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Equipamento"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvEquipmentName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                tools:text="TRK-101" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Status Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:id="@+id/viewStatusIndicator"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:background="@color/status_stopped" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_status_label"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_status_stopped"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Telemetry Card (visible when tracking) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTelemetry"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:visibility="gone"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="12dp"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Telemetry"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <!-- GPS Section -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <View
+                            android:id="@+id/viewGpsIndicator"
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:background="@color/status_stopped" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="GPS"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Lat:"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvGpsLat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="-23.550520" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Lon:"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvGpsLon"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="-46.633308" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Speed:"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvGpsSpeed"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="45.2 km/h" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Acc:"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvGpsAccuracy"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="±5.2m" />
+
+                        <TextView
+                            android:id="@+id/tvGpsTime"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            tools:text="14:30:25" />
+                    </LinearLayout>
+
+                    <!-- IMU Section -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <View
+                            android:id="@+id/viewImuIndicator"
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:background="@color/status_stopped" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="IMU"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Accel: "
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvImuAccel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="X:0.12 Y:-0.05 Z:9.81" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gyro: "
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvImuGyro"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="X:0.01 Y:0.02 Z:-0.01" />
+                    </LinearLayout>
+
+                    <!-- Connection Status Section -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@color/divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <!-- MQTT Status -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <View
+                                android:id="@+id/viewMqttIndicator"
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@color/status_stopped" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="MQTT: "
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvMqttStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_primary"
+                                tools:text="Connected" />
+                        </LinearLayout>
+
+                        <!-- Queue Status -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <View
+                                android:id="@+id/viewQueueIndicator"
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@color/status_tracking" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="Queue: "
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvQueueSize"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_primary"
+                                tools:text="0 pending" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Packets Sent -->
+                    <TextView
+                        android:id="@+id/tvPacketsSent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        tools:text="1234 sent" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tracking Buttons -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStartTracking"
+                style="@style/Theme.AuraTracking.Button"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/dashboard_start_tracking"
+                android:textSize="18sp"
+                app:icon="@android:drawable/ic_media_play"
+                app:iconGravity="textStart" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStopTracking"
+                style="@style/Theme.AuraTracking.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/dashboard_stop_tracking"
+                android:textSize="18sp"
+                android:visibility="gone"
+                app:icon="@android:drawable/ic_media_pause"
+                app:iconGravity="textStart"
+                tools:visibility="visible" />
+
+            <!-- Config Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConfig"
+                style="@style/Theme.AuraTracking.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/dashboard_config"
+                android:textSize="16sp"
+                app:icon="@android:drawable/ic_menu_preferences"
+                app:iconGravity="textStart" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

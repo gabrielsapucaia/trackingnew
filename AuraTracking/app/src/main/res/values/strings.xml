@@ -1,0 +1,80 @@
+<resources>
+    <string name="app_name">AuraTracking</string>
+
+    <!-- Login Activity -->
+    <string name="login_title">AuraTracking</string>
+    <string name="login_subtitle">Sistema de Telemetria</string>
+    <string name="login_matricula_hint">Matrícula do Operador</string>
+    <string name="login_continue">Continuar</string>
+    <string name="login_error_empty">Informe a matrícula</string>
+
+    <!-- Pin Activity -->
+    <string name="pin_title">Digite o PIN</string>
+    <string name="pin_subtitle">Operador: %1$s</string>
+    <string name="pin_hint">PIN (4 dígitos)</string>
+    <string name="pin_login">Entrar</string>
+    <string name="pin_error_empty">Informe o PIN</string>
+    <string name="pin_error_invalid">PIN deve ter 4 dígitos</string>
+    <string name="pin_error_login_failed">Falha no login. Verifique suas credenciais.</string>
+
+    <!-- Dashboard Activity -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_operator_label">Operador:</string>
+    <string name="dashboard_status_label">Status:</string>
+    <string name="dashboard_status_stopped">Parado</string>
+    <string name="dashboard_status_tracking">Rastreando</string>
+    <string name="dashboard_start_tracking">Iniciar Tracking</string>
+    <string name="dashboard_stop_tracking">Parar Tracking</string>
+    <string name="dashboard_config">Configurações</string>
+    <string name="dashboard_logout">Sair</string>
+    
+    <!-- Menu -->
+    <string name="menu_diagnostics">Diagnósticos</string>
+
+    <!-- Admin Config Activity -->
+    <string name="admin_title">Configurações</string>
+    <string name="admin_mqtt_section">MQTT</string>
+    <string name="admin_mqtt_host_hint">Host MQTT</string>
+    <string name="admin_mqtt_port_hint">Porta MQTT</string>
+    <string name="admin_fleet_section">Frota e Equipamento</string>
+    <string name="admin_fleet_hint">Selecione a Frota</string>
+    <string name="admin_equipment_hint">Selecione o Equipamento</string>
+    <string name="admin_save">Salvar</string>
+    <string name="admin_cancel">Cancelar</string>
+    <string name="admin_saved_success">Configurações salvas com sucesso</string>
+    <string name="admin_error_empty">Preencha todos os campos</string>
+    
+    <!-- Diagnostics Activity -->
+    <string name="diagnostics_title">Diagnósticos</string>
+    <string name="diagnostics_service_running">Serviço Ativo</string>
+    <string name="diagnostics_service_stopped">Serviço Parado</string>
+    <string name="diagnostics_export_logs">Exportar Logs</string>
+    <string name="diagnostics_restart_service">Reiniciar Serviço</string>
+    <string name="diagnostics_logs_exported">Logs exportados para Documents/AuraTracking</string>
+    <string name="diagnostics_logs_export_failed">Falha ao exportar logs</string>
+    <string name="diagnostics_service_restarting">Reiniciando serviço…</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Tracking Service</string>
+    <string name="notification_channel_description">Notificações do serviço de rastreamento</string>
+    <string name="notification_title">AuraTracking Ativo</string>
+    <string name="notification_text">Coletando dados de telemetria</string>
+    
+    <!-- Watchdog -->
+    <string name="watchdog_notification_title">Serviço Recuperado</string>
+    <string name="watchdog_notification_text">O serviço de telemetria foi reiniciado automaticamente</string>
+
+    <!-- Permissions -->
+    <string name="permission_location_title">Permissão de Localização</string>
+    <string name="permission_location_message">O app precisa de acesso à localização para funcionar corretamente.</string>
+    <string name="permission_background_title">Localização em Segundo Plano</string>
+    <string name="permission_background_message">Para rastrear continuamente, permita acesso à localização o tempo todo.</string>
+    <string name="permission_notification_title">Notificações</string>
+    <string name="permission_notification_message">Permita notificações para ver o status do rastreamento.</string>
+
+    <!-- General -->
+    <string name="loading">Carregando…</string>
+    <string name="error_generic">Ocorreu um erro. Tente novamente.</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+</resources>

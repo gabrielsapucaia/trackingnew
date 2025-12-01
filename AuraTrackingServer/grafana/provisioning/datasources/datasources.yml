@@ -1,0 +1,44 @@
+# ============================================================
+# Grafana Datasource Provisioning
+# ============================================================
+# Auto-configura conexão com TimescaleDB
+# ============================================================
+
+apiVersion: 1
+
+datasources:
+  - name: TimescaleDB
+    type: postgres
+    access: proxy
+    url: 10.10.10.20:5432
+    database: auratracking
+    user: grafana_reader
+    isDefault: true
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: true
+    secureJsonData:
+      password: grafana2025
+    editable: false
+
+  - name: TimescaleDB-Admin
+    type: postgres
+    access: proxy
+    url: 10.10.10.20:5432
+    database: auratracking
+    user: aura
+    isDefault: false
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 5
+      maxIdleConns: 2
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: true
+    secureJsonData:
+      password: aura2025
+    editable: false
