@@ -68,15 +68,19 @@ class TelemetryAggregator(
     /**
      * Inicia o timer de publicação a 1Hz
      */
+    @Synchronized
     fun start() {
-        if (isRunning) {
+        if (isRunning && publishJob?.isActive == true) {
             Log.d(TAG, "Already running")
             return
         }
-        
+
+        // Cancela qualquer resquício antes de iniciar um novo loop
+        publishJob?.cancel()
+
         Log.i(TAG, "Starting 1Hz telemetry publisher")
         isRunning = true
-        
+
         publishJob = scope.launch {
             while (isActive) {
                 sendCombinedTelemetry()
@@ -88,6 +92,7 @@ class TelemetryAggregator(
     /**
      * Para o timer de publicação
      */
+    @Synchronized
     fun stop() {
         Log.i(TAG, "Stopping 1Hz telemetry publisher")
         isRunning = false

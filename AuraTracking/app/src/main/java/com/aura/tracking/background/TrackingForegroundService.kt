@@ -101,6 +101,9 @@ class TrackingForegroundService : Service() {
     private var telemetryAggregator: TelemetryAggregator? = null
     private var wakeLock: PowerManager.WakeLock? = null
 
+    @Volatile
+    private var isStartingDataCollection: Boolean = false
+
     // Database
     private val database by lazy { AppDatabase.getInstance(this) }
 
@@ -128,10 +131,16 @@ class TrackingForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        AuraLog.Service.i("Service onStartCommand")
+        AuraLog.Service.i("Service onStartCommand (isRunning=$isRunning)")
 
         // Inicia como foreground
         startForegroundWithNotification()
+
+        // GUARD: Se já está rodando, não reiniciar coleta
+        if (isRunning && telemetryAggregator != null) {
+            AuraLog.Service.i("Service already running, skipping data collection restart")
+            return START_STICKY
+        }
 
         // Adquire WakeLock
         wakeLock?.acquire(24 * 60 * 60 * 1000L) // 24 horas max
@@ -281,178 +290,197 @@ class TrackingForegroundService : Service() {
      * Inicia coleta de telemetria GPS 1Hz + IMU 1Hz
      */
     private fun startDataCollection() {
+        // GUARD: Evita criar múltiplas instâncias
+        if (telemetryAggregator != null) {
+            AuraLog.Service.w("Data collection already active, skipping")
+            return
+        }
+
+        // GUARD: Evita corrida de inicialização (duplo start após crash/restart)
+        if (isStartingDataCollection) {
+            AuraLog.Service.w("Data collection start already in progress, skipping")
+            return
+        }
+        isStartingDataCollection = true
+        
         AuraLog.Service.i("Starting telemetry collection")
 
         serviceScope.launch {
-            // Carrega configuração inicial
-            val config = database.configDao().getConfig()
-            // Usa equipmentName como deviceId (tag do equipamento, ex: TRK-101)
-            val deviceId = config?.equipmentName ?: android.os.Build.MODEL
-            // Obtém operatorId da matrícula do operador logado
-            val currentOperator = database.operatorDao().getCurrentOperator()
-            val operatorId = currentOperator?.registration?.takeIf { it.isNotEmpty() } ?: "TEST"
-            var currentMqttHost = config?.mqttHost ?: "localhost"
-            var currentMqttPort = config?.mqttPort ?: 1883
+            try {
+                // Carrega configuração inicial
+                val config = database.configDao().getConfig()
+                // Usa equipmentName como deviceId (tag do equipamento, ex: TRK-101)
+                val deviceId = config?.equipmentName ?: android.os.Build.MODEL
+                // Obtém operatorId da matrícula do operador logado
+                val currentOperator = database.operatorDao().getCurrentOperator()
+                val operatorId = currentOperator?.registration?.takeIf { it.isNotEmpty() } ?: "TEST"
+                var currentMqttHost = config?.mqttHost ?: "localhost"
+                var currentMqttPort = config?.mqttPort ?: 1883
 
-            AuraLog.Service.i("Config loaded: device=$deviceId, operator=$operatorId, mqtt=$currentMqttHost:$currentMqttPort")
+                AuraLog.Service.i("Config loaded: device=$deviceId, operator=$operatorId, mqtt=$currentMqttHost:$currentMqttPort")
 
-            // Configura MQTT inicial
-            mqttClient?.configure(currentMqttHost, currentMqttPort)
-            mqttClient?.onConnectionStatusChange = { connected ->
-                _mqttConnected.value = connected
-                if (connected) {
-                    lastMqttTimestamp = System.currentTimeMillis()
-                }
-                AuraLog.MQTT.i("Connection status changed: $connected")
-            }
-            mqttClient?.connect()
-
-            // Observa mudanças na configuração e reconecta quando IP mudar
-            launch {
-                AuraLog.Service.i("Starting config observer")
-                var isFirstConfig = true
-                try {
-                    database.configDao().observeConfig().collect { newConfig ->
-                        AuraLog.Service.d("Config observer received update: ${newConfig != null}")
-                        
-                        if (newConfig == null) {
-                            AuraLog.Service.d("Config is null, skipping")
-                            return@collect
-                        }
-                        
-                        val newMqttHost = newConfig.mqttHost ?: "localhost"
-                        val newMqttPort = newConfig.mqttPort ?: 1883
-                        
-                        AuraLog.Service.d("Config observed: mqtt=$newMqttHost:$newMqttPort (first=$isFirstConfig)")
-                        
-                        // Ignora a primeira emissão (configuração inicial)
-                        if (isFirstConfig) {
-                            isFirstConfig = false
-                            currentMqttHost = newMqttHost
-                            currentMqttPort = newMqttPort
-                            AuraLog.Service.i("Initial config observed: mqtt=$newMqttHost:$newMqttPort")
-                            return@collect
-                        }
-                        
-                        // Verifica se houve mudança no host ou porta
-                        if (newMqttHost != currentMqttHost || newMqttPort != currentMqttPort) {
-                            AuraLog.Service.i("MQTT config changed: $currentMqttHost:$currentMqttPort -> $newMqttHost:$newMqttPort")
-                            
-                            // Atualiza valores antes de reconectar
-                            currentMqttHost = newMqttHost
-                            currentMqttPort = newMqttPort
-                            
-                            // Reconecta com nova configuração
-                            AuraLog.MQTT.i("Reconnecting with new config: $newMqttHost:$newMqttPort")
-                            
-                            // Desconecta do broker atual (aguarda conclusão)
-                            mqttClient?.disconnect()
-                            
-                            // Delay maior para garantir que desconexão termine completamente
-                            kotlinx.coroutines.delay(1000)
-                            
-                            // Reconfigura e reconecta
-                            mqttClient?.configure(newMqttHost, newMqttPort)
-                            mqttClient?.connect()
-                        } else {
-                            AuraLog.Service.d("Config unchanged: mqtt=$newMqttHost:$newMqttPort")
-                        }
-                    }
-                } catch (e: Exception) {
-                    AuraLog.Service.e("Error in config observer: ${e.message}", e)
-                }
-            }
-
-            // Inicializa agregador
-            telemetryAggregator = TelemetryAggregator(
-                mqttClient = mqttClient!!,
-                queueDao = database.telemetryQueueDao(),
-                deviceId = deviceId,
-                operatorId = operatorId
-            )
-            
-            // IMPORTANTE: Inicia o timer de 1Hz do agregador
-            telemetryAggregator?.start()
-            AuraLog.Service.i("TelemetryAggregator 1Hz timer started")
-
-            // Observa estatísticas
-            launch {
-                telemetryAggregator?.packetsSent?.collect { count ->
-                    _packetsSent.value = count
-                }
-            }
-
-            // Observa tamanho da fila
-            launch {
-                database.telemetryQueueDao().getCountFlow().collect { count ->
-                    _queueSize.value = count
-                    if (count > 1000) {
-                        AuraLog.Queue.w("Queue size high: $count messages")
-                    }
-                }
-            }
-
-            // Observa conexão MQTT e drena fila quando reconectar
-            launch {
-                var wasConnected = false
-                mqttClient?.isConnected?.collect { connected ->
+                // Configura MQTT inicial
+                mqttClient?.configure(currentMqttHost, currentMqttPort)
+                mqttClient?.onConnectionStatusChange = { connected ->
                     _mqttConnected.value = connected
-                    
-                    // Dispara drenagem quando (re)conectar e há itens na fila
-                    if (connected && !wasConnected) {
+                    if (connected) {
+                        lastMqttTimestamp = System.currentTimeMillis()
+                    }
+                    AuraLog.MQTT.i("Connection status changed: $connected")
+                }
+                mqttClient?.connect()
+
+                // Observa mudanças na configuração e reconecta quando IP mudar
+                launch {
+                    AuraLog.Service.i("Starting config observer")
+                    var isFirstConfig = true
+                    try {
+                        database.configDao().observeConfig().collect { newConfig ->
+                            AuraLog.Service.d("Config observer received update: ${newConfig != null}")
+                            
+                            if (newConfig == null) {
+                                AuraLog.Service.d("Config is null, skipping")
+                                return@collect
+                            }
+                            
+                            val newMqttHost = newConfig.mqttHost ?: "localhost"
+                            val newMqttPort = newConfig.mqttPort ?: 1883
+                            
+                            AuraLog.Service.d("Config observed: mqtt=$newMqttHost:$newMqttPort (first=$isFirstConfig)")
+                            
+                            // Ignora a primeira emissão (configuração inicial)
+                            if (isFirstConfig) {
+                                isFirstConfig = false
+                                currentMqttHost = newMqttHost
+                                currentMqttPort = newMqttPort
+                                AuraLog.Service.i("Initial config observed: mqtt=$newMqttHost:$newMqttPort")
+                                return@collect
+                            }
+                            
+                            // Verifica se houve mudança no host ou porta
+                            if (newMqttHost != currentMqttHost || newMqttPort != currentMqttPort) {
+                                AuraLog.Service.i("MQTT config changed: $currentMqttHost:$currentMqttPort -> $newMqttHost:$newMqttPort")
+                                
+                                // Atualiza valores antes de reconectar
+                                currentMqttHost = newMqttHost
+                                currentMqttPort = newMqttPort
+                                
+                                // Reconecta com nova configuração
+                                AuraLog.MQTT.i("Reconnecting with new config: $newMqttHost:$newMqttPort")
+                                
+                                // Desconecta do broker atual (aguarda conclusão)
+                                mqttClient?.disconnect()
+                                
+                                // Delay maior para garantir que desconexão termine completamente
+                                kotlinx.coroutines.delay(1000)
+                                
+                                // Reconfigura e reconecta
+                                mqttClient?.configure(newMqttHost, newMqttPort)
+                                mqttClient?.connect()
+                            } else {
+                                AuraLog.Service.d("Config unchanged: mqtt=$newMqttHost:$newMqttPort")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        AuraLog.Service.e("Error in config observer: ${e.message}", e)
+                    }
+                }
+
+                // Inicializa agregador
+                telemetryAggregator = TelemetryAggregator(
+                    mqttClient = mqttClient!!,
+                    queueDao = database.telemetryQueueDao(),
+                    deviceId = deviceId,
+                    operatorId = operatorId
+                )
+                
+                AuraLog.Service.i("TelemetryAggregator instance created (hashCode=${telemetryAggregator.hashCode()})")
+                
+                // IMPORTANTE: Inicia o timer de 1Hz do agregador
+                telemetryAggregator?.start()
+                AuraLog.Service.i("TelemetryAggregator 1Hz timer started")
+
+                // Observa estatísticas
+                launch {
+                    telemetryAggregator?.packetsSent?.collect { count ->
+                        _packetsSent.value = count
+                    }
+                }
+
+                // Observa tamanho da fila
+                launch {
+                    database.telemetryQueueDao().getCountFlow().collect { count ->
+                        _queueSize.value = count
+                        if (count > 1000) {
+                            AuraLog.Queue.w("Queue size high: $count messages")
+                        }
+                    }
+                }
+
+                // Observa conexão MQTT e drena fila quando reconectar
+                launch {
+                    var wasConnected = false
+                    mqttClient?.isConnected?.collect { connected ->
+                        _mqttConnected.value = connected
+                        
+                        // Dispara drenagem quando (re)conectar e há itens na fila
+                        if (connected && !wasConnected) {
+                            val queueCount = database.telemetryQueueDao().getCount()
+                            if (queueCount > 0) {
+                                AuraLog.Queue.i("MQTT connected, triggering immediate queue flush ($queueCount items)")
+                                drainQueueImmediately()
+                            }
+                        }
+                        wasConnected = connected
+                    }
+                }
+
+                // Verificador periódico de fila (backup para garantir drenagem)
+                launch {
+                    AuraLog.Queue.i("Starting periodic queue checker (every 10s)")
+                    while (true) {
+                        kotlinx.coroutines.delay(10_000) // A cada 10 segundos
+                        val isConnected = mqttClient?.isConnected?.value ?: false
                         val queueCount = database.telemetryQueueDao().getCount()
-                        if (queueCount > 0) {
-                            AuraLog.Queue.i("MQTT connected, triggering immediate queue flush ($queueCount items)")
+                        AuraLog.Queue.d("Periodic tick: mqtt=$isConnected, queue=$queueCount")
+                        if (isConnected && queueCount > 0) {
+                            AuraLog.Queue.i("Periodic check: draining $queueCount queued items")
                             drainQueueImmediately()
                         }
                     }
-                    wasConnected = connected
                 }
-            }
 
-            // Verificador periódico de fila (backup para garantir drenagem)
-            launch {
-                AuraLog.Queue.i("Starting periodic queue checker (every 10s)")
-                while (true) {
-                    kotlinx.coroutines.delay(10_000) // A cada 10 segundos
-                    val isConnected = mqttClient?.isConnected?.value ?: false
-                    val queueCount = database.telemetryQueueDao().getCount()
-                    AuraLog.Queue.d("Periodic tick: mqtt=$isConnected, queue=$queueCount")
-                    if (isConnected && queueCount > 0) {
-                        AuraLog.Queue.i("Periodic check: draining $queueCount queued items")
-                        drainQueueImmediately()
-                    }
-                }
-            }
-
-            // Verificador periódico de configuração (fallback caso observer não funcione)
-            launch {
-                AuraLog.Service.i("Starting periodic config checker (every 5s)")
-                while (true) {
-                    kotlinx.coroutines.delay(5_000) // A cada 5 segundos
-                    try {
-                        val latestConfig = database.configDao().getConfig()
-                        val latestHost = latestConfig?.mqttHost ?: "localhost"
-                        val latestPort = latestConfig?.mqttPort ?: 1883
-                        
-                        AuraLog.Service.d("Periodic config check: current=$currentMqttHost:$currentMqttPort, latest=$latestHost:$latestPort")
-                        
-                        if (latestHost != currentMqttHost || latestPort != currentMqttPort) {
-                            AuraLog.Service.i("Periodic check: MQTT config changed: $currentMqttHost:$currentMqttPort -> $latestHost:$latestPort")
-                            currentMqttHost = latestHost
-                            currentMqttPort = latestPort
+                // Verificador periódico de configuração (fallback caso observer não funcione)
+                launch {
+                    AuraLog.Service.i("Starting periodic config checker (every 5s)")
+                    while (true) {
+                        kotlinx.coroutines.delay(5_000) // A cada 5 segundos
+                        try {
+                            val latestConfig = database.configDao().getConfig()
+                            val latestHost = latestConfig?.mqttHost ?: "localhost"
+                            val latestPort = latestConfig?.mqttPort ?: 1883
                             
-                            // Reconecta com nova configuração
-                            AuraLog.MQTT.i("Reconnecting with new config: $latestHost:$latestPort")
-                            mqttClient?.disconnect()
-                            kotlinx.coroutines.delay(1000)
-                            mqttClient?.configure(latestHost, latestPort)
-                            mqttClient?.connect()
+                            AuraLog.Service.d("Periodic config check: current=$currentMqttHost:$currentMqttPort, latest=$latestHost:$latestPort")
+                            
+                            if (latestHost != currentMqttHost || latestPort != currentMqttPort) {
+                                AuraLog.Service.i("Periodic check: MQTT config changed: $currentMqttHost:$currentMqttPort -> $latestHost:$latestPort")
+                                currentMqttHost = latestHost
+                                currentMqttPort = latestPort
+                                
+                                // Reconecta com nova configuração
+                                AuraLog.MQTT.i("Reconnecting with new config: $latestHost:$latestPort")
+                                mqttClient?.disconnect()
+                                kotlinx.coroutines.delay(1000)
+                                mqttClient?.configure(latestHost, latestPort)
+                                mqttClient?.connect()
+                            }
+                        } catch (e: Exception) {
+                            AuraLog.Service.e("Error in periodic config check: ${e.message}", e)
                         }
-                    } catch (e: Exception) {
-                        AuraLog.Service.e("Error in periodic config check: ${e.message}", e)
                     }
                 }
+            } finally {
+                isStartingDataCollection = false
             }
         }
 
@@ -491,29 +519,35 @@ class TrackingForegroundService : Service() {
         serviceScope.launch {
             try {
                 val aggregator = telemetryAggregator ?: return@launch
-                var totalSent = 0
-                var iterations = 0
-                val maxIterations = 100 // Limite de segurança
-                
-                while (mqttClient?.isConnected?.value == true && iterations < maxIterations) {
-                    val result = aggregator.flushQueue(batchSize = 50)
-                    totalSent += result.sent
-                    
-                    if (result.remaining == 0) {
-                        break
+                val acquired = QueueFlushWorker.tryFlushWithLock {
+                    var totalSent = 0
+                    var iterations = 0
+                    val maxIterations = 100 // Limite de segurança
+
+                    while (mqttClient?.isConnected?.value == true && iterations < maxIterations) {
+                        val result = aggregator.flushQueue(batchSize = 50)
+                        totalSent += result.sent
+
+                        if (result.remaining == 0) {
+                            break
+                        }
+
+                        if (result.sent == 0 && result.failed > 0) {
+                            AuraLog.Queue.w("Queue flush stopped: all failed in batch")
+                            break
+                        }
+
+                        iterations++
+                        // Pequena pausa entre batches
+                        kotlinx.coroutines.delay(100)
                     }
-                    
-                    if (result.sent == 0 && result.failed > 0) {
-                        AuraLog.Queue.w("Queue flush stopped: all failed in batch")
-                        break
-                    }
-                    
-                    iterations++
-                    // Pequena pausa entre batches
-                    kotlinx.coroutines.delay(100)
+
+                    AuraLog.Queue.i("Immediate queue drain complete: $totalSent messages sent")
                 }
-                
-                AuraLog.Queue.i("Immediate queue drain complete: $totalSent messages sent")
+
+                if (!acquired) {
+                    AuraLog.Queue.d("Skip immediate drain: another flush is in progress")
+                }
             } catch (e: Exception) {
                 AuraLog.Queue.e("Failed to drain queue: ${e.message}")
             }
@@ -525,6 +559,7 @@ class TrackingForegroundService : Service() {
      */
     private fun stopDataCollection() {
         AuraLog.Service.i("Stopping telemetry collection")
+        isStartingDataCollection = false
 
         // Para o timer de 1Hz do agregador
         telemetryAggregator?.stop()
