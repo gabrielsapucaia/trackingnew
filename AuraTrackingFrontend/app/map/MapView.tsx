@@ -38,11 +38,9 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
         const canvas = document.createElement("canvas");
         const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl") as WebGLRenderingContext | null;
         if (gl && gl instanceof WebGLRenderingContext) {
-          // Verifica se contexto tem propriedades necessárias
           try {
             gl.getParameter(gl.VERSION);
             setWebglSupported(true);
-            // NÃO define deckGLReady aqui - será definido após Map carregar
           } catch {
             setWebglSupported(false);
           }
@@ -87,7 +85,7 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
 
   const onMapLoad = useCallback(() => {
     setIsMapLoaded(true);
-    // Aguarda um pouco mais para garantir que contexto WebGL do Map está totalmente inicializado
+    // Aguarda um delay simples para garantir que contexto WebGL está inicializado
     setTimeout(() => {
       if (mapRef.current) {
         try {
@@ -103,7 +101,7 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
         } catch {}
       }
       setDeckGLReady(true);
-    }, 300);
+    }, 500);
   }, []);
 
   // Atualiza viewState diretamente do evento - sem debounce/throttle para máxima fluidez
@@ -137,7 +135,6 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
       />
 
       {/* DeckGL como overlay - layers dos dispositivos */}
-      {/* Renderiza apenas quando WebGL está disponível, Map está carregado e DeckGL está pronto */}
       {webglSupported && deckGLReady && isMapLoaded && (
         <div
           style={{

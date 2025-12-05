@@ -82,9 +82,16 @@ class TelemetryAggregator(
         isRunning = true
 
         publishJob = scope.launch {
+            var nextTick = android.os.SystemClock.elapsedRealtime()
             while (isActive) {
                 sendCombinedTelemetry()
-                delay(PUBLISH_INTERVAL_MS)
+                nextTick += PUBLISH_INTERVAL_MS
+                val wait = nextTick - android.os.SystemClock.elapsedRealtime()
+                if (wait > 0) {
+                    delay(wait)
+                } else {
+                    nextTick = android.os.SystemClock.elapsedRealtime()
+                }
             }
         }
     }
