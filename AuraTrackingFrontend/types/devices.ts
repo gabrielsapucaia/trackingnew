@@ -11,6 +11,8 @@ export type DeviceSummary = {
   speedKmh: number | null;
   totalPoints24h: number;
   status: "online" | "offline";
+  /** Vibration level - placeholder until API provides this field */
+  vibration?: number | null;
 };
 
 export type DevicesResponse = {
