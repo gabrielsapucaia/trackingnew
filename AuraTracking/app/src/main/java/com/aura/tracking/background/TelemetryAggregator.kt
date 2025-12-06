@@ -5,6 +5,7 @@ import com.aura.tracking.data.room.TelemetryQueueDao
 import com.aura.tracking.data.room.TelemetryQueueEntity
 import com.aura.tracking.diagnostics.LatencyDiagnostics
 import com.aura.tracking.mqtt.MqttClientManager
+import com.aura.tracking.mqtt.MqttClientManager.PublishFailureReason
 import com.aura.tracking.sensors.gps.GpsData
 import com.aura.tracking.sensors.imu.ImuData
 import kotlinx.coroutines.CoroutineScope
@@ -183,8 +184,8 @@ class TelemetryAggregator(
      */
     private suspend fun publishOrQueue(topic: String, payload: String, messageId: String, t3PacketCreation: Long = 0) {
         if (mqttClient.isConnected.value) {
-            val success = mqttClient.publish(topic, payload)
-            if (success) {
+            val result = mqttClient.publishWithResult(topic, payload)
+            if (result.success) {
                 // LATENCY DIAGNOSTICS: T4 - MQTT Publish
                 if (t3PacketCreation > 0) {
                     LatencyDiagnostics.recordMqttPublish(messageId, t3PacketCreation)
@@ -192,6 +193,9 @@ class TelemetryAggregator(
                 _packetsSent.value++
                 Log.d(TAG, "Telemetry sent: $topic (msgId=${messageId.take(8)}...)")
             } else {
+                if (result.failureReason == PublishFailureReason.MAX_INFLIGHT) {
+                    Log.w(TAG, "Publish blocked (max inflight), queuing message ${messageId.take(8)}")
+                }
                 enqueue(topic, payload, messageId)
             }
         } else {
@@ -225,6 +229,7 @@ class TelemetryAggregator(
 
         var sent = 0
         var failed = 0
+        var hitMaxInflight = false
         val idsToDelete = mutableListOf<Long>()
 
         for (entry in entries) {
@@ -232,14 +237,24 @@ class TelemetryAggregator(
                 break
             }
 
-            val success = mqttClient.publish(entry.topic, entry.payload, entry.qos)
-            if (success) {
-                idsToDelete.add(entry.id)
-                sent++
-                _packetsSent.value++ // Incrementar contador de enviados
-            } else {
-                queueDao.incrementRetryCount(entry.id)
-                failed++
+            val result = mqttClient.publishWithResult(entry.topic, entry.payload, entry.qos)
+            when {
+                result.success -> {
+                    idsToDelete.add(entry.id)
+                    sent++
+                    _packetsSent.value++ // Incrementar contador de enviados
+                }
+                result.failureReason == PublishFailureReason.MAX_INFLIGHT -> {
+                    queueDao.incrementRetryCount(entry.id)
+                    failed++
+                    hitMaxInflight = true
+                    Log.w(TAG, "Flush paused: max inflight reached, deferring remaining batch")
+                    break
+                }
+                else -> {
+                    queueDao.incrementRetryCount(entry.id)
+                    failed++
+                }
             }
         }
 
@@ -249,6 +264,11 @@ class TelemetryAggregator(
 
         // Limpar entradas com muitas falhas
         queueDao.deleteFailedEntries(maxRetries = 10)
+
+        if (hitMaxInflight) {
+            // Pequena pausa para abrir espaço no broker antes de tentar de novo
+            delay(250)
+        }
 
         val remaining = queueDao.getCount()
         Log.d(TAG, "Queue flush: sent=$sent, failed=$failed, remaining=$remaining")

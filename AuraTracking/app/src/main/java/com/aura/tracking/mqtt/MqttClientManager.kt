@@ -48,7 +48,7 @@ class MqttClientManager(private val context: Context) {
         private const val CONNECTION_TIMEOUT = 30
         private const val KEEP_ALIVE_INTERVAL = 30 // 30 segundos heartbeat
         private const val MAX_RECONNECT_DELAY = 120_000L // 2 min max
-        private const val MAX_INFLIGHT = 10 // Max mensagens em voo
+        private const val MAX_INFLIGHT = 50 // Max mensagens em voo
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -277,11 +277,23 @@ class MqttClientManager(private val context: Context) {
      * @return true se a mensagem foi enviada com sucesso
      */
     suspend fun publish(topic: String, payload: String, qos: Int = 1, retained: Boolean = false): Boolean {
+        return publishWithResult(topic, payload, qos, retained).success
+    }
+
+    /**
+     * Publish a message and return a detailed result (used for backpressure handling).
+     */
+    suspend fun publishWithResult(
+        topic: String,
+        payload: String,
+        qos: Int = 1,
+        retained: Boolean = false
+    ): PublishResult {
         val client = mqttClient
         if (client == null || !client.isConnected) {
             AuraLog.MQTT.w("Cannot publish - not connected")
             messagesFailed++
-            return false
+            return PublishResult(success = false, failureReason = PublishFailureReason.NOT_CONNECTED)
         }
 
         return try {
@@ -290,18 +302,19 @@ class MqttClientManager(private val context: Context) {
                 isRetained = retained
             }
 
-            suspendCoroutine<Boolean> { cont ->
+            suspendCoroutine<PublishResult> { cont ->
                 client.publish(topic, message, null, object : IMqttActionListener {
                     override fun onSuccess(asyncActionToken: IMqttToken?) {
                         AuraLog.MQTT.d("Published to $topic (${payload.length} bytes)")
                         onMessageDelivered?.invoke(topic)
-                        cont.resume(true)
+                        cont.resume(PublishResult(success = true))
                     }
 
                     override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
                         AuraLog.MQTT.e("Publish failed: ${exception?.message}")
                         messagesFailed++
-                        cont.resume(false)
+                        val reason = mapFailureReason(exception)
+                        cont.resume(PublishResult(success = false, failureReason = reason))
                     }
                 })
             }
@@ -309,7 +322,10 @@ class MqttClientManager(private val context: Context) {
             AuraLog.MQTT.e("Publish error: ${e.message}")
             messagesFailed++
             onError?.invoke(e)
-            false
+            PublishResult(
+                success = false,
+                failureReason = mapFailureReason(e)
+            )
         }
     }
 
@@ -355,4 +371,26 @@ class MqttClientManager(private val context: Context) {
     fun getMessagesFailed(): Long = messagesFailed
     fun getReconnectAttempts(): Int = reconnectAttempts
     fun getLastPublishTimestamp(): Long = lastPublishTimestamp
+
+    data class PublishResult(
+        val success: Boolean,
+        val failureReason: PublishFailureReason? = null
+    )
+
+    enum class PublishFailureReason {
+        NOT_CONNECTED,
+        MAX_INFLIGHT,
+        TIMEOUT,
+        UNKNOWN
+    }
+
+    private fun mapFailureReason(exception: Throwable?): PublishFailureReason? {
+        val mqttException = exception as? MqttException
+        return when (mqttException?.reasonCode) {
+            MqttException.REASON_CODE_MAX_INFLIGHT.toInt() -> PublishFailureReason.MAX_INFLIGHT
+            MqttException.REASON_CODE_CLIENT_TIMEOUT.toInt(),
+            MqttException.REASON_CODE_NO_MESSAGE_IDS_AVAILABLE.toInt() -> PublishFailureReason.TIMEOUT
+            else -> mqttException?.let { PublishFailureReason.UNKNOWN }
+        }
+    }
 }
