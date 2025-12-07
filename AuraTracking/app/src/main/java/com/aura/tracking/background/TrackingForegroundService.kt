@@ -104,6 +104,10 @@ class TrackingForegroundService : Service() {
     @Volatile
     private var isStartingDataCollection: Boolean = false
 
+    // Métricas de observabilidade GPS no serviço
+    private var gpsAcceptedAfterAccuracy: Long = 0
+    private var gpsDiscardedAccuracy: Long = 0
+
     // Database
     private val database by lazy { AppDatabase.getInstance(this) }
 
@@ -491,10 +495,19 @@ class TrackingForegroundService : Service() {
             
             // Valida precisão - descarta se >25m (Moto G34 optimization)
             if (gpsData.accuracy <= 25f) {
+                gpsAcceptedAfterAccuracy++
                 telemetryAggregator?.updateGps(gpsData)
+                if (gpsAcceptedAfterAccuracy % 50L == 0L) {
+                    AuraLog.GPS.d("GPS accepted (acc<=25m) count=$gpsAcceptedAfterAccuracy discarded_acc=$gpsDiscardedAccuracy")
+                }
                 AuraLog.GPS.d("GPS: lat=${gpsData.latitude}, lon=${gpsData.longitude}, acc=${gpsData.accuracy}m")
             } else {
-                AuraLog.GPS.w("GPS discarded: accuracy ${gpsData.accuracy}m > 25m threshold")
+                gpsDiscardedAccuracy++
+                if (gpsDiscardedAccuracy % 10L == 0L) {
+                    AuraLog.GPS.w("GPS discarded by accuracy (>${25}m): count=$gpsDiscardedAccuracy accepted=$gpsAcceptedAfterAccuracy lastAcc=${gpsData.accuracy}m")
+                } else {
+                    AuraLog.GPS.w("GPS discarded: accuracy ${gpsData.accuracy}m > 25m threshold")
+                }
             }
         }
 

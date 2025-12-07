@@ -5,9 +5,11 @@ import { ScatterplotLayer, TextLayer, IconLayer } from "@deck.gl/layers";
 import type { Layer, PickingInfo } from "@deck.gl/core";
 import maplibregl from "maplibre-gl";
 import Map, { useControl } from "react-map-gl/maplibre";
-import { MapboxOverlay } from "@deck.gl/mapbox";
+// @ts-ignore
+import { MapboxOverlay } from "@deck.gl/mapbox"; // @ts-ignore
 import type { DeviceSummary } from "../../types/devices";
 import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
+import type { ConnectionStatus } from "./useDeviceStream";
 
 // Debug logging - only enabled in development
 const isDev = process.env.NODE_ENV === 'development';
@@ -25,6 +27,7 @@ type MapViewProps = {
   devices: DeviceSummary[];
   isLoading: boolean;
   error: string | null;
+  connectionStatus?: ConnectionStatus;
 };
 
 type ViewState = {
@@ -384,13 +387,13 @@ const DeckGLOverlay = memo(function DeckGLOverlay({ layers, onClick }: DeckGLOve
 // Main MapView Component
 // ============================================================================
 
-export default function MapView({ devices, isLoading, error }: MapViewProps) {
+export default function MapView({ devices, isLoading, error, connectionStatus }: MapViewProps) {
   const mapRef = useRef<any>(null);
   const deckClickRef = useRef(false);
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tileErrorCountRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const [mapState, dispatch] = useReducer(mapStateReducer, { status: 'checking-webgl' });
   const [mapStyle, setMapStyle] = useState(SATELLITE_STYLE);
   const [usingFallbackTiles, setUsingFallbackTiles] = useState(false);
@@ -545,7 +548,7 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
 
   const onMapLoad = useCallback(() => {
     debugLog("[Map] Loaded");
-    
+
     if (mapRef.current) {
       const map = mapRef.current.getMap();
       if (map) {
@@ -554,9 +557,33 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
             handleTileError();
           }
         });
+
+        // Add viewport bounds tracking for Phase 1 optimization
+        map.on('moveend', () => {
+          if (map.getBounds()) {
+            const bounds = map.getBounds();
+            setMapBounds([
+              bounds.getWest(),
+              bounds.getSouth(),
+              bounds.getEast(),
+              bounds.getNorth()
+            ]);
+          }
+        });
+
+        // Initial bounds setup
+        if (map.getBounds()) {
+          const bounds = map.getBounds();
+          setMapBounds([
+            bounds.getWest(),
+            bounds.getSouth(),
+            bounds.getEast(),
+            bounds.getNorth()
+          ]);
+        }
       }
     }
-    
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (mapRef.current) {
@@ -595,6 +622,7 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
     setTooltipPosition(null);
   }, []);
 
+
   // Handle DeckGL click
   const handleDeckClick = useCallback((info: PickingInfo) => {
     if (info.object && info.layer?.id === 'devices-icon-layer') {
@@ -618,6 +646,21 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
     [devices]
   );
 
+  // Viewport-based device filtering (Phase 1 Optimization)
+  const [mapBounds, setMapBounds] = useState<[number, number, number, number] | null>(null);
+
+  // Filter devices by viewport visibility
+  const visibleDevices = useMemo(() => {
+    if (!mapBounds || !mapRef.current) return validDevices;
+
+    const [west, south, east, north] = mapBounds;
+    return validDevices.filter(device => {
+      const lon = device.longitude as number;
+      const lat = device.latitude as number;
+      return lon >= west && lon <= east && lat >= south && lat <= north;
+    });
+  }, [validDevices, mapBounds]);
+
   // Create a stable key for update triggers
   const devicesKey = useMemo(
     () => validDevices.map(d => `${d.deviceId}:${d.status}:${d.latitude}:${d.longitude}`).join('|'),
@@ -627,18 +670,21 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
   // Layers - ScatterplotLayer for background + IconLayer for truck image + TextLayer for device tag with background
   const layers = useMemo(() => {
     if (mapState.status !== 'ready') return [];
-    
+
+    // Use visible devices for viewport-based rendering (Phase 1 optimization)
+    const renderDevices = visibleDevices.length > 0 ? visibleDevices : validDevices;
+
     return [
       // Background circle layer (pickable for clicks)
       new ScatterplotLayer<DeviceSummary>({
         id: 'devices-icon-layer',
-        data: validDevices,
+        data: renderDevices,
         getPosition: (d) => [d.longitude as number, d.latitude as number],
         getRadius: 18,
         radiusUnits: 'pixels',
         radiusMinPixels: 16,
         radiusMaxPixels: 20,
-        getFillColor: (d) => d.status === 'online' 
+        getFillColor: (d) => d.status === 'online'
           ? [34, 197, 94, 220]    // Green for online
           : [148, 163, 184, 180], // Gray for offline
         getLineColor: [255, 255, 255, 255],
@@ -653,11 +699,11 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
           getFillColor: [devicesKey]
         }
       }),
-      
+
       // Dump truck icon layer
       new IconLayer<DeviceSummary>({
         id: 'devices-truck-icon-layer',
-        data: validDevices,
+        data: renderDevices,
         getPosition: (d) => [d.longitude as number, d.latitude as number],
         getIcon: () => ({
           url: '/dump-truck.svg',
@@ -675,11 +721,11 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
           getPosition: [devicesKey]
         }
       }),
-      
+
       // Device tag layer (above the icon) with improved visibility
       new TextLayer<DeviceSummary>({
         id: 'devices-label-layer',
-        data: validDevices,
+        data: renderDevices,
         getPosition: (d) => [d.longitude as number, d.latitude as number],
         getText: (d) => d.deviceId,
         getSize: 14,
@@ -700,7 +746,7 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
         }
       })
     ];
-  }, [validDevices, mapState.status, devicesKey]);
+  }, [visibleDevices, validDevices, mapState.status, devicesKey]);
 
   // Derive display states from state machine
   const showDeckGL = mapState.status === 'ready';
@@ -720,16 +766,69 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
         background: "#0b0b0b"
       }}
     >
-      {/* Map - receives all interaction events */}
-      <Map
-        ref={mapRef}
-        mapLib={maplibregl}
-        mapStyle={mapStyle}
-        initialViewState={INITIAL_VIEW_STATE}
-        onLoad={onMapLoad}
-        onClick={handleMapClick}
-        style={{ width: "100%", height: "100%", position: "relative", zIndex: 1 }}
-      >
+      {/* Status Indicator */}
+      <div style={{
+        position: "absolute",
+        top: 12,
+        right: 12,
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        background: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(4px)",
+        padding: "6px 12px",
+        borderRadius: "20px",
+        border: "1px solid rgba(255,255,255,0.1)",
+        color: "white",
+        fontSize: "11px",
+        fontWeight: 600,
+        letterSpacing: "0.5px"
+      }}>
+        <div style={{
+          width: "8px",
+          height: "8px",
+          borderRadius: "50%",
+          background: connectionStatus === 'live' ? '#22c55e' :
+                     connectionStatus === 'reconnecting' ? '#eab308' :
+                     connectionStatus === 'fallback_polling' ? '#f97316' :
+                     '#ef4444',
+          boxShadow: connectionStatus === 'live' ? '0 0 8px #22c55e' : 'none',
+          transition: 'background 0.3s ease'
+        }} />
+        <span>
+          {connectionStatus === 'live' ? 'LIVE' :
+           connectionStatus === 'reconnecting' ? 'RECONNECTING' :
+           connectionStatus === 'fallback_polling' ? 'FALLBACK' :
+           'OFFLINE'}
+        </span>
+        <span style={{
+          borderLeft: "1px solid rgba(255,255,255,0.2)",
+          paddingLeft: "8px",
+          marginLeft: "4px",
+          color: "rgba(255,255,255,0.6)"
+        }}>
+          {validDevices.length} DEVICES
+        </span>
+      </div>
+
+
+      {/* Map Container */}
+      <div style={{
+        width: "100%",
+        height: "100%",
+        position: "relative"
+      }}>
+        {/* Map - receives all interaction events */}
+        <Map
+          ref={mapRef}
+          mapLib={maplibregl}
+          mapStyle={mapStyle}
+          initialViewState={INITIAL_VIEW_STATE}
+          onLoad={onMapLoad}
+          onClick={handleMapClick}
+          style={{ width: "100%", height: "100%", position: "relative", zIndex: 1 }}
+        >
         {showDeckGL && (
           <DeckGLOverlay
             layers={layers}
@@ -737,6 +836,7 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
           />
         )}
       </Map>
+    </div>
 
       {/* Device tooltip */}
       {selectedDevice && tooltipPosition && (
@@ -772,7 +872,7 @@ export default function MapView({ devices, isLoading, error }: MapViewProps) {
         <div
           style={{
             position: "absolute",
-            top: 12,
+            top: 50,
             right: 12,
             padding: "6px 10px",
             borderRadius: 8,

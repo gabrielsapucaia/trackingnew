@@ -39,6 +39,10 @@ from pydantic import BaseModel, Field, ValidationError
 from tenacity import retry, stop_after_attempt, wait_exponential
 import uvicorn
 
+from .broadcaster import TelemetryBroadcaster
+
+logger = structlog.get_logger()
+
 # ============================================================
 # CONFIGURAÇÃO
 # ============================================================
@@ -408,9 +412,10 @@ class DatabasePool:
 class IngestWorker:
     """Worker principal de ingestão."""
     
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, broadcaster: Optional[TelemetryBroadcaster] = None):
         self.config = config
         self.logger = structlog.get_logger("ingest")
+        self.broadcaster = broadcaster
         
         # Componentes
         self.db = DatabasePool(config)
@@ -541,6 +546,12 @@ class IngestWorker:
         
         # Adicionar ao buffer
         self.batch_buffer.append(record)
+
+        # Broadcast interno (Fase 1)
+        if self.broadcaster:
+            # Envia o record processado (dict) para o broadcaster
+            # O broadcaster aplica throttling e despacha para subscribers
+            self.broadcaster.publish(packet.deviceId, record)
         
         # Verificar se deve fazer flush
         should_flush = (
@@ -702,6 +713,12 @@ class IngestWorker:
                 # Purge de mensagens antigas
                 self.offline_queue.purge_old(48)
                 
+                # Cleanup broadcaster stale devices (cada 1h aprox - 3600s)
+                # Como o loop roda a cada 5s, podemos usar um contador ou check de tempo
+                # Simplificação: check a cada loop, o método é leve
+                if self.broadcaster:
+                    self.broadcaster.cleanup_stale_devices()
+
                 # Aguardar
                 time.sleep(5)
                 
@@ -745,6 +762,7 @@ class IngestWorker:
 # ============================================================
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from typing import List, Optional
 from datetime import datetime, timedelta
 
@@ -753,6 +771,9 @@ def create_health_app(worker: IngestWorker) -> FastAPI:
     
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        # Startup: Injetar loop no broadcaster
+        if worker.broadcaster:
+            worker.broadcaster.set_loop(asyncio.get_running_loop())
         yield
     
     app = FastAPI(
@@ -777,7 +798,8 @@ def create_health_app(worker: IngestWorker) -> FastAPI:
     async def health():
         stats = worker.get_stats()
         healthy = stats["mqtt_connected"] and stats["db_connected"]
-        return {
+        
+        response = {
             "status": "healthy" if healthy else "degraded",
             "mqtt_connected": stats["mqtt_connected"],
             "db_connected": stats["db_connected"],
@@ -786,6 +808,11 @@ def create_health_app(worker: IngestWorker) -> FastAPI:
             "messages_inserted": stats["messages_inserted"],
             "offline_queue_size": stats["offline_queue_size"]
         }
+        
+        if worker.broadcaster:
+            response["broadcaster"] = worker.broadcaster.get_stats()
+            
+        return response
     
     @app.get("/stats")
     async def stats():
@@ -799,32 +826,87 @@ def create_health_app(worker: IngestWorker) -> FastAPI:
     
     # ========== REST API Endpoints ==========
     
+    @app.get("/api/events/stream")
+    async def stream_events():
+        """
+        Endpoint SSE para atualizações em tempo real.
+        Eventos:
+        - device-update: Atualização de posição/status
+        - heartbeat: Keep-alive a cada 15s
+        """
+        if not worker.broadcaster:
+            return {"error": "Broadcaster not available"}, 503
+
+        async def event_generator():
+            queue = await worker.broadcaster.subscribe()
+            try:
+                while True:
+                    try:
+                        # Wait for event or heartbeat timeout
+                        payload = await asyncio.wait_for(queue.get(), timeout=15.0)
+                        
+                        # Format payload for SSE (minimal data)
+                        # Payload vem do IngestWorker._handle_telemetry (dict completo)
+                        sse_data = {
+                            "id": payload.get("device_id"),
+                            "ts": payload.get("time").timestamp() if payload.get("time") else time.time(),
+                            "lat": payload.get("latitude"),
+                            "lon": payload.get("longitude"),
+                            "st": "online" # Simplificação por enquanto
+                        }
+                        
+                        yield f"event: device-update\ndata: {json.dumps(sse_data)}\n\n"
+                        
+                    except asyncio.TimeoutError:
+                        # Heartbeat
+                        yield f"event: heartbeat\ndata: {time.time()}\n\n"
+                        
+            except asyncio.CancelledError:
+                # Client disconnected
+                pass
+            finally:
+                worker.broadcaster.unsubscribe(queue)
+
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-store",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no"
+            }
+        )
+
     @app.get("/api/devices")
     async def get_devices():
-        """Lista todos os dispositivos com última posição."""
+        """Lista apenas dispositivos online (últimos 5 minutos)."""
         try:
             conn = worker.db.get_connection()
             if not conn:
                 return {"error": "Database not connected"}, 503
-            
+
             cursor = conn.cursor()
-            cursor.execute("""
-                SELECT 
+
+            # Always use 5 minutes filter for online devices only
+            time_filter = "NOW() - INTERVAL '5 minutes'"
+
+            cursor.execute(f"""
+                SELECT
                     device_id,
                     operator_id,
                     MAX(time) as last_seen,
-                    (SELECT latitude FROM telemetry t2 
-                     WHERE t2.device_id = t.device_id 
+                    (SELECT latitude FROM telemetry t2
+                     WHERE t2.device_id = t.device_id
                      ORDER BY time DESC LIMIT 1) as latitude,
-                    (SELECT longitude FROM telemetry t2 
-                     WHERE t2.device_id = t.device_id 
+                    (SELECT longitude FROM telemetry t2
+                     WHERE t2.device_id = t.device_id
                      ORDER BY time DESC LIMIT 1) as longitude,
-                    (SELECT speed_kmh FROM telemetry t2 
-                     WHERE t2.device_id = t.device_id 
+                    (SELECT speed_kmh FROM telemetry t2
+                     WHERE t2.device_id = t.device_id
                      ORDER BY time DESC LIMIT 1) as speed_kmh,
                     COUNT(*) as total_points
                 FROM telemetry t
-                WHERE time > NOW() - INTERVAL '24 hours'
+                WHERE time > {time_filter}
                 GROUP BY device_id, operator_id
                 ORDER BY last_seen DESC
             """)
@@ -1104,20 +1186,17 @@ def main():
     config = Config()
     
     # Setup logging
-    setup_logging(config)
-    logger = structlog.get_logger("main")
-    
-    logger.info("==============================================")
-    logger.info("  AuraTracking Ingest Worker v1.0.0")
-    logger.info("==============================================")
     logger.info("config", 
                mqtt_host=config.mqtt_host,
                mqtt_topic=config.mqtt_topic,
                db_host=config.db_host,
                batch_size=config.batch_size)
     
-    # Criar worker
-    worker = IngestWorker(config)
+    # Criar broadcaster
+    broadcaster = TelemetryBroadcaster(throttle_seconds=5.0)
+
+    # Criar worker com broadcaster
+    worker = IngestWorker(config, broadcaster=broadcaster)
     
     # Criar health app
     health_app = create_health_app(worker)

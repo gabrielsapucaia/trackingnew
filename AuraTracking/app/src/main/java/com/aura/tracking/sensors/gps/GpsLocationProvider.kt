@@ -45,7 +45,7 @@ class GpsLocationProvider(private val context: Context) {
         
         // STALE FILTER: Idade máxima aceitável para uma posição GPS
         // Posições mais antigas que isso são descartadas (causadas por batching em background)
-        private const val MAX_LOCATION_AGE_MS = 2000L // 2 segundos
+        private const val MAX_LOCATION_AGE_MS = 4000L // 4 segundos, mais tolerante a batching legítimo
     }
 
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
@@ -55,6 +55,18 @@ class GpsLocationProvider(private val context: Context) {
     private var locationCallback: LocationCallback? = null
     private var isRunning = false
     
+    // Métricas de observabilidade
+    private var totalReceived: Long = 0
+    private var totalAccepted: Long = 0
+    private var totalDiscardedStale: Long = 0
+    private var totalAcceptedByCadence: Long = 0
+    
+    // Cadência do provedor
+    private val recentCallbackIntervalsMs = ArrayDeque<Long>()
+    private var lastCallbackElapsedRealtimeNanos: Long = 0L
+    private var lastAcceptedElapsedRealtimeNanos: Long = 0L
+    private var lastCadenceDegraded: Boolean = false
+
     // Timestamp da última atualização para detecção de starvation
     private var lastUpdateTimestamp: Long = 0L
     private var recoveryAttempts: Int = 0
@@ -97,7 +109,10 @@ class GpsLocationProvider(private val context: Context) {
     fun gpsFlow(): Flow<GpsData> = callbackFlow {
         val callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { location ->
+                val locations = result.locations
+                if (locations.isEmpty()) return
+
+                locations.forEach { location ->
                     val gpsData = location.toGpsData()
                     trySend(gpsData)
                 }
@@ -135,8 +150,11 @@ class GpsLocationProvider(private val context: Context) {
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { location ->
-                    handleLocationUpdate(location)
+                val locations = result.locations
+                if (locations.isEmpty()) return
+
+                locations.forEach { location ->
+                    handleLocationUpdate(location, batchSize = locations.size)
                 }
             }
         }
@@ -231,8 +249,11 @@ class GpsLocationProvider(private val context: Context) {
             // Cria novo callback
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
-                    result.lastLocation?.let { location ->
-                        handleLocationUpdate(location)
+                    val locations = result.locations
+                    if (locations.isEmpty()) return
+
+                    locations.forEach { location ->
+                        handleLocationUpdate(location, batchSize = locations.size)
                     }
                 }
             }
@@ -266,7 +287,34 @@ class GpsLocationProvider(private val context: Context) {
      * LATENCY DIAGNOSTICS: Registra timestamps para diagnóstico de latência.
      * STALE FILTER: Prefere posições recentes, mas aceita stale como fallback.
      */
-    private fun handleLocationUpdate(location: Location) {
+    private fun handleLocationUpdate(location: Location, batchSize: Int = 1) {
+        totalReceived++
+
+        val currentElapsedNanos = android.os.SystemClock.elapsedRealtimeNanos()
+
+        // Atualiza cadência observada do provedor
+        if (lastCallbackElapsedRealtimeNanos > 0) {
+            val intervalMs = (currentElapsedNanos - lastCallbackElapsedRealtimeNanos) / 1_000_000
+            recentCallbackIntervalsMs.addLast(intervalMs)
+            if (recentCallbackIntervalsMs.size > 10) {
+                recentCallbackIntervalsMs.removeFirst()
+            }
+        }
+        lastCallbackElapsedRealtimeNanos = currentElapsedNanos
+
+        val observedCadenceMs = if (recentCallbackIntervalsMs.isNotEmpty()) {
+            recentCallbackIntervalsMs.average().toLong()
+        } else {
+            INTERVAL_1HZ_MS
+        }
+
+        // Considera degradado se média da janela > 2s (duas vezes o alvo)
+        val isCadenceDegraded = observedCadenceMs > 2000
+        if (isCadenceDegraded != lastCadenceDegraded) {
+            AuraLog.GPS.i("Cadence state changed: degraded=$isCadenceDegraded (avg=${observedCadenceMs}ms)")
+            lastCadenceDegraded = isCadenceDegraded
+        }
+
         // STALE FILTER: Calcular idade da posição
         val locationAge = android.os.SystemClock.elapsedRealtime() - 
             (location.elapsedRealtimeNanos / 1_000_000)
@@ -278,18 +326,44 @@ class GpsLocationProvider(private val context: Context) {
         val isStale = locationAge > MAX_LOCATION_AGE_MS
         val timeSinceLastValid = System.currentTimeMillis() - lastUpdateTimestamp
         val needsFallback = timeSinceLastValid > GPS_STARVATION_THRESHOLD_MS / 2 // 15s sem dados válidos
-        
+        val isBatchDelivery = batchSize > 1 // Aceita pontos atrasados se vierem em lote
+        val intervalSinceLastAcceptedMs = if (lastAcceptedElapsedRealtimeNanos > 0) {
+            (currentElapsedNanos - lastAcceptedElapsedRealtimeNanos) / 1_000_000
+        } else {
+            0L
+        }
+
+        var temporalQuality = "normal"
+        var accepted = false
+
         if (isStale) {
-            if (needsFallback) {
-                AuraLog.GPS.w("Accepting stale GPS as fallback: age=${locationAge}ms (no valid data for ${timeSinceLastValid}ms)")
+            if (isCadenceDegraded) {
+                temporalQuality = "stale_cadence"
+                totalAcceptedByCadence++
+                AuraLog.GPS.w("Accepting stale GPS due to degraded cadence: age=${locationAge}ms interval=${intervalSinceLastAcceptedMs}ms observedCadence=${observedCadenceMs}ms")
+                accepted = true
+            } else if (needsFallback || isBatchDelivery) {
+                temporalQuality = "stale_fallback"
+                AuraLog.GPS.w("Accepting stale GPS: age=${locationAge}ms (batch=$isBatchDelivery, no valid data for ${timeSinceLastValid}ms)")
+                accepted = true
             } else {
-                AuraLog.GPS.d("Ignoring stale GPS: age=${locationAge}ms (have recent data)")
+                totalDiscardedStale++
+                AuraLog.GPS.d("Ignoring stale GPS: age=${locationAge}ms (have recent data, observedCadence=${observedCadenceMs}ms)")
                 return // Temos dados recentes, não precisa de fallback
             }
+        } else {
+            accepted = true
         }
+
+        if (!accepted) return
         
         lastLocation = location
         lastUpdateTimestamp = System.currentTimeMillis()
+        lastAcceptedElapsedRealtimeNanos = currentElapsedNanos
+        totalAccepted++
+        if (totalAccepted % 50L == 0L || totalDiscardedStale % 50L == 0L) {
+            AuraLog.GPS.d("GPS metrics: received=$totalReceived accepted=$totalAccepted discarded_stale=$totalDiscardedStale accepted_cadence=$totalAcceptedByCadence")
+        }
         
         // Reset recovery attempts ao receber atualização válida
         if (recoveryAttempts > 0) {
@@ -298,11 +372,15 @@ class GpsLocationProvider(private val context: Context) {
         }
         
         // Converte para GpsData
-        val gpsData = location.toGpsData()
+        val gpsData = location.toGpsData(
+            ageMs = locationAge,
+            intervalSinceLastFixMs = intervalSinceLastAcceptedMs,
+            temporalQuality = temporalQuality
+        )
         _lastGpsData.value = gpsData
 
         AuraLog.GPS.d("GPS: lat=${gpsData.latitude}, lon=${gpsData.longitude}, " +
-                "speed=${gpsData.speedKmh}km/h, acc=${gpsData.accuracy}m, age=${locationAge}ms")
+                "speed=${gpsData.speedKmh}km/h, acc=${gpsData.accuracy}m, age=${locationAge}ms, interval=${intervalSinceLastAcceptedMs}ms, tq=${temporalQuality}")
 
         // Notifica listeners
         onLocationUpdate?.invoke(location)
@@ -312,7 +390,11 @@ class GpsLocationProvider(private val context: Context) {
     /**
      * Converte Location para GpsData
      */
-    private fun Location.toGpsData(): GpsData {
+    private fun Location.toGpsData(
+        ageMs: Long = 0L,
+        intervalSinceLastFixMs: Long = 0L,
+        temporalQuality: String = "normal"
+    ): GpsData {
         return GpsData(
             latitude = latitude,
             longitude = longitude,
@@ -320,7 +402,10 @@ class GpsLocationProvider(private val context: Context) {
             speed = speed,
             bearing = bearing,
             accuracy = accuracy,
-            timestamp = time
+            timestamp = time,
+            ageMs = ageMs,
+            intervalSinceLastFixMs = intervalSinceLastFixMs,
+            temporalQuality = temporalQuality
         )
     }
 

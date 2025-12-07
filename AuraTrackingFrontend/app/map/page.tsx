@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useDevices } from "./useDevices";
+import { useDeviceStream, type ConnectionStatus } from "./useDeviceStream";
 import MapView from "./MapView";
 
 // Threshold for "fresh" data (10 seconds)
@@ -29,14 +29,12 @@ function isDataFresh(lastUpdated: Date | null): boolean {
 
 export default function MapPage() {
   const { 
-    devices, 
-    activeDevices,
+    devices,
+    status: connectionStatus,
     isInitialLoading, 
-    isRefreshing,
     error, 
-    lastUpdated, 
-    retryCount
-  } = useDevices(5000);
+    lastUpdated
+  } = useDeviceStream();
 
   // State to force re-render for freshness indicator
   const [, setTick] = useState(0);
@@ -65,7 +63,7 @@ export default function MapPage() {
         <h1 style={{ margin: 0 }}>Aura Tracking Map</h1>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
           <p style={{ margin: 0, opacity: 0.8 }}>
-            Dispositivos ativos: {activeDevices.length} {isRefreshing && "(atualizando...)"}
+            Dispositivos ativos: {devices.length}
           </p>
           
           {/* Last updated time */}
@@ -96,7 +94,7 @@ export default function MapPage() {
                 color: indicatorColor,
                 transition: smoothTransition
               }}
-              title={`${indicatorLabel}${retryCount > 0 ? ` (${retryCount} erros consecutivos)` : ''}`}
+              title={indicatorLabel}
             >
               <span
                 style={{
@@ -136,11 +134,6 @@ export default function MapPage() {
                 </span>
               )}
             </p>
-            {retryCount > 0 && (
-              <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8rem", opacity: 0.8 }}>
-                Tentando novamente automaticamente...
-              </p>
-            )}
           </div>
         )}
         
@@ -151,7 +144,7 @@ export default function MapPage() {
           </p>
         )}
       </header>
-      <MapView devices={activeDevices} isLoading={isLoading} error={error} />
+      <MapView devices={devices} isLoading={isLoading} error={error} connectionStatus={connectionStatus} />
     </main>
   );
 }
