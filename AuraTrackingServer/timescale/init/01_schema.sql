@@ -74,6 +74,15 @@ CREATE TABLE IF NOT EXISTS telemetry (
     speed DOUBLE PRECISION,           -- m/s
     bearing DOUBLE PRECISION,         -- graus (0-360)
     gps_accuracy DOUBLE PRECISION,    -- metros
+    -- GPS Detalhado (opcional)
+    satellites INTEGER,
+    h_acc DOUBLE PRECISION,           -- Horizontal accuracy
+    v_acc DOUBLE PRECISION,           -- Vertical accuracy
+    s_acc DOUBLE PRECISION,           -- Speed accuracy
+    hdop DOUBLE PRECISION,
+    vdop DOUBLE PRECISION,
+    pdop DOUBLE PRECISION,
+    gps_timestamp BIGINT,             -- Timestamp do fix GPS
     
     -- Dados IMU
     accel_x DOUBLE PRECISION,         -- m/s²
@@ -82,17 +91,86 @@ CREATE TABLE IF NOT EXISTS telemetry (
     gyro_x DOUBLE PRECISION,          -- rad/s
     gyro_y DOUBLE PRECISION,
     gyro_z DOUBLE PRECISION,
+    -- Magnitudes (opcionais)
+    accel_magnitude DOUBLE PRECISION,
+    gyro_magnitude DOUBLE PRECISION,
+    -- Magnetômetro (opcional)
+    mag_x DOUBLE PRECISION,
+    mag_y DOUBLE PRECISION,
+    mag_z DOUBLE PRECISION,
+    mag_magnitude DOUBLE PRECISION,
+    -- Aceleração Linear (opcional)
+    linear_accel_x DOUBLE PRECISION,
+    linear_accel_y DOUBLE PRECISION,
+    linear_accel_z DOUBLE PRECISION,
+    linear_accel_magnitude DOUBLE PRECISION,
+    -- Gravidade (opcional)
+    gravity_x DOUBLE PRECISION,
+    gravity_y DOUBLE PRECISION,
+    gravity_z DOUBLE PRECISION,
+    -- Rotação Vetorial (opcional)
+    rotation_vector_x DOUBLE PRECISION,
+    rotation_vector_y DOUBLE PRECISION,
+    rotation_vector_z DOUBLE PRECISION,
+    rotation_vector_w DOUBLE PRECISION,
     
-    -- Dados calculados
+    -- Orientação (opcional)
+    azimuth DOUBLE PRECISION,
+    pitch DOUBLE PRECISION,
+    roll DOUBLE PRECISION,
+    
+    -- Sistema (opcional)
+    battery_level INTEGER,
+    battery_temperature DOUBLE PRECISION,
+    battery_status VARCHAR(20),
+    battery_voltage INTEGER,
+    battery_health VARCHAR(20),
+    battery_technology VARCHAR(20),
+    wifi_rssi INTEGER,
+    wifi_ssid VARCHAR(100),
+    cellular_network_type VARCHAR(20),
+    cellular_operator VARCHAR(50),
+    cellular_rsrp INTEGER,
+    cellular_rsrq INTEGER,
+    cellular_rssnr INTEGER,
+    
+    -- WiFi adicional
+    wifi_bssid VARCHAR(20),
+    wifi_frequency INTEGER,
+    wifi_channel INTEGER,
+    
+    -- CellInfo detalhado
+    cellular_ci BIGINT,
+    cellular_pci INTEGER,
+    cellular_tac INTEGER,
+    cellular_earfcn INTEGER,
+    cellular_band INTEGER[],
+    cellular_bandwidth INTEGER,
+    
+    -- Bateria adicional
+    battery_charge_counter BIGINT,
+    battery_full_capacity BIGINT,
+    
+    -- Motion Detection (REMOVIDO: Sensores não disponíveis no dispositivo - colunas mantidas para flexibilidade futura)
+    motion_significant_motion BOOLEAN,
+    motion_stationary_detect BOOLEAN,
+    motion_motion_detect BOOLEAN,
+    motion_flat_up BOOLEAN,
+    motion_flat_down BOOLEAN,
+    motion_stowed BOOLEAN,
+    motion_display_rotate INTEGER,
+    
+    -- Flag de transmissão
+    transmission_mode VARCHAR(10) DEFAULT 'online',
+    
+    -- Dados calculados (mantidos para compatibilidade)
     speed_kmh DOUBLE PRECISION GENERATED ALWAYS AS (speed * 3.6) STORED,
-    accel_magnitude DOUBLE PRECISION GENERATED ALWAYS AS (
-        sqrt(accel_x * accel_x + accel_y * accel_y + accel_z * accel_z)
-    ) STORED,
     
     -- Metadados
     topic VARCHAR(255),
     received_at TIMESTAMPTZ DEFAULT NOW(),
-    raw_payload JSONB
+    raw_payload JSONB,
+    message_id VARCHAR(100)            -- UUID para deduplicação
 );
 
 -- Converter para hypertable (chunks de 1 dia)
@@ -104,6 +182,10 @@ SELECT create_hypertable('telemetry', 'time',
 -- ============================================================
 -- ÍNDICES PARA TELEMETRY
 -- ============================================================
+-- Constraint único para ON CONFLICT (time, device_id)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_telemetry_time_device_unique 
+    ON telemetry (time, device_id);
+
 -- Índice composto principal para queries por dispositivo
 CREATE INDEX idx_telemetry_device_time 
     ON telemetry (device_id, time DESC);
@@ -112,6 +194,23 @@ CREATE INDEX idx_telemetry_device_time
 CREATE INDEX idx_telemetry_operator_time 
     ON telemetry (operator_id, time DESC) 
     WHERE operator_id IS NOT NULL;
+
+-- Índices para novos campos
+CREATE INDEX IF NOT EXISTS idx_telemetry_transmission_mode 
+    ON telemetry (transmission_mode) 
+    WHERE transmission_mode IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_telemetry_satellites 
+    ON telemetry (satellites) 
+    WHERE satellites IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_telemetry_battery_level 
+    ON telemetry (battery_level) 
+    WHERE battery_level IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_telemetry_message_id 
+    ON telemetry (message_id) 
+    WHERE message_id IS NOT NULL;
 
 -- Índice para localização geográfica (lat/lon separados)
 CREATE INDEX idx_telemetry_location 

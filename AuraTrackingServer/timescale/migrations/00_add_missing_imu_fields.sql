@@ -1,0 +1,38 @@
+-- Migration: Adicionar campos IMU que estão faltando
+-- Data: 2024-12-11
+-- Descrição: Adiciona campos IMU detalhados que estavam no schema mas não foram aplicados no banco existente
+
+-- Magnitudes IMU
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS accel_magnitude DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS gyro_magnitude DOUBLE PRECISION;
+
+-- Magnetômetro
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS mag_x DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS mag_y DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS mag_z DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS mag_magnitude DOUBLE PRECISION;
+
+-- Aceleração Linear
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS linear_accel_x DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS linear_accel_y DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS linear_accel_z DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS linear_accel_magnitude DOUBLE PRECISION;
+
+-- Gravidade
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS gravity_x DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS gravity_y DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS gravity_z DOUBLE PRECISION;
+
+-- Rotação Vetorial
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS rotation_vector_x DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS rotation_vector_y DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS rotation_vector_z DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS rotation_vector_w DOUBLE PRECISION;
+
+-- Orientação
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS azimuth DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS pitch DOUBLE PRECISION;
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS roll DOUBLE PRECISION;
+
+
+

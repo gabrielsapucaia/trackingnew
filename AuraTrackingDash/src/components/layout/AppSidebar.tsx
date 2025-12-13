@@ -14,14 +14,14 @@ import {
   TrendingUp,
   Calendar,
   FileText,
-  Smartphone,
   Users,
-  Building2,
   Shield,
   Database,
   Bell,
   Cog,
   HardHat, // Added for Equipamentos
+  WifiOff,
+  Wifi,
 } from "lucide-react"
 
 import {
@@ -57,9 +57,54 @@ const navigationSections = [
         icon: MapPin,
       },
       {
-        title: "Tempo Real",
+        title: "Online",
         href: "/monitoramento/tempo-real",
-        icon: Activity,
+        icon: Wifi,
+      },
+      {
+        title: "Offline",
+        href: "/monitoramento/offline",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (teste)",
+        href: "/monitoramento/offline-teste",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (Scatter)",
+        href: "/monitoramento/offline-scatter",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (Paths)",
+        href: "/monitoramento/offline-paths",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (Heatmap)",
+        href: "/monitoramento/offline-heatmap",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (ScreenGrid)",
+        href: "/monitoramento/offline-screengrid",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (Grid)",
+        href: "/monitoramento/offline-grid",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (GridLayer)",
+        href: "/monitoramento/offline-gridlayer",
+        icon: WifiOff,
+      },
+      {
+        title: "Offline (GridLayer) 2",
+        href: "/monitoramento/offline-gridlayer-copy",
+        icon: WifiOff,
       },
     ],
   },
@@ -86,13 +131,8 @@ const navigationSections = [
   },
   {
     title: "Cadastro",
-    icon: ClipboardList,
-    items: [
-      {
-        title: "Dispositivos",
-        href: "/cadastro",
-        icon: Smartphone,
-      },
+      icon: ClipboardList,
+      items: [
       {
         title: "Operadores",
         href: "/cadastro/operadores",
@@ -118,11 +158,6 @@ const navigationSections = [
         href: "/cadastro/tipos-materiais",
         icon: FileText,
       },
-      {
-        title: "Entidades",
-        href: "/cadastro/entidades",
-        icon: Building2,
-      },
     ],
   },
   {
@@ -145,9 +180,9 @@ const navigationSections = [
         icon: Database,
       },
       {
-        title: "Notificações",
-        href: "/admin/notificacoes",
-        icon: Bell,
+        title: "Usuários",
+        href: "/admin/usuarios",
+        icon: Shield,
       },
     ],
   },

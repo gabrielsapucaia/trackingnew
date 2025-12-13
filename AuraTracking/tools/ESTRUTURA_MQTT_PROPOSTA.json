@@ -1,0 +1,453 @@
+{
+  "description": "Estrutura MQTT proposta para telemetria expandida do AuraTracking",
+  "version": "1.0",
+  "timestamp": "2025-01-09T00:00:00Z",
+  
+  "payloadStructure": {
+    "messageId": {
+      "type": "string",
+      "format": "uuid-v4",
+      "required": true,
+      "description": "UUID único para deduplicação server-side"
+    },
+    "deviceId": {
+      "type": "string",
+      "required": true,
+      "description": "ID do dispositivo (ex: motorola-001)"
+    },
+    "matricula": {
+      "type": "string",
+      "required": true,
+      "description": "Matrícula do operador"
+    },
+    "timestamp": {
+      "type": "integer",
+      "unit": "milliseconds",
+      "required": true,
+      "description": "Timestamp do app (epoch milliseconds)"
+    },
+    
+    "gps": {
+      "required": true,
+      "fields": {
+        "lat": {
+          "type": "double",
+          "unit": "degrees",
+          "required": true,
+          "description": "Latitude GPS"
+        },
+        "lon": {
+          "type": "double",
+          "unit": "degrees",
+          "required": true,
+          "description": "Longitude GPS"
+        },
+        "alt": {
+          "type": "double",
+          "unit": "meters",
+          "required": true,
+          "description": "Altitude GPS"
+        },
+        "speed": {
+          "type": "float",
+          "unit": "m/s",
+          "required": true,
+          "description": "Velocidade em m/s"
+        },
+        "bearing": {
+          "type": "float",
+          "unit": "degrees",
+          "required": true,
+          "description": "Direção (0-360°)"
+        },
+        "accuracy": {
+          "type": "float",
+          "unit": "meters",
+          "required": true,
+          "description": "Precisão do fix GPS"
+        },
+        "satellites": {
+          "type": "integer",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Número de satélites GPS usados",
+          "nullable": true
+        },
+        "hdop": {
+          "type": "float",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Horizontal Dilution of Precision",
+          "nullable": true
+        },
+        "vdop": {
+          "type": "float",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Vertical Dilution of Precision",
+          "nullable": true
+        },
+        "pdop": {
+          "type": "float",
+          "required": false,
+          "priority": "MEDIUM",
+          "description": "Position Dilution of Precision",
+          "nullable": true
+        },
+        "gpsTimestamp": {
+          "type": "integer",
+          "unit": "milliseconds",
+          "required": false,
+          "priority": "MEDIUM",
+          "description": "Timestamp do fix GPS (não do app)",
+          "nullable": true
+        }
+      }
+    },
+    
+    "imu": {
+      "required": true,
+      "fields": {
+        "accelX": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": true,
+          "description": "Aceleração X"
+        },
+        "accelY": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": true,
+          "description": "Aceleração Y"
+        },
+        "accelZ": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": true,
+          "description": "Aceleração Z"
+        },
+        "gyroX": {
+          "type": "float",
+          "unit": "rad/s",
+          "required": true,
+          "description": "Rotação X"
+        },
+        "gyroY": {
+          "type": "float",
+          "unit": "rad/s",
+          "required": true,
+          "description": "Rotação Y"
+        },
+        "gyroZ": {
+          "type": "float",
+          "unit": "rad/s",
+          "required": true,
+          "description": "Rotação Z"
+        },
+        "magX": {
+          "type": "float",
+          "unit": "μT",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Campo magnético X (magnetômetro)",
+          "nullable": true
+        },
+        "magY": {
+          "type": "float",
+          "unit": "μT",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Campo magnético Y (magnetômetro)",
+          "nullable": true
+        },
+        "magZ": {
+          "type": "float",
+          "unit": "μT",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Campo magnético Z (magnetômetro)",
+          "nullable": true
+        },
+        "pressure": {
+          "type": "float",
+          "unit": "hPa",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Pressão barométrica",
+          "nullable": true
+        },
+        "linearAccelX": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Aceleração linear X (sem gravidade)",
+          "nullable": true
+        },
+        "linearAccelY": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Aceleração linear Y (sem gravidade)",
+          "nullable": true
+        },
+        "linearAccelZ": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Aceleração linear Z (sem gravidade)",
+          "nullable": true
+        },
+        "gravityX": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": false,
+          "priority": "MEDIUM",
+          "description": "Gravidade isolada X",
+          "nullable": true
+        },
+        "gravityY": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": false,
+          "priority": "MEDIUM",
+          "description": "Gravidade isolada Y",
+          "nullable": true
+        },
+        "gravityZ": {
+          "type": "float",
+          "unit": "m/s²",
+          "required": false,
+          "priority": "MEDIUM",
+          "description": "Gravidade isolada Z",
+          "nullable": true
+        }
+      }
+    },
+    
+    "orientation": {
+      "required": false,
+      "nullable": true,
+      "fields": {
+        "azimuth": {
+          "type": "float",
+          "unit": "degrees",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Azimuth (0-360°) - direção do movimento",
+          "nullable": true
+        },
+        "pitch": {
+          "type": "float",
+          "unit": "degrees",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Pitch (-180° a +180°) - inclinação frontal",
+          "nullable": true
+        },
+        "roll": {
+          "type": "float",
+          "unit": "degrees",
+          "required": false,
+          "priority": "CRITICAL",
+          "description": "Roll (-90° a +90°) - inclinação lateral",
+          "nullable": true
+        },
+        "rotationMatrix": {
+          "type": "array",
+          "items": "float",
+          "length": 9,
+          "required": false,
+          "priority": "MEDIUM",
+          "description": "Matriz de rotação 3x3",
+          "nullable": true
+        }
+      }
+    },
+    
+    "system": {
+      "required": false,
+      "nullable": true,
+      "fields": {
+        "battery": {
+          "required": false,
+          "nullable": true,
+          "fields": {
+            "level": {
+              "type": "integer",
+              "unit": "percent",
+              "required": false,
+              "priority": "HIGH",
+              "description": "Nível da bateria (0-100%)",
+              "nullable": true
+            },
+            "temperature": {
+              "type": "float",
+              "unit": "celsius",
+              "required": false,
+              "priority": "MEDIUM",
+              "description": "Temperatura da bateria",
+              "nullable": true
+            },
+            "status": {
+              "type": "string",
+              "required": false,
+              "priority": "HIGH",
+              "description": "Status (CHARGING, DISCHARGING, FULL, etc.)",
+              "nullable": true,
+              "enum": ["CHARGING", "DISCHARGING", "FULL", "NOT_CHARGING", "UNKNOWN"]
+            },
+            "voltage": {
+              "type": "integer",
+              "unit": "millivolts",
+              "required": false,
+              "priority": "LOW",
+              "description": "Voltagem da bateria",
+              "nullable": true
+            }
+          }
+        },
+        "connectivity": {
+          "required": false,
+          "nullable": true,
+          "fields": {
+            "networkType": {
+              "type": "string",
+              "required": false,
+              "priority": "LOW",
+              "description": "Tipo de rede (WIFI, CELLULAR_4G, etc.)",
+              "nullable": true
+            },
+            "signalStrength": {
+              "type": "integer",
+              "unit": "dBm",
+              "required": false,
+              "priority": "LOW",
+              "description": "Força do sinal",
+              "nullable": true
+            },
+            "operator": {
+              "type": "string",
+              "required": false,
+              "priority": "LOW",
+              "description": "Operadora celular",
+              "nullable": true
+            }
+          }
+        }
+      }
+    },
+    
+    "metadata": {
+      "required": false,
+      "nullable": true,
+      "description": "Metadados estáticos (enviar uma vez por sessão)",
+      "fields": {
+        "deviceModel": {
+          "type": "string",
+          "required": false,
+          "description": "Modelo do dispositivo",
+          "nullable": true
+        },
+        "androidVersion": {
+          "type": "string",
+          "required": false,
+          "description": "Versão do Android",
+          "nullable": true
+        },
+        "appVersion": {
+          "type": "string",
+          "required": false,
+          "description": "Versão do app",
+          "nullable": true
+        }
+      }
+    }
+  },
+  
+  "examplePayload": {
+    "messageId": "550e8400-e29b-41d4-a716-446655440000",
+    "deviceId": "motorola-001",
+    "matricula": "OP12345",
+    "timestamp": 1704067200000,
+    "gps": {
+      "lat": -22.906847,
+      "lon": -43.172896,
+      "alt": 15.5,
+      "speed": 8.33,
+      "bearing": 45.0,
+      "accuracy": 5.0,
+      "satellites": 12,
+      "hdop": 1.2,
+      "vdop": 2.1,
+      "pdop": 2.4,
+      "gpsTimestamp": 1704067199500
+    },
+    "imu": {
+      "accelX": 0.5,
+      "accelY": -0.2,
+      "accelZ": 9.8,
+      "gyroX": 0.01,
+      "gyroY": 0.02,
+      "gyroZ": -0.01,
+      "magX": 25.3,
+      "magY": -5.2,
+      "magZ": 42.1,
+      "pressure": 1013.25,
+      "linearAccelX": 0.3,
+      "linearAccelY": -0.1,
+      "linearAccelZ": 0.0,
+      "gravityX": 0.2,
+      "gravityY": -0.1,
+      "gravityZ": 9.8
+    },
+    "orientation": {
+      "azimuth": 45.0,
+      "pitch": 2.5,
+      "roll": -1.2,
+      "rotationMatrix": [0.707, -0.707, 0.0, 0.707, 0.707, 0.0, 0.0, 0.0, 1.0]
+    },
+    "system": {
+      "battery": {
+        "level": 85,
+        "temperature": 28.5,
+        "status": "DISCHARGING",
+        "voltage": 4200
+      },
+      "connectivity": {
+        "networkType": "CELLULAR_4G",
+        "signalStrength": -85,
+        "operator": "VIVO"
+      }
+    },
+    "metadata": {
+      "deviceModel": "motorola g34",
+      "androidVersion": "13",
+      "appVersion": "1.0.0"
+    }
+  },
+  
+  "sizeEstimates": {
+    "currentPayload": {
+      "bytes": 200,
+      "description": "Payload atual (GPS básico + IMU básico)"
+    },
+    "expandedPayloadCritical": {
+      "bytes": 400,
+      "description": "Payload expandido com campos críticos"
+    },
+    "expandedPayloadFull": {
+      "bytes": 600,
+      "description": "Payload completo (crítico + opcional)"
+    }
+  },
+  
+  "backwardCompatibility": {
+    "note": "Todos os campos novos são opcionais (nullable) para manter compatibilidade",
+    "oldClients": "Clientes antigos continuarão funcionando normalmente",
+    "newClients": "Clientes novos podem usar campos adicionais quando disponíveis"
+  }
+}
+

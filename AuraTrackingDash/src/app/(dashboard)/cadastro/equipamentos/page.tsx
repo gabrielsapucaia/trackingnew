@@ -48,13 +48,15 @@ interface EquipmentType {
   description?: string
 }
 
+type SortColumn = keyof Equipamento | "typeName"
+
 export default function EquipamentosPage() {
   const [equipamentos, setEquipamentos] = useState<Equipamento[]>([])
   const [equipmentTypes, setEquipmentTypes] = useState<EquipmentType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updatingEquipamentos, setUpdatingEquipamentos] = useState<Set<number>>(new Set())
-  const [sortColumn, setSortColumn] = useState<keyof Equipamento | null>(null)
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingEquipamento, setEditingEquipamento] = useState<Equipamento | null>(null)
@@ -131,7 +133,7 @@ export default function EquipamentosPage() {
     }
   }
 
-  const handleSort = (column: keyof Equipamento) => {
+  const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
     } else {
@@ -144,8 +146,8 @@ export default function EquipamentosPage() {
     if (!sortColumn) return equipamentos
 
     return [...equipamentos].sort((a, b) => {
-      const aValue = a[sortColumn]
-      const bValue = b[sortColumn]
+      const aValue = sortColumn === "typeName" ? a.equipment_types?.name : (a as any)[sortColumn]
+      const bValue = sortColumn === "typeName" ? b.equipment_types?.name : (b as any)[sortColumn]
 
       if (!aValue && !bValue) return 0
       if (!aValue) return 1
@@ -162,7 +164,7 @@ export default function EquipamentosPage() {
     })
   }
 
-  const getSortIcon = (column: keyof Equipamento) => {
+  const getSortIcon = (column: SortColumn) => {
     if (sortColumn !== column) {
       return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
     }
@@ -171,7 +173,7 @@ export default function EquipamentosPage() {
       : <ArrowDown className="h-4 w-4 text-primary" />
   }
 
-  const getSortableHeader = (column: keyof Equipamento, label: string) => (
+  const getSortableHeader = (column: SortColumn, label: string) => (
     <th 
       className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80 transition-colors select-none"
       onClick={() => handleSort(column)}
@@ -491,7 +493,7 @@ export default function EquipamentosPage() {
                 <tr>
                   {getSortableHeader('status', 'Status')}
                   {getSortableHeader('tag', 'Tag')}
-                  {getSortableHeader('equipment_types.name', 'Tipo')}
+                  {getSortableHeader('typeName', 'Tipo')}
                   {getSortableHeader('location', 'Localização')}
                   {getSortableHeader('created_at', 'Data de Criação')}
                   {getSortableHeader('updated_at', 'Data de Modificação')}

@@ -22,6 +22,9 @@ import com.aura.tracking.sensors.gps.GpsData
 import com.aura.tracking.sensors.gps.GpsLocationProvider
 import com.aura.tracking.sensors.imu.ImuData
 import com.aura.tracking.sensors.imu.ImuSensorProvider
+import com.aura.tracking.sensors.orientation.OrientationProvider
+import com.aura.tracking.sensors.system.SystemDataProvider
+import com.aura.tracking.sensors.motion.MotionDetectorProvider
 import com.aura.tracking.ui.dashboard.DashboardActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -97,6 +100,9 @@ class TrackingForegroundService : Service() {
     // Componentes
     private var gpsProvider: GpsLocationProvider? = null
     private var imuProvider: ImuSensorProvider? = null
+    private var orientationProvider: OrientationProvider? = null
+    private var systemDataProvider: SystemDataProvider? = null
+    private var motionDetectorProvider: MotionDetectorProvider? = null
     private var mqttClient: MqttClientManager? = null
     private var telemetryAggregator: TelemetryAggregator? = null
     private var wakeLock: PowerManager.WakeLock? = null
@@ -131,6 +137,9 @@ class TrackingForegroundService : Service() {
         // Inicializa providers
         gpsProvider = GpsLocationProvider(this)
         imuProvider = ImuSensorProvider(this)
+        orientationProvider = OrientationProvider(this)
+        systemDataProvider = SystemDataProvider(this)
+        // REMOVIDO: motionDetectorProvider = MotionDetectorProvider(this)  // Sensores não disponíveis no dispositivo
         mqttClient = MqttClientManager(this)
     }
 
@@ -518,11 +527,29 @@ class TrackingForegroundService : Service() {
             telemetryAggregator?.updateImu(imuData)
         }
 
+        // Configura callbacks Orientation
+        orientationProvider?.onOrientationDataUpdate = { orientationData ->
+            telemetryAggregator?.updateOrientation(orientationData)
+        }
+
+        // Configura callbacks System
+        systemDataProvider?.onSystemDataUpdate = { systemData ->
+            telemetryAggregator?.updateSystemData(systemData)
+        }
+
+        // REMOVIDO: Configura callbacks Motion Detection - sensores não disponíveis no dispositivo
+        // motionDetectorProvider?.onMotionDetected = { motionData ->
+        //     telemetryAggregator?.updateMotionDetection(motionData)
+        // }
+
         // Inicia sensores a 1Hz
         gpsProvider?.startLocationUpdates(1000) // 1Hz
         imuProvider?.startSensorUpdates() // 1Hz averaged output
+        orientationProvider?.startOrientationUpdates() // 1Hz
+        systemDataProvider?.startSystemUpdates() // 1Hz
+        // REMOVIDO: motionDetectorProvider?.startMotionDetection() // Event-based - sensores não disponíveis
 
-        AuraLog.Service.i("Telemetry collection started: GPS 1Hz, IMU 1Hz")
+        AuraLog.Service.i("Telemetry collection started: GPS 1Hz, IMU 1Hz, Orientation 1Hz, System 1Hz")
     }
 
     /**
@@ -579,10 +606,16 @@ class TrackingForegroundService : Service() {
         
         gpsProvider?.stopLocationUpdates()
         imuProvider?.stopSensorUpdates()
+        orientationProvider?.stopOrientationUpdates()
+        systemDataProvider?.stopSystemUpdates()
+        // REMOVIDO: motionDetectorProvider?.stopMotionDetection()  // Sensores não disponíveis
         mqttClient?.disconnect()
 
         gpsProvider = null
         imuProvider = null
+        orientationProvider = null
+        systemDataProvider = null
+        // REMOVIDO: motionDetectorProvider = null  // Sensores não disponíveis
         mqttClient = null
         telemetryAggregator = null
     }

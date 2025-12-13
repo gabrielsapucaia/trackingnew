@@ -100,6 +100,15 @@ class GpsData(BaseModel):
     speed: Optional[float] = Field(None, ge=0)  # m/s
     bearing: Optional[float] = Field(None, ge=0, le=360)
     accuracy: Optional[float] = Field(None, ge=0)
+    # Campos detalhados (opcionais)
+    satellites: Optional[int] = Field(None, ge=0)
+    hAcc: Optional[float] = Field(None, ge=0)
+    vAcc: Optional[float] = Field(None, ge=0)
+    sAcc: Optional[float] = Field(None, ge=0)
+    hdop: Optional[float] = Field(None, ge=0)
+    vdop: Optional[float] = Field(None, ge=0)
+    pdop: Optional[float] = Field(None, ge=0)
+    gpsTimestamp: Optional[int] = Field(None, gt=0)
     
     @property
     def lat_value(self) -> Optional[float]:
@@ -127,6 +136,108 @@ class ImuData(BaseModel):
     gyroX: Optional[float] = 0.0
     gyroY: Optional[float] = 0.0
     gyroZ: Optional[float] = 0.0
+    # Magnitudes (opcionais)
+    accelMagnitude: Optional[float] = None
+    gyroMagnitude: Optional[float] = None
+    # Magnetômetro (opcional)
+    magX: Optional[float] = None
+    magY: Optional[float] = None
+    magZ: Optional[float] = None
+    magMagnitude: Optional[float] = None
+    # Aceleração Linear (opcional)
+    linearAccelX: Optional[float] = None
+    linearAccelY: Optional[float] = None
+    linearAccelZ: Optional[float] = None
+    linearAccelMagnitude: Optional[float] = None
+    # Gravidade (opcional)
+    gravityX: Optional[float] = None
+    gravityY: Optional[float] = None
+    gravityZ: Optional[float] = None
+    # Rotação Vetorial (opcional)
+    rotationVectorX: Optional[float] = None
+    rotationVectorY: Optional[float] = None
+    rotationVectorZ: Optional[float] = None
+    rotationVectorW: Optional[float] = None
+
+
+class OrientationData(BaseModel):
+    """Dados de orientação do dispositivo."""
+    azimuth: float = Field(..., ge=0, le=360)
+    pitch: float = Field(..., ge=-180, le=180)
+    roll: float = Field(..., ge=-90, le=90)
+    rotationMatrix: Optional[list[float]] = None
+
+
+class BatteryData(BaseModel):
+    """Dados de bateria."""
+    level: int = Field(..., ge=0, le=100)
+    temperature: Optional[float] = None
+    status: str
+    voltage: Optional[int] = None
+    health: Optional[str] = None
+    technology: Optional[str] = None
+    chargeCounter: Optional[int] = None
+    fullCapacity: Optional[int] = None
+
+
+class WifiData(BaseModel):
+    """Dados WiFi."""
+    rssi: Optional[int] = None
+    ssid: Optional[str] = None
+    bssid: Optional[str] = None
+    frequency: Optional[int] = None
+    channel: Optional[int] = None
+
+
+class SignalStrengthData(BaseModel):
+    """Dados de força do sinal celular."""
+    rsrp: Optional[int] = None
+    rsrq: Optional[int] = None
+    rssnr: Optional[int] = None
+    rssi: Optional[int] = None
+    level: Optional[int] = Field(None, ge=0, le=4)
+
+
+class CellInfoData(BaseModel):
+    """Informações de célula celular."""
+    ci: Optional[int] = None
+    pci: Optional[int] = None
+    tac: Optional[int] = None
+    earfcn: Optional[int] = None
+    band: Optional[list[int]] = None
+    bandwidth: Optional[int] = None
+
+
+class CellularData(BaseModel):
+    """Dados celulares."""
+    networkType: Optional[str] = None
+    operator: Optional[str] = None
+    signalStrength: Optional[SignalStrengthData] = None
+    cellInfo: Optional[CellInfoData] = None
+
+
+class ConnectivityData(BaseModel):
+    """Dados de conectividade."""
+    wifi: Optional[WifiData] = None
+    cellular: Optional[CellularData] = None
+
+
+class SystemData(BaseModel):
+    """Dados de sistema."""
+    battery: Optional[BatteryData] = None
+    connectivity: Optional[ConnectivityData] = None
+
+
+# REMOVIDO: Campos de Motion Detection removidos porque sensores não disponíveis no dispositivo Moto G34 5G
+# class MotionDetectionData(BaseModel):
+#     """Dados de detecção de movimento."""
+#     significantMotion: Optional[bool] = None
+#     stationaryDetect: Optional[bool] = None
+#     motionDetect: Optional[bool] = None
+#     flatUp: Optional[bool] = None
+#     flatDown: Optional[bool] = None
+#     stowed: Optional[bool] = None
+#     displayRotate: Optional[int] = None
 
 
 class TelemetryPacket(BaseModel):
@@ -139,9 +250,19 @@ class TelemetryPacket(BaseModel):
     messageId: Optional[str] = Field(None, min_length=1, max_length=100)  # UUID para deduplicação
     deviceId: str = Field(..., min_length=1, max_length=100)
     operatorId: Optional[str] = None
+    matricula: Optional[str] = None  # Alias para operatorId
     timestamp: int = Field(..., gt=0)  # Unix ms
+    transmissionMode: Optional[str] = Field("online", pattern="^(online|queued)$")  # Flag de transmissão
     gps: Optional[GpsData] = None
     imu: Optional[ImuData] = None
+    orientation: Optional[OrientationData] = None
+    system: Optional[SystemData] = None
+    # motion: Optional[MotionDetectionData] = None  # REMOVIDO: Sensores não disponíveis no dispositivo
+    
+    @property
+    def operator_id_value(self) -> Optional[str]:
+        """Retorna operatorId (aceita matricula como fallback)."""
+        return self.operatorId if self.operatorId else self.matricula
 
 
 class EventPacket(BaseModel):
@@ -358,12 +479,48 @@ class DatabasePool:
             INSERT INTO telemetry (
                 time, device_id, operator_id, message_id,
                 latitude, longitude, altitude, speed, bearing, gps_accuracy,
+                satellites, h_acc, v_acc, s_acc, hdop, vdop, pdop, gps_timestamp,
                 accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
+                accel_magnitude,
+                gyro_magnitude,
+                mag_x, mag_y, mag_z, mag_magnitude,
+                linear_accel_x, linear_accel_y, linear_accel_z, linear_accel_magnitude,
+                gravity_x, gravity_y, gravity_z,
+                rotation_vector_x, rotation_vector_y, rotation_vector_z, rotation_vector_w,
+                azimuth, pitch, roll,
+                battery_level, battery_temperature, battery_status, battery_voltage,
+                battery_health, battery_technology,
+                wifi_rssi, wifi_ssid,
+                wifi_bssid, wifi_frequency, wifi_channel,
+                cellular_network_type, cellular_operator, cellular_rsrp, cellular_rsrq, cellular_rssnr,
+                cellular_ci, cellular_pci, cellular_tac, cellular_earfcn, cellular_band, cellular_bandwidth,
+                battery_charge_counter, battery_full_capacity,
+                -- REMOVIDO: motion_significant_motion, motion_stationary_detect, motion_motion_detect,
+                -- motion_flat_up, motion_flat_down, motion_stowed, motion_display_rotate,
+                transmission_mode,
                 topic, received_at, raw_payload
             ) VALUES (
                 %(time)s, %(device_id)s, %(operator_id)s, %(message_id)s,
                 %(latitude)s, %(longitude)s, %(altitude)s, %(speed)s, %(bearing)s, %(gps_accuracy)s,
+                %(satellites)s, %(h_acc)s, %(v_acc)s, %(s_acc)s, %(hdop)s, %(vdop)s, %(pdop)s, %(gps_timestamp)s,
                 %(accel_x)s, %(accel_y)s, %(accel_z)s, %(gyro_x)s, %(gyro_y)s, %(gyro_z)s,
+                %(accel_magnitude)s,
+                %(gyro_magnitude)s,
+                %(mag_x)s, %(mag_y)s, %(mag_z)s, %(mag_magnitude)s,
+                %(linear_accel_x)s, %(linear_accel_y)s, %(linear_accel_z)s, %(linear_accel_magnitude)s,
+                %(gravity_x)s, %(gravity_y)s, %(gravity_z)s,
+                %(rotation_vector_x)s, %(rotation_vector_y)s, %(rotation_vector_z)s, %(rotation_vector_w)s,
+                %(azimuth)s, %(pitch)s, %(roll)s,
+                %(battery_level)s, %(battery_temperature)s, %(battery_status)s, %(battery_voltage)s,
+                %(battery_health)s, %(battery_technology)s,
+                %(wifi_rssi)s, %(wifi_ssid)s,
+                %(wifi_bssid)s, %(wifi_frequency)s, %(wifi_channel)s,
+                %(cellular_network_type)s, %(cellular_operator)s, %(cellular_rsrp)s, %(cellular_rsrq)s, %(cellular_rssnr)s,
+                %(cellular_ci)s, %(cellular_pci)s, %(cellular_tac)s, %(cellular_earfcn)s, %(cellular_band)s, %(cellular_bandwidth)s,
+                %(battery_charge_counter)s, %(battery_full_capacity)s,
+                -- REMOVIDO: %(motion_significant_motion)s, %(motion_stationary_detect)s, %(motion_motion_detect)s,
+                -- %(motion_flat_up)s, %(motion_flat_down)s, %(motion_stowed)s, %(motion_display_rotate)s,
+                %(transmission_mode)s,
                 %(topic)s, %(received_at)s, %(raw_payload)s
             )
             ON CONFLICT (time, device_id) DO NOTHING
@@ -510,6 +667,108 @@ class IngestWorker:
         else:
             self._handle_telemetry(topic, data, payload)
     
+    def _convert_packet_to_record(self, packet: TelemetryPacket, topic: str, raw_payload: str) -> dict:
+        """Converte TelemetryPacket para registro do banco."""
+        return {
+            "time": datetime.fromtimestamp(packet.timestamp / 1000, tz=timezone.utc),
+            "device_id": packet.deviceId,
+            "operator_id": packet.operator_id_value,
+            "message_id": packet.messageId,
+            # GPS básico
+            "latitude": packet.gps.lat_value if packet.gps else None,
+            "longitude": packet.gps.lon_value if packet.gps else None,
+            "altitude": packet.gps.alt_value if packet.gps else None,
+            "speed": packet.gps.speed if packet.gps else None,
+            "bearing": packet.gps.bearing if packet.gps else None,
+            "gps_accuracy": packet.gps.accuracy if packet.gps else None,
+            # GPS detalhado
+            "satellites": packet.gps.satellites if packet.gps else None,
+            "h_acc": packet.gps.hAcc if packet.gps else None,
+            "v_acc": packet.gps.vAcc if packet.gps else None,
+            "s_acc": packet.gps.sAcc if packet.gps else None,
+            "hdop": packet.gps.hdop if packet.gps else None,
+            "vdop": packet.gps.vdop if packet.gps else None,
+            "pdop": packet.gps.pdop if packet.gps else None,
+            "gps_timestamp": packet.gps.gpsTimestamp if packet.gps else None,
+            # IMU básico
+            "accel_x": packet.imu.accelX if packet.imu else None,
+            "accel_y": packet.imu.accelY if packet.imu else None,
+            "accel_z": packet.imu.accelZ if packet.imu else None,
+            "gyro_x": packet.imu.gyroX if packet.imu else None,
+            "gyro_y": packet.imu.gyroY if packet.imu else None,
+            "gyro_z": packet.imu.gyroZ if packet.imu else None,
+            # Magnitudes
+            "accel_magnitude": packet.imu.accelMagnitude if packet.imu else None,
+            "gyro_magnitude": packet.imu.gyroMagnitude if packet.imu else None,
+            # Magnetômetro
+            "mag_x": packet.imu.magX if packet.imu else None,
+            "mag_y": packet.imu.magY if packet.imu else None,
+            "mag_z": packet.imu.magZ if packet.imu else None,
+            "mag_magnitude": packet.imu.magMagnitude if packet.imu else None,
+            # Aceleração Linear
+            "linear_accel_x": packet.imu.linearAccelX if packet.imu else None,
+            "linear_accel_y": packet.imu.linearAccelY if packet.imu else None,
+            "linear_accel_z": packet.imu.linearAccelZ if packet.imu else None,
+            "linear_accel_magnitude": packet.imu.linearAccelMagnitude if packet.imu else None,
+            # Gravidade
+            "gravity_x": packet.imu.gravityX if packet.imu else None,
+            "gravity_y": packet.imu.gravityY if packet.imu else None,
+            "gravity_z": packet.imu.gravityZ if packet.imu else None,
+            # Rotação Vetorial
+            "rotation_vector_x": packet.imu.rotationVectorX if packet.imu else None,
+            "rotation_vector_y": packet.imu.rotationVectorY if packet.imu else None,
+            "rotation_vector_z": packet.imu.rotationVectorZ if packet.imu else None,
+            "rotation_vector_w": packet.imu.rotationVectorW if packet.imu else None,
+            # Orientação
+            "azimuth": packet.orientation.azimuth if packet.orientation else None,
+            "pitch": packet.orientation.pitch if packet.orientation else None,
+            "roll": packet.orientation.roll if packet.orientation else None,
+            # Sistema - Bateria
+            "battery_level": packet.system.battery.level if packet.system and packet.system.battery else None,
+            "battery_temperature": packet.system.battery.temperature if packet.system and packet.system.battery else None,
+            "battery_status": packet.system.battery.status if packet.system and packet.system.battery else None,
+            "battery_voltage": packet.system.battery.voltage if packet.system and packet.system.battery else None,
+            "battery_health": packet.system.battery.health if packet.system and packet.system.battery else None,
+            "battery_technology": packet.system.battery.technology if packet.system and packet.system.battery else None,
+            # Sistema - Conectividade WiFi
+            "wifi_rssi": packet.system.connectivity.wifi.rssi if packet.system and packet.system.connectivity and packet.system.connectivity.wifi else None,
+            "wifi_ssid": packet.system.connectivity.wifi.ssid if packet.system and packet.system.connectivity and packet.system.connectivity.wifi else None,
+            # Sistema - Conectividade Celular
+            "cellular_network_type": packet.system.connectivity.cellular.networkType if packet.system and packet.system.connectivity and packet.system.connectivity.cellular else None,
+            "cellular_operator": packet.system.connectivity.cellular.operator if packet.system and packet.system.connectivity and packet.system.connectivity.cellular else None,
+            "cellular_rsrp": packet.system.connectivity.cellular.signalStrength.rsrp if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.signalStrength else None,
+            "cellular_rsrq": packet.system.connectivity.cellular.signalStrength.rsrq if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.signalStrength else None,
+            "cellular_rssnr": packet.system.connectivity.cellular.signalStrength.rssnr if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.signalStrength else None,
+            # WiFi adicional
+            "wifi_bssid": packet.system.connectivity.wifi.bssid if packet.system and packet.system.connectivity and packet.system.connectivity.wifi else None,
+            "wifi_frequency": packet.system.connectivity.wifi.frequency if packet.system and packet.system.connectivity and packet.system.connectivity.wifi else None,
+            "wifi_channel": packet.system.connectivity.wifi.channel if packet.system and packet.system.connectivity and packet.system.connectivity.wifi else None,
+            # CellInfo
+            "cellular_ci": packet.system.connectivity.cellular.cellInfo.ci if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.cellInfo else None,
+            "cellular_pci": packet.system.connectivity.cellular.cellInfo.pci if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.cellInfo else None,
+            "cellular_tac": packet.system.connectivity.cellular.cellInfo.tac if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.cellInfo else None,
+            "cellular_earfcn": packet.system.connectivity.cellular.cellInfo.earfcn if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.cellInfo else None,
+            "cellular_band": packet.system.connectivity.cellular.cellInfo.band if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.cellInfo else None,
+            "cellular_bandwidth": packet.system.connectivity.cellular.cellInfo.bandwidth if packet.system and packet.system.connectivity and packet.system.connectivity.cellular and packet.system.connectivity.cellular.cellInfo else None,
+            # Bateria adicional
+            "battery_charge_counter": packet.system.battery.chargeCounter if packet.system and packet.system.battery else None,
+            "battery_full_capacity": packet.system.battery.fullCapacity if packet.system and packet.system.battery else None,
+            # REMOVIDO: Motion Detection - sensores não disponíveis no dispositivo
+            # "motion_significant_motion": packet.motion.significantMotion if packet.motion else None,
+            # "motion_stationary_detect": packet.motion.stationaryDetect if packet.motion else None,
+            # "motion_motion_detect": packet.motion.motionDetect if packet.motion else None,
+            # "motion_flat_up": packet.motion.flatUp if packet.motion else None,
+            # "motion_flat_down": packet.motion.flatDown if packet.motion else None,
+            # "motion_stowed": packet.motion.stowed if packet.motion else None,
+            # "motion_display_rotate": packet.motion.displayRotate if packet.motion else None,
+            # Flag de transmissão
+            "transmission_mode": packet.transmissionMode or "online",
+            # Metadados
+            "topic": topic,
+            "received_at": datetime.now(timezone.utc),
+            "raw_payload": raw_payload if isinstance(raw_payload, str) else json.dumps(raw_payload)
+        }
+    
     def _handle_telemetry(self, topic: str, data: dict, raw_payload: str):
         """Processa pacote de telemetria."""
         try:
@@ -519,30 +778,8 @@ class IngestWorker:
             self.stats["messages_failed"] += 1
             return
         
-        # Converter para registro do banco
-        # Usa lat_value/lon_value/alt_value para aceitar ambos os formatos
-        # FASE 3: Inclui message_id para rastreabilidade
-        record = {
-            "time": datetime.fromtimestamp(packet.timestamp / 1000, tz=timezone.utc),
-            "device_id": packet.deviceId,
-            "operator_id": packet.operatorId,
-            "message_id": packet.messageId,  # UUID do Android para rastreabilidade
-            "latitude": packet.gps.lat_value if packet.gps else None,
-            "longitude": packet.gps.lon_value if packet.gps else None,
-            "altitude": packet.gps.alt_value if packet.gps else None,
-            "speed": packet.gps.speed if packet.gps else None,
-            "bearing": packet.gps.bearing if packet.gps else None,
-            "gps_accuracy": packet.gps.accuracy if packet.gps else None,
-            "accel_x": packet.imu.accelX if packet.imu else None,
-            "accel_y": packet.imu.accelY if packet.imu else None,
-            "accel_z": packet.imu.accelZ if packet.imu else None,
-            "gyro_x": packet.imu.gyroX if packet.imu else None,
-            "gyro_y": packet.imu.gyroY if packet.imu else None,
-            "gyro_z": packet.imu.gyroZ if packet.imu else None,
-            "topic": topic,
-            "received_at": datetime.now(timezone.utc),
-            "raw_payload": json.dumps(data)
-        }
+        # Converter para registro do banco usando método auxiliar
+        record = self._convert_packet_to_record(packet, topic, json.dumps(data))
         
         # Adicionar ao buffer
         self.batch_buffer.append(record)
@@ -626,28 +863,9 @@ class IngestWorker:
                 data = json.loads(payload)
                 packet = TelemetryPacket(**data)
                 
-                # FASE 3: Inclui message_id para rastreabilidade
-                record = {
-                    "time": datetime.fromtimestamp(packet.timestamp / 1000, tz=timezone.utc),
-                    "device_id": packet.deviceId,
-                    "operator_id": packet.operatorId,
-                    "message_id": packet.messageId,  # UUID do Android
-                    "latitude": packet.gps.lat_value if packet.gps else None,
-                    "longitude": packet.gps.lon_value if packet.gps else None,
-                    "altitude": packet.gps.alt_value if packet.gps else None,
-                    "speed": packet.gps.speed if packet.gps else None,
-                    "bearing": packet.gps.bearing if packet.gps else None,
-                    "gps_accuracy": packet.gps.accuracy if packet.gps else None,
-                    "accel_x": packet.imu.accelX if packet.imu else None,
-                    "accel_y": packet.imu.accelY if packet.imu else None,
-                    "accel_z": packet.imu.accelZ if packet.imu else None,
-                    "gyro_x": packet.imu.gyroX if packet.imu else None,
-                    "gyro_y": packet.imu.gyroY if packet.imu else None,
-                    "gyro_z": packet.imu.gyroZ if packet.imu else None,
-                    "topic": topic,
-                    "received_at": datetime.now(timezone.utc),
-                    "raw_payload": payload
-                }
+                # Usa o mesmo método de conversão que _handle_telemetry
+                # (reutiliza a lógica de conversão)
+                record = self._convert_packet_to_record(packet, topic, payload)
                 records.append(record)
             except Exception as e:
                 self.logger.warning("offline_record_invalid", error=str(e))
@@ -927,6 +1145,113 @@ def create_health_app(worker: IngestWorker) -> FastAPI:
             cursor.close()
             return {"devices": devices, "count": len(devices)}
             
+        except Exception as e:
+            return {"error": str(e)}, 500
+    
+    @app.get("/api/history")
+    async def get_history(
+        device_id: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        limit: int = 20000,
+    ):
+        """
+        Busca pontos históricos de telemetria (raw).
+        Filtros:
+        - device_id opcional (se omitido, traz todos)
+        - start/end ISO (padrão: última hora)
+        - limit (padrão 20k)
+        """
+        try:
+            conn = worker.db.get_connection()
+            if not conn:
+                return {"error": "Database not connected"}, 503
+
+            # Parse dates
+            if start:
+                start_dt = datetime.fromisoformat(start.replace("Z", "+00:00"))
+            else:
+                start_dt = datetime.now(timezone.utc) - timedelta(hours=1)
+
+            if end:
+                end_dt = datetime.fromisoformat(end.replace("Z", "+00:00"))
+            else:
+                end_dt = datetime.now(timezone.utc)
+
+            cursor = conn.cursor()
+            query = """
+                SELECT 
+                    time, device_id, operator_id,
+                    latitude, longitude, speed_kmh,
+                    satellites, h_acc, v_acc, s_acc,
+                    accel_magnitude, gyro_magnitude,
+                    mag_x, mag_y, mag_z, mag_magnitude,
+                    linear_accel_magnitude,
+                    azimuth, pitch, roll,
+                    battery_level, battery_status, battery_temperature,
+                    wifi_rssi, cellular_network_type, cellular_operator, cellular_rsrp,
+                    transmission_mode
+                FROM telemetry
+                WHERE time >= %s AND time <= %s
+                  AND latitude IS NOT NULL AND longitude IS NOT NULL
+            """
+            params = [start_dt, end_dt]
+
+            if device_id:
+                query += " AND device_id = %s"
+                params.append(device_id)
+
+            query += " ORDER BY time ASC LIMIT %s"
+            params.append(limit)
+
+            cursor.execute(query, params)
+            points = []
+            for row in cursor.fetchall():
+                points.append(
+                    {
+                        "ts": row[0].isoformat() if row[0] else None,
+                        "device_id": row[1],
+                        "operator_id": row[2],
+                        "lat": float(row[3]) if row[3] is not None else None,
+                        "lon": float(row[4]) if row[4] is not None else None,
+                        "speed_kmh": float(row[5]) if row[5] is not None else None,
+                        # GPS detalhado
+                        "satellites": int(row[6]) if row[6] is not None else None,
+                        "h_acc": float(row[7]) if row[7] is not None else None,
+                        "v_acc": float(row[8]) if row[8] is not None else None,
+                        "s_acc": float(row[9]) if row[9] is not None else None,
+                        # IMU expandido
+                        "accel_magnitude": float(row[10]) if row[10] is not None else None,
+                        "gyro_magnitude": float(row[11]) if row[11] is not None else None,
+                        "mag_x": float(row[12]) if row[12] is not None else None,
+                        "mag_y": float(row[13]) if row[13] is not None else None,
+                        "mag_z": float(row[14]) if row[14] is not None else None,
+                        "mag_magnitude": float(row[15]) if row[15] is not None else None,
+                        "linear_accel_magnitude": float(row[16]) if row[16] is not None else None,
+                        # Orientação
+                        "azimuth": float(row[17]) if row[17] is not None else None,
+                        "pitch": float(row[18]) if row[18] is not None else None,
+                        "roll": float(row[19]) if row[19] is not None else None,
+                        # Sistema
+                        "battery_level": int(row[20]) if row[20] is not None else None,
+                        "battery_status": row[21] if row[21] else None,
+                        "battery_temperature": float(row[22]) if row[22] is not None else None,
+                        "wifi_rssi": int(row[23]) if row[23] is not None else None,
+                        "cellular_network_type": row[24] if row[24] else None,
+                        "cellular_operator": row[25] if row[25] else None,
+                        "cellular_rsrp": int(row[26]) if row[26] is not None else None,
+                        # Flag de transmissão
+                        "transmission_mode": row[27] if row[27] else "online",
+                    }
+                )
+            cursor.close()
+            return {
+                "count": len(points),
+                "device_id": device_id,
+                "start": start_dt.isoformat(),
+                "end": end_dt.isoformat(),
+                "points": points,
+            }
         except Exception as e:
             return {"error": str(e)}, 500
     

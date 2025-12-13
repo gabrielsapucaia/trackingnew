@@ -235,3 +235,8 @@ dmypy.json
 *.tif
 *.tiff
 *.webp
+
+# Large backup files
+*.sql
+!**/init/*.sql
+!**/migrations/*.sql

@@ -395,6 +395,30 @@ class GpsLocationProvider(private val context: Context) {
         intervalSinceLastFixMs: Long = 0L,
         temporalQuality: String = "normal"
     ): GpsData {
+        // Extrair dados detalhados do Location
+        val extras = extras
+        
+        // Satélites
+        val satellites = extras?.getInt("satellites")?.takeIf { it > 0 }
+        
+        // Precisões (disponíveis diretamente no Location no Android 8.0+)
+        val hAcc = extras?.getFloat("horizontalAccuracy")?.takeIf { it > 0 }
+            ?: extras?.getFloat("hAcc")?.takeIf { it > 0 }
+        
+        val vAcc = extras?.getFloat("verticalAccuracy")?.takeIf { it > 0 }
+            ?: extras?.getFloat("vAcc")?.takeIf { it > 0 }
+        
+        val sAcc = extras?.getFloat("speedAccuracy")?.takeIf { it > 0 }
+            ?: extras?.getFloat("sAcc")?.takeIf { it > 0 }
+        
+        // DOP (Dilution of Precision) - pode não estar disponível
+        val hdop = extras?.getFloat("hdop")?.takeIf { it > 0 }
+        val vdop = extras?.getFloat("vdop")?.takeIf { it > 0 }
+        val pdop = extras?.getFloat("pdop")?.takeIf { it > 0 }
+        
+        // Timestamp do fix GPS
+        val gpsTimestamp = time.takeIf { it > 0 }
+        
         return GpsData(
             latitude = latitude,
             longitude = longitude,
@@ -405,7 +429,15 @@ class GpsLocationProvider(private val context: Context) {
             timestamp = time,
             ageMs = ageMs,
             intervalSinceLastFixMs = intervalSinceLastFixMs,
-            temporalQuality = temporalQuality
+            temporalQuality = temporalQuality,
+            satellites = satellites,
+            hAcc = hAcc,
+            vAcc = vAcc,
+            sAcc = sAcc,
+            hdop = hdop,
+            vdop = vdop,
+            pdop = pdop,
+            gpsTimestamp = gpsTimestamp
         )
     }
 

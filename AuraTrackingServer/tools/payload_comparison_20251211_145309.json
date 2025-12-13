@@ -1,0 +1,70 @@
+{
+  "samples": 5,
+  "timestamp": "2025-12-11 14:52:27",
+  "sections": {
+    "system_wifi": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 5
+    },
+    "orientation": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 3
+    },
+    "system_battery": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 8
+    },
+    "imu": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 23
+    },
+    "system_cellular_cellinfo": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 6
+    },
+    "motion": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 7
+    },
+    "system_cellular_signal": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 5
+    },
+    "gps": {
+      "found": 0,
+      "missing": 0,
+      "coverage": 0.0,
+      "missing_fields": [],
+      "found_fields": [],
+      "expected": 14
+    }
+  }
+}

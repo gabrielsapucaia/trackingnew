@@ -1,0 +1,62 @@
+{
+  "timestamp": "2025-12-11 15:23:02",
+  "sections": {
+    "system_cellular": {
+      "band": true,
+      "rsrp": true,
+      "bandwidth": true,
+      "rsrq": true,
+      "earfcn": true,
+      "networkType": false,
+      "operator": true,
+      "rssnr": false,
+      "tac": true
+    },
+    "gps": {
+      "gpsTimestamp": true,
+      "hAcc": false,
+      "vdop": false,
+      "satellites": false,
+      "sAcc": false,
+      "vAcc": false,
+      "pdop": false,
+      "hdop": false
+    },
+    "imu": {
+      "rotationVectorX": true,
+      "gravityY": true,
+      "linearAccelZ": true,
+      "magZ": true,
+      "gravityZ": true,
+      "linearAccelX": true,
+      "rotationVectorY": true,
+      "rotationVectorZ": true,
+      "magY": true,
+      "rotationVectorW": true,
+      "magMagnitude": true,
+      "linearAccelMagnitude": true,
+      "linearAccelY": true,
+      "gravityX": true,
+      "magX": true
+    },
+    "orientation": {
+      "pitch": true,
+      "roll": true
+    },
+    "system_battery": {
+      "level": true,
+      "temperature": true,
+      "technology": true,
+      "voltage": true,
+      "health": true,
+      "status": true
+    },
+    "motion": {},
+    "system_wifi": {
+      "rssi": true,
+      "channel": true,
+      "ssid": true
+    }
+  },
+  "samples": 3
+}

@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-12-11 15:38:54",
+  "device": "ZF524XRLK3\tdevice",
+  "sensors": {
+    "TYPE_ROTATION_VECTOR": {
+      "name": "Rotação Vetorial",
+      "available": false
+    },
+    "TYPE_MAGNETIC_FIELD": {
+      "name": "Magnetômetro",
+      "available": false
+    },
+    "TYPE_GRAVITY": {
+      "name": "Gravidade",
+      "available": false
+    },
+    "TYPE_GYROSCOPE": {
+      "name": "Giroscópio",
+      "available": false
+    },
+    "TYPE_ACCELEROMETER": {
+      "name": "Acelerômetro",
+      "available": false
+    },
+    "TYPE_LINEAR_ACCELERATION": {
+      "name": "Aceleração Linear",
+      "available": false
+    },
+    "TYPE_STATIONARY_DETECT": {
+      "name": "Detecção Estacionária",
+      "available": false
+    },
+    "TYPE_MOTION_DETECT": {
+      "name": "Detecção de Movimento",
+      "available": false
+    },
+    "TYPE_SIGNIFICANT_MOTION": {
+      "name": "Movimento Significativo",
+      "available": false
+    }
+  }
+}

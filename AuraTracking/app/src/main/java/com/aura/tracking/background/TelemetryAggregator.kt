@@ -8,6 +8,9 @@ import com.aura.tracking.mqtt.MqttClientManager
 import com.aura.tracking.mqtt.MqttClientManager.PublishFailureReason
 import com.aura.tracking.sensors.gps.GpsData
 import com.aura.tracking.sensors.imu.ImuData
+import com.aura.tracking.sensors.orientation.OrientationData
+import com.aura.tracking.sensors.system.SystemData
+// REMOVIDO: import com.aura.tracking.sensors.motion.MotionDetectionData  // Sensores não disponíveis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,6 +57,9 @@ class TelemetryAggregator(
     // Estado atual
     @Volatile private var lastGpsData: GpsData? = null
     @Volatile private var lastImuData: ImuData? = null
+    @Volatile private var lastOrientationData: OrientationData? = null
+    @Volatile private var lastSystemData: SystemData? = null
+    // REMOVIDO: @Volatile private var lastMotionData: MotionDetectionData? = null  // Sensores não disponíveis
 
     // Job do timer de 1Hz
     private var publishJob: Job? = null
@@ -124,7 +130,29 @@ class TelemetryAggregator(
     }
 
     /**
-     * Envia telemetria combinada GPS + IMU
+     * Atualiza dados de orientação (chamado pelo OrientationProvider)
+     */
+    fun updateOrientation(orientationData: OrientationData) {
+        lastOrientationData = orientationData
+    }
+
+    /**
+     * Atualiza dados de sistema (chamado pelo SystemDataProvider)
+     */
+    fun updateSystemData(systemData: SystemData) {
+        lastSystemData = systemData
+    }
+
+    // REMOVIDO: Atualiza dados de detecção de movimento - sensores não disponíveis no dispositivo
+    // /**
+    //  * Atualiza dados de detecção de movimento (chamado pelo MotionDetectorProvider)
+    //  */
+    // fun updateMotionDetection(motionData: MotionDetectionData) {
+    //     lastMotionData = motionData
+    // }
+
+    /**
+     * Envia telemetria combinada GPS + IMU + Orientação + Sistema + Movimento
      * Chamado pelo timer a cada 1 segundo.
      * 
      * FASE 3: Cada pacote recebe um messageId único para deduplicação.
@@ -143,18 +171,30 @@ class TelemetryAggregator(
         // LATENCY DIAGNOSTICS: T3 - Packet Creation
         val t3PacketCreation = LatencyDiagnostics.recordPacketCreation(messageId)
         
+        // Determina modo de transmissão ANTES de criar packet
+        val transmissionMode = if (mqttClient.isConnected.value) "online" else "queued"
+        
         val packet = TelemetryPacket(
             messageId = messageId,
             deviceId = deviceId,
             matricula = operatorId,
             timestamp = System.currentTimeMillis(),
+            transmissionMode = transmissionMode,
             gps = GpsPayload(
                 lat = gps.latitude,
                 lon = gps.longitude,
                 alt = gps.altitude,
                 speed = gps.speed,
                 bearing = gps.bearing,
-                accuracy = gps.accuracy
+                accuracy = gps.accuracy,
+                satellites = gps.satellites,
+                hAcc = gps.hAcc,
+                vAcc = gps.vAcc,
+                sAcc = gps.sAcc,
+                hdop = gps.hdop,
+                vdop = gps.vdop,
+                pdop = gps.pdop,
+                gpsTimestamp = gps.gpsTimestamp
             ),
             imu = lastImuData?.let { imu ->
                 ImuPayload(
@@ -163,16 +203,107 @@ class TelemetryAggregator(
                     accelZ = imu.accelZ,
                     gyroX = imu.gyroX,
                     gyroY = imu.gyroY,
-                    gyroZ = imu.gyroZ
+                    gyroZ = imu.gyroZ,
+                    accelMagnitude = imu.accelMagnitude,
+                    gyroMagnitude = imu.gyroMagnitude,
+                    magX = imu.magX,
+                    magY = imu.magY,
+                    magZ = imu.magZ,
+                    magMagnitude = imu.magMagnitude,
+                    linearAccelX = imu.linearAccelX,
+                    linearAccelY = imu.linearAccelY,
+                    linearAccelZ = imu.linearAccelZ,
+                    linearAccelMagnitude = imu.linearAccelMagnitude,
+                    gravityX = imu.gravityX,
+                    gravityY = imu.gravityY,
+                    gravityZ = imu.gravityZ,
+                    rotationVectorX = imu.rotationVectorX,
+                    rotationVectorY = imu.rotationVectorY,
+                    rotationVectorZ = imu.rotationVectorZ,
+                    rotationVectorW = imu.rotationVectorW
+                )
+            },
+            orientation = lastOrientationData?.let { orient ->
+                OrientationPayload(
+                    azimuth = orient.azimuth,
+                    pitch = orient.pitch,
+                    roll = orient.roll,
+                    rotationMatrix = orient.rotationMatrix
+                )
+            },
+            system = lastSystemData?.let { sys ->
+                SystemPayload(
+                    battery = sys.battery?.let { bat ->
+                        BatteryPayload(
+                            level = bat.level,
+                            temperature = bat.temperature,
+                            status = bat.status,
+                            voltage = bat.voltage,
+                            health = bat.health,
+                            technology = bat.technology,
+                            chargeCounter = bat.chargeCounter,
+                            fullCapacity = bat.fullCapacity
+                        )
+                    },
+                    connectivity = sys.connectivity?.let { conn ->
+                        ConnectivityPayload(
+                            wifi = conn.wifi?.let { wifi ->
+                                WifiPayload(
+                                    rssi = wifi.rssi,
+                                    ssid = wifi.ssid,
+                                    bssid = wifi.bssid,
+                                    frequency = wifi.frequency,
+                                    channel = wifi.channel
+                                )
+                            },
+                            cellular = conn.cellular?.let { cell ->
+                                CellularPayload(
+                                    networkType = cell.networkType,
+                                    operator = cell.operator,
+                                    signalStrength = cell.signalStrength?.let { sig ->
+                                        SignalStrengthPayload(
+                                            rsrp = sig.rsrp,
+                                            rsrq = sig.rsrq,
+                                            rssnr = sig.rssnr,
+                                            rssi = sig.rssi,
+                                            level = sig.level
+                                        )
+                                    },
+                                    cellInfo = cell.cellInfo?.let { info ->
+                                        CellInfoPayload(
+                                            ci = info.ci,
+                                            pci = info.pci,
+                                            tac = info.tac,
+                                            earfcn = info.earfcn,
+                                            band = info.band,
+                                            bandwidth = info.bandwidth
+                                        )
+                                    }
+                                )
+                            }
+                        )
+                    }
                 )
             }
+            // REMOVIDO: motion - sensores não disponíveis no dispositivo
+            // motion = lastMotionData?.let { motion ->
+            //     MotionDetectionPayload(
+            //         significantMotion = motion.significantMotion,
+            //         stationaryDetect = motion.stationaryDetect,
+            //         motionDetect = motion.motionDetect,
+            //         flatUp = motion.flatUp,
+            //         flatDown = motion.flatDown,
+            //         stowed = motion.stowed,
+            //         displayRotate = motion.displayRotate
+            //     )
+            // }
         )
 
         val topic = "$BASE_TOPIC/$deviceId/telemetry"
         val payload = json.encodeToString(packet)
 
         scope.launch {
-            publishOrQueue(topic, payload, messageId, t3PacketCreation)
+            publishOrQueue(topic, payload, messageId, transmissionMode, t3PacketCreation)
         }
     }
 
@@ -180,9 +311,10 @@ class TelemetryAggregator(
      * Publica via MQTT ou enfileira se desconectado.
      * 
      * @param messageId UUID único para deduplicação (persistido na queue)
+     * @param transmissionMode Modo de transmissão ("online" ou "queued")
      * @param t3PacketCreation Timestamp T3 para diagnóstico de latência
      */
-    private suspend fun publishOrQueue(topic: String, payload: String, messageId: String, t3PacketCreation: Long = 0) {
+    private suspend fun publishOrQueue(topic: String, payload: String, messageId: String, transmissionMode: String, t3PacketCreation: Long = 0) {
         if (mqttClient.isConnected.value) {
             val result = mqttClient.publishWithResult(topic, payload)
             if (result.success) {
@@ -191,14 +323,16 @@ class TelemetryAggregator(
                     LatencyDiagnostics.recordMqttPublish(messageId, t3PacketCreation)
                 }
                 _packetsSent.value++
-                Log.d(TAG, "Telemetry sent: $topic (msgId=${messageId.take(8)}...)")
+                Log.d(TAG, "Telemetry sent: $topic (msgId=${messageId.take(8)}..., mode=$transmissionMode)")
             } else {
                 if (result.failureReason == PublishFailureReason.MAX_INFLIGHT) {
                     Log.w(TAG, "Publish blocked (max inflight), queuing message ${messageId.take(8)}")
                 }
+                // Payload já contém transmissionMode="queued"
                 enqueue(topic, payload, messageId)
             }
         } else {
+            // Payload já contém transmissionMode="queued"
             enqueue(topic, payload, messageId)
         }
     }
@@ -296,7 +430,8 @@ class TelemetryAggregator(
         scope.launch {
             // Eventos usam messageId gerado na hora (não precisa de persistência)
             val eventMessageId = UUID.randomUUID().toString()
-            publishOrQueue(topic, payload, eventMessageId)
+            val eventTransmissionMode = if (mqttClient.isConnected.value) "online" else "queued"
+            publishOrQueue(topic, payload, eventMessageId, eventTransmissionMode)
         }
     }
 
@@ -321,8 +456,12 @@ data class TelemetryPacket(
     val deviceId: String,
     val matricula: String,  // Matrícula do operador
     val timestamp: Long,
+    val transmissionMode: String = "online",  // "online" ou "queued"
     val gps: GpsPayload,
-    val imu: ImuPayload? = null
+    val imu: ImuPayload? = null,
+    val orientation: OrientationPayload? = null,
+    val system: SystemPayload? = null
+    // REMOVIDO: val motion: MotionDetectionPayload? = null  // Sensores não disponíveis
 )
 
 @Serializable
@@ -332,7 +471,15 @@ data class GpsPayload(
     val alt: Double,
     val speed: Float,
     val bearing: Float,
-    val accuracy: Float
+    val accuracy: Float,
+    val satellites: Int? = null,
+    val hAcc: Float? = null,
+    val vAcc: Float? = null,
+    val sAcc: Float? = null,
+    val hdop: Float? = null,
+    val vdop: Float? = null,
+    val pdop: Float? = null,
+    val gpsTimestamp: Long? = null
 )
 
 @Serializable
@@ -342,8 +489,105 @@ data class ImuPayload(
     val accelZ: Float,
     val gyroX: Float,
     val gyroY: Float,
-    val gyroZ: Float
+    val gyroZ: Float,
+    val accelMagnitude: Float? = null,
+    val gyroMagnitude: Float? = null,
+    val magX: Float? = null,
+    val magY: Float? = null,
+    val magZ: Float? = null,
+    val magMagnitude: Float? = null,
+    val linearAccelX: Float? = null,
+    val linearAccelY: Float? = null,
+    val linearAccelZ: Float? = null,
+    val linearAccelMagnitude: Float? = null,
+    val gravityX: Float? = null,
+    val gravityY: Float? = null,
+    val gravityZ: Float? = null,
+    val rotationVectorX: Float? = null,
+    val rotationVectorY: Float? = null,
+    val rotationVectorZ: Float? = null,
+    val rotationVectorW: Float? = null
 )
+
+@Serializable
+data class OrientationPayload(
+    val azimuth: Float,
+    val pitch: Float,
+    val roll: Float,
+    val rotationMatrix: FloatArray? = null
+)
+
+@Serializable
+data class BatteryPayload(
+    val level: Int? = null,  // 0-100% (null se não disponível)
+    val temperature: Float? = null,
+    val status: String,
+    val voltage: Int? = null,
+    val health: String? = null,
+    val technology: String? = null,
+    val chargeCounter: Long? = null,
+    val fullCapacity: Long? = null
+)
+
+@Serializable
+data class ConnectivityPayload(
+    val wifi: WifiPayload? = null,
+    val cellular: CellularPayload? = null
+)
+
+@Serializable
+data class WifiPayload(
+    val rssi: Int? = null,
+    val ssid: String? = null,
+    val bssid: String? = null,
+    val frequency: Int? = null,
+    val channel: Int? = null
+)
+
+@Serializable
+data class CellularPayload(
+    val networkType: String? = null,
+    val operator: String? = null,
+    val signalStrength: SignalStrengthPayload? = null,
+    val cellInfo: CellInfoPayload? = null
+)
+
+@Serializable
+data class SignalStrengthPayload(
+    val rsrp: Int? = null,
+    val rsrq: Int? = null,
+    val rssnr: Int? = null,
+    val rssi: Int? = null,
+    val level: Int? = null
+)
+
+@Serializable
+data class CellInfoPayload(
+    val ci: Long? = null,
+    val pci: Int? = null,
+    val tac: Int? = null,
+    val earfcn: Int? = null,
+    val band: List<Int>? = null,
+    val bandwidth: Int? = null
+)
+
+@Serializable
+data class SystemPayload(
+    val battery: BatteryPayload? = null,
+    val connectivity: ConnectivityPayload? = null
+)
+
+// REMOVIDO: MotionDetectionPayload - sensores não disponíveis no dispositivo
+// @Serializable
+// data class MotionDetectionPayload(
+//     val significantMotion: Boolean? = null,
+//     val stationaryDetect: Boolean? = null,
+//     val motionDetect: Boolean? = null,
+//     val flatUp: Boolean? = null,
+//     val flatDown: Boolean? = null,
+//     val stowed: Boolean? = null,
+//     val displayRotate: Int? = null
+// )
 
 @Serializable
 data class EventPacket(

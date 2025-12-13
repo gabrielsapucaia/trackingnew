@@ -1,0 +1,262 @@
+{
+  "timestamp": "2025-12-11 14:44:29",
+  "period_hours": 1,
+  "total_records": 0,
+  "fields": {
+    "motion_motion_detect": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "gyro_magnitude": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "motion_significant_motion": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "linear_accel_x": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "wifi_ssid": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "linear_accel_magnitude": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_rssnr": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "mag_x": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "motion_stowed": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_tac": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "v_acc": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "wifi_bssid": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "hdop": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "wifi_channel": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "mag_magnitude": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_pci": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_status": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_bandwidth": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "h_acc": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "azimuth": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_technology": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_full_capacity": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_temperature": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_health": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "wifi_frequency": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_level": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "roll": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "rotation_vector_x": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_charge_counter": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "pdop": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "motion_stationary_detect": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_ci": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "mag_y": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "gps_timestamp": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "motion_flat_down": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_rsrp": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_earfcn": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "motion_display_rotate": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "s_acc": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "satellites": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_rsrq": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "vdop": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "motion_flat_up": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "battery_voltage": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "gravity_x": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "pitch": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_band": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "wifi_rssi": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_network_type": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "cellular_operator": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    },
+    "mag_z": {
+      "percent": 0.0,
+      "count": 0,
+      "is_null": true
+    }
+  }
+}

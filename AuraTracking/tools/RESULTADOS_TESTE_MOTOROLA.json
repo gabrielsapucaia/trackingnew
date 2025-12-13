@@ -1,0 +1,286 @@
+{
+  "device": {
+    "model": "moto g34 5G",
+    "serial": "ZF524XRLK3",
+    "androidVersion": "13",
+    "testDate": "2025-01-09T10:45:00Z"
+  },
+  "sensorsAvailable": {
+    "accelerometer": {
+      "available": true,
+      "vendor": "TDK-Invensense",
+      "model": "icm4x6xa",
+      "version": 260,
+      "maxRate": "400.00Hz",
+      "minRate": "1.00Hz",
+      "fifo": "10000 events",
+      "status": "ACTIVE",
+      "note": "Já está sendo usado pelo app (com.aura.tracking.sensors.imu.ImuSensorProvider)"
+    },
+    "gyroscope": {
+      "available": true,
+      "vendor": "TDK-Invensense",
+      "model": "icm4x6xa",
+      "version": 260,
+      "maxRate": "400.00Hz",
+      "minRate": "1.00Hz",
+      "fifo": "10000 events",
+      "status": "ACTIVE",
+      "note": "Já está sendo usado pelo app (com.aura.tracking.sensors.imu.ImuSensorProvider)"
+    },
+    "magnetometer": {
+      "available": true,
+      "vendor": "memsic",
+      "model": "mmc56x3x",
+      "version": 20720740,
+      "maxRate": "100.00Hz",
+      "minRate": "1.00Hz",
+      "fifo": "10000 events",
+      "status": "ACTIVE",
+      "note": "Disponível mas NÃO está sendo usado pelo app - CRÍTICO para detecção de direção"
+    },
+    "pressure": {
+      "available": false,
+      "note": "Barômetro NÃO encontrado no dispositivo. Altitude precisa não será possível via barômetro."
+    },
+    "gravity": {
+      "available": true,
+      "vendor": "qualcomm",
+      "maxRate": "200.00Hz",
+      "minRate": "5.00Hz",
+      "fifo": "10000 events",
+      "note": "Disponível mas NÃO está sendo usado pelo app"
+    },
+    "linearAcceleration": {
+      "available": true,
+      "vendor": "qualcomm",
+      "maxRate": "200.00Hz",
+      "minRate": "5.00Hz",
+      "fifo": "10000 events",
+      "note": "Disponível mas NÃO está sendo usado pelo app - CRÍTICO para aceleração real do veículo"
+    },
+    "rotationVector": {
+      "available": true,
+      "vendor": "qualcomm",
+      "maxRate": "200.00Hz",
+      "minRate": "5.00Hz",
+      "fifo": "10000 events",
+      "note": "Disponível mas NÃO está sendo usado pelo app"
+    },
+    "gameRotationVector": {
+      "available": true,
+      "vendor": "qualcomm",
+      "maxRate": "200.00Hz",
+      "minRate": "5.00Hz",
+      "note": "Disponível mas NÃO está sendo usado pelo app"
+    },
+    "geomagneticRotationVector": {
+      "available": true,
+      "vendor": "qualcomm",
+      "maxRate": "100.00Hz",
+      "minRate": "5.00Hz",
+      "note": "Disponível mas NÃO está sendo usado pelo app"
+    },
+    "orientation": {
+      "available": true,
+      "vendor": "qualcomm",
+      "maxRate": "200.00Hz",
+      "minRate": "5.00Hz",
+      "note": "Disponível mas NÃO está sendo usado pelo app - Pode ser calculado usando accel + mag"
+    }
+  },
+  "gpsDetails": {
+    "satellites": {
+      "available": true,
+      "example": 12,
+      "note": "Dados disponíveis em Bundle[{satellites=12, maxCn0=32, meanCn0=24}]"
+    },
+    "hdop": {
+      "available": false,
+      "note": "HDOP não encontrado diretamente no dumpsys location. Pode estar em extras do Location object."
+    },
+    "vdop": {
+      "available": false,
+      "note": "VDOP não encontrado diretamente no dumpsys location. Pode estar em extras do Location object."
+    },
+    "pdop": {
+      "available": false,
+      "note": "PDOP não encontrado diretamente no dumpsys location. Pode estar em extras do Location object."
+    },
+    "accuracy": {
+      "available": true,
+      "example": 11.604425,
+      "unit": "meters",
+      "note": "hAcc (horizontal accuracy) disponível"
+    },
+    "verticalAccuracy": {
+      "available": true,
+      "example": 7.920479,
+      "unit": "meters",
+      "note": "vAcc (vertical accuracy) disponível"
+    }
+  },
+  "battery": {
+    "level": {
+      "available": true,
+      "example": 100,
+      "unit": "percent",
+      "note": "Disponível via dumpsys battery"
+    },
+    "temperature": {
+      "available": true,
+      "example": 32.5,
+      "unit": "celsius",
+      "note": "Disponível (325 = 32.5°C em décimos de grau)"
+    },
+    "status": {
+      "available": true,
+      "example": 5,
+      "mapping": {
+        "1": "UNKNOWN",
+        "2": "CHARGING",
+        "3": "DISCHARGING",
+        "4": "NOT_CHARGING",
+        "5": "FULL"
+      },
+      "current": "FULL",
+      "note": "Status 5 = FULL (carregando)"
+    },
+    "voltage": {
+      "available": true,
+      "example": 4462,
+      "unit": "millivolts",
+      "note": "Disponível"
+    },
+    "health": {
+      "available": true,
+      "example": 2,
+      "mapping": {
+        "1": "UNKNOWN",
+        "2": "GOOD",
+        "3": "OVERHEAT",
+        "4": "DEAD",
+        "5": "OVER_VOLTAGE",
+        "6": "UNSPECIFIED_FAILURE",
+        "7": "COLD"
+      },
+      "current": "GOOD",
+      "note": "Disponível"
+    }
+  },
+  "summary": {
+    "totalSensorsAvailable": 10,
+    "sensorsCurrentlyUsed": 2,
+    "sensorsAvailableButNotUsed": 8,
+    "criticalSensorsMissing": {
+      "magnetometer": "Disponível mas não usado - CRÍTICO para detecção de direção",
+      "linearAcceleration": "Disponível mas não usado - CRÍTICO para aceleração real",
+      "pressure": "NÃO disponível - Altitude precisa não será possível via barômetro"
+    },
+    "recommendations": {
+      "critical": [
+        {
+          "sensor": "Magnetômetro",
+          "available": true,
+          "priority": "CRITICAL",
+          "reason": "Detectar direção real (mão vs contramão), calcular bearing preciso",
+          "implementation": "Adicionar Sensor.TYPE_MAGNETIC_FIELD ao ImuSensorProvider"
+        },
+        {
+          "sensor": "Aceleração Linear",
+          "available": true,
+          "priority": "CRITICAL",
+          "reason": "Aceleração real do veículo (sem gravidade), detectar frenagens/acelerações bruscas",
+          "implementation": "Adicionar Sensor.TYPE_LINEAR_ACCELERATION ao ImuSensorProvider"
+        },
+        {
+          "data": "GPS Satélites",
+          "available": true,
+          "priority": "CRITICAL",
+          "reason": "Qualidade do fix GPS, filtrar dados ruins",
+          "implementation": "Extrair de Location.getExtras().getInt('satellites')"
+        },
+        {
+          "calculation": "Orientação (Azimuth, Pitch, Roll)",
+          "requires": ["accelerometer", "magnetometer"],
+          "available": true,
+          "priority": "CRITICAL",
+          "reason": "Direção e inclinação do veículo, análise de comportamento",
+          "implementation": "Usar SensorManager.getRotationMatrix() com accel + mag"
+        },
+        {
+          "data": "Bateria (Level, Status)",
+          "available": true,
+          "priority": "HIGH",
+          "reason": "Filtrar dados quando dispositivo está carregando (pode estar parado)",
+          "implementation": "BroadcastReceiver para ACTION_BATTERY_CHANGED"
+        }
+      ],
+      "optional": [
+        {
+          "sensor": "Gravidade Isolada",
+          "available": true,
+          "priority": "MEDIUM",
+          "reason": "Backup para cálculo de inclinação (redundante com aceleração linear)",
+          "implementation": "Adicionar Sensor.TYPE_GRAVITY ao ImuSensorProvider"
+        },
+        {
+          "sensor": "Rotação Vetorial",
+          "available": true,
+          "priority": "MEDIUM",
+          "reason": "Orientação 3D precisa (pode ser calculada)",
+          "implementation": "Adicionar Sensor.TYPE_ROTATION_VECTOR ao ImuSensorProvider"
+        }
+      ],
+      "notAvailable": [
+        {
+          "sensor": "Barômetro",
+          "available": false,
+          "impact": "Altitude precisa não será possível via barômetro. GPS altitude terá menor precisão (~10m vs ~1m barômetro).",
+          "workaround": "Usar GPS altitude com vAcc (vertical accuracy) para filtrar dados ruins"
+        }
+      ]
+    }
+  },
+  "mqttStructureValidation": {
+    "canImplement": {
+      "gps": {
+        "satellites": true,
+        "hdop": "unknown (verificar Location.getExtras())",
+        "vdop": "unknown (verificar Location.getExtras())",
+        "pdop": "unknown (verificar Location.getExtras())"
+      },
+      "imu": {
+        "magX": true,
+        "magY": true,
+        "magZ": true,
+        "pressure": false,
+        "linearAccelX": true,
+        "linearAccelY": true,
+        "linearAccelZ": true,
+        "gravityX": true,
+        "gravityY": true,
+        "gravityZ": true
+      },
+      "orientation": {
+        "azimuth": true,
+        "pitch": true,
+        "roll": true,
+        "rotationMatrix": true
+      },
+      "system": {
+        "batteryLevel": true,
+        "batteryStatus": true,
+        "batteryTemperature": true,
+        "batteryVoltage": true
+      }
+    },
+    "payloadSizeEstimate": {
+      "current": 200,
+      "withCritical": 380,
+      "withOptional": 550,
+      "note": "Sem barômetro, payload será ~20 bytes menor que estimado"
+    }
+  }
+}
+

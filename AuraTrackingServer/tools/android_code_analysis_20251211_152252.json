@@ -1,0 +1,61 @@
+{
+  "findings": {},
+  "timestamp": "2025-12-11 15:22:52",
+  "files": {
+    "OrientationProvider": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\orientation\\OrientationProvider.kt",
+      "size": 8449,
+      "found": true
+    },
+    "TelemetryAggregator": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\background\\TelemetryAggregator.kt",
+      "size": 21280,
+      "found": true
+    },
+    "GpsLocationProvider": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\gps\\GpsLocationProvider.kt",
+      "size": 18216,
+      "found": true
+    },
+    "SystemData": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\system\\SystemData.kt",
+      "size": 2328,
+      "found": true
+    },
+    "SystemDataProvider": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\system\\SystemDataProvider.kt",
+      "size": 17175,
+      "found": true
+    },
+    "OrientationData": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\orientation\\OrientationData.kt",
+      "size": 613,
+      "found": true
+    },
+    "GpsData": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\gps\\GpsData.kt",
+      "size": 1560,
+      "found": true
+    },
+    "ImuSensorProvider": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\imu\\ImuSensorProvider.kt",
+      "size": 19948,
+      "found": true
+    },
+    "MotionDetectionData": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\motion\\MotionDetectionData.kt",
+      "size": 758,
+      "found": true
+    },
+    "MotionDetectorProvider": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\motion\\MotionDetectorProvider.kt",
+      "size": 5953,
+      "found": true
+    },
+    "ImuData": {
+      "path": "D:\\tracking\\AuraTracking\\app\\src\\main\\java\\com\\aura\\tracking\\sensors\\imu\\ImuData.kt",
+      "size": 2429,
+      "found": true
+    }
+  }
+}

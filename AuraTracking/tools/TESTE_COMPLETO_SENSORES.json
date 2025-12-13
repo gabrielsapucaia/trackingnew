@@ -1,0 +1,502 @@
+{
+  "device": {
+    "model": "moto g34 5G",
+    "serial": "ZF524XRLK3",
+    "androidVersion": "13",
+    "totalSensors": 55,
+    "testDate": "2025-01-09T10:51:00Z"
+  },
+  "sensorsComplete": {
+    "movement": {
+      "accelerometer": {
+        "available": true,
+        "vendor": "TDK-Invensense",
+        "model": "icm4x6xa",
+        "version": 260,
+        "maxRate": "400.00Hz",
+        "minRate": "1.00Hz",
+        "fifo": "10000 events",
+        "status": "ACTIVE",
+        "note": "Já em uso pelo app"
+      },
+      "gyroscope": {
+        "available": true,
+        "vendor": "TDK-Invensense",
+        "model": "icm4x6xa",
+        "version": 260,
+        "maxRate": "400.00Hz",
+        "minRate": "1.00Hz",
+        "fifo": "10000 events",
+        "status": "ACTIVE",
+        "note": "Já em uso pelo app"
+      },
+      "magnetometer": {
+        "available": true,
+        "vendor": "memsic",
+        "model": "mmc56x3x",
+        "version": 20720740,
+        "maxRate": "100.00Hz",
+        "minRate": "1.00Hz",
+        "fifo": "10000 events",
+        "status": "ACTIVE",
+        "note": "CRÍTICO - Não está sendo usado"
+      },
+      "gravity": {
+        "available": true,
+        "vendor": "qualcomm",
+        "maxRate": "200.00Hz",
+        "minRate": "5.00Hz",
+        "fifo": "10000 events",
+        "note": "Disponível mas não usado"
+      },
+      "linearAcceleration": {
+        "available": true,
+        "vendor": "qualcomm",
+        "maxRate": "200.00Hz",
+        "minRate": "5.00Hz",
+        "fifo": "10000 events",
+        "note": "CRÍTICO - Não está sendo usado"
+      },
+      "rotationVector": {
+        "available": true,
+        "vendor": "qualcomm",
+        "maxRate": "200.00Hz",
+        "minRate": "5.00Hz",
+        "fifo": "10000 events",
+        "note": "Disponível mas não usado"
+      },
+      "gameRotationVector": {
+        "available": true,
+        "vendor": "qualcomm",
+        "maxRate": "200.00Hz",
+        "minRate": "5.00Hz",
+        "fifo": "10000 events",
+        "note": "Disponível mas não usado"
+      },
+      "geomagneticRotationVector": {
+        "available": true,
+        "vendor": "qualcomm",
+        "maxRate": "100.00Hz",
+        "minRate": "5.00Hz",
+        "fifo": "10000 events",
+        "note": "Disponível mas não usado"
+      },
+      "orientation": {
+        "available": true,
+        "vendor": "qualcomm",
+        "maxRate": "200.00Hz",
+        "minRate": "5.00Hz",
+        "note": "Disponível mas não usado - Pode ser calculado"
+      }
+    },
+    "uncalibrated": {
+      "accelerometerUncalibrated": {
+        "available": true,
+        "vendor": "TDK-Invensense",
+        "model": "icm4x6xa",
+        "version": 260,
+        "maxRate": "400.00Hz",
+        "minRate": "1.00Hz",
+        "note": "Dados não calibrados - útil para calibração"
+      },
+      "gyroscopeUncalibrated": {
+        "available": true,
+        "vendor": "TDK-Invensense",
+        "model": "icm4x6xa",
+        "version": 260,
+        "maxRate": "400.00Hz",
+        "minRate": "1.00Hz",
+        "note": "Dados não calibrados - útil para calibração"
+      },
+      "magnetometerUncalibrated": {
+        "available": true,
+        "vendor": "memsic",
+        "model": "mmc56x3x",
+        "version": 20720740,
+        "maxRate": "100.00Hz",
+        "minRate": "1.00Hz",
+        "note": "Dados não calibrados - útil para calibração"
+      }
+    },
+    "environmental": {
+      "ambientLight": {
+        "available": true,
+        "vendor": "Lite-On",
+        "model": "ltr569",
+        "version": 256,
+        "type": "on-change",
+        "exampleValue": 66.81,
+        "unit": "lux",
+        "note": "Disponível mas não relevante para análise de movimento"
+      },
+      "proximity": {
+        "available": true,
+        "vendor": "Lite-On",
+        "model": "ltr569",
+        "version": 256,
+        "type": "on-change",
+        "exampleValue": 5.0,
+        "unit": "cm",
+        "note": "Disponível mas não relevante para análise de movimento"
+      },
+      "temperature": {
+        "available": false,
+        "note": "Temperatura ambiente não encontrada"
+      },
+      "humidity": {
+        "available": false,
+        "note": "Umidade relativa não encontrada"
+      },
+      "pressure": {
+        "available": false,
+        "note": "Barômetro não encontrado - Limitação importante"
+      }
+    },
+    "activity": {
+      "stepDetector": {
+        "available": true,
+        "vendor": "qualcomm",
+        "type": "on-change",
+        "permission": "ACTIVITY_RECOGNITION",
+        "note": "Detecta passos - não relevante para veículos"
+      },
+      "stepCounter": {
+        "available": true,
+        "vendor": "qualcomm",
+        "type": "on-change",
+        "permission": "ACTIVITY_RECOGNITION",
+        "note": "Conta passos - não relevante para veículos"
+      },
+      "significantMotion": {
+        "available": true,
+        "vendor": "qualcomm",
+        "type": "one-shot",
+        "note": "Detecta movimento significativo - pode ser útil"
+      },
+      "stationaryDetect": {
+        "available": true,
+        "vendor": "qualcomm",
+        "type": "one-shot",
+        "note": "Detecta quando dispositivo está parado - pode ser útil"
+      },
+      "motionDetect": {
+        "available": true,
+        "vendor": "qualcomm",
+        "type": "one-shot",
+        "note": "Detecta movimento - pode ser útil"
+      }
+    },
+    "motorolaSpecific": {
+      "capSense": {
+        "available": true,
+        "vendor": "semtech",
+        "channels": [0, 1, 2, 3, 4],
+        "note": "Sensores capacitivos específicos Motorola - não relevante"
+      },
+      "doubleTap": {
+        "available": true,
+        "vendor": "ilitek",
+        "note": "Detecta toque duplo - não relevante"
+      },
+      "flatUp": {
+        "available": true,
+        "vendor": "Motorola",
+        "note": "Detecta quando dispositivo está deitado para cima - pode ser útil"
+      },
+      "flatDown": {
+        "available": true,
+        "vendor": "Motorola",
+        "note": "Detecta quando dispositivo está deitado para baixo - pode ser útil"
+      },
+      "stowed": {
+        "available": true,
+        "vendor": "Motorola",
+        "note": "Detecta quando dispositivo está guardado - pode ser útil"
+      },
+      "cameraGesture": {
+        "available": true,
+        "vendor": "Motorola",
+        "note": "Gesto de câmera - não relevante"
+      },
+      "displayRotate": {
+        "available": true,
+        "vendor": "Motorola",
+        "note": "Orientação da tela - pode ser útil"
+      }
+    }
+  },
+  "gpsDetails": {
+    "satellites": {
+      "available": true,
+      "example": 12,
+      "maxCn0": 32,
+      "meanCn0": 24,
+      "extraction": "Location.getExtras().getInt('satellites')"
+    },
+    "horizontalAccuracy": {
+      "available": true,
+      "example": 11.604425,
+      "unit": "meters",
+      "field": "hAcc"
+    },
+    "verticalAccuracy": {
+      "available": true,
+      "example": 7.920479,
+      "unit": "meters",
+      "field": "vAcc"
+    },
+    "speedAccuracy": {
+      "available": true,
+      "example": 0.1640122,
+      "unit": "m/s",
+      "field": "sAcc"
+    },
+    "hdop": {
+      "available": "unknown",
+      "note": "Não encontrado diretamente. Verificar Location.getExtras()"
+    },
+    "vdop": {
+      "available": "unknown",
+      "note": "Não encontrado diretamente. Verificar Location.getExtras()"
+    },
+    "pdop": {
+      "available": "unknown",
+      "note": "Não encontrado diretamente. Verificar Location.getExtras()"
+    }
+  },
+  "battery": {
+    "level": {
+      "available": true,
+      "example": 100,
+      "unit": "percent"
+    },
+    "temperature": {
+      "available": true,
+      "example": 32.5,
+      "unit": "celsius",
+      "raw": 325,
+      "note": "Em décimos de grau"
+    },
+    "status": {
+      "available": true,
+      "example": 5,
+      "mapping": {
+        "1": "UNKNOWN",
+        "2": "CHARGING",
+        "3": "DISCHARGING",
+        "4": "NOT_CHARGING",
+        "5": "FULL"
+      },
+      "current": "FULL"
+    },
+    "voltage": {
+      "available": true,
+      "example": 4462,
+      "unit": "millivolts"
+    },
+    "health": {
+      "available": true,
+      "example": 2,
+      "mapping": {
+        "1": "UNKNOWN",
+        "2": "GOOD",
+        "3": "OVERHEAT",
+        "4": "DEAD",
+        "5": "OVER_VOLTAGE",
+        "6": "UNSPECIFIED_FAILURE",
+        "7": "COLD"
+      },
+      "current": "GOOD"
+    },
+    "technology": {
+      "available": true,
+      "example": "Li-ion"
+    },
+    "chargeCounter": {
+      "available": true,
+      "example": 5064914,
+      "unit": "microampere-hours"
+    },
+    "fullCapacity": {
+      "available": true,
+      "example": 5096000,
+      "unit": "microampere-hours"
+    }
+  },
+  "connectivity": {
+    "wifi": {
+      "available": true,
+      "rssi": {
+        "available": true,
+        "example": -72,
+        "unit": "dBm",
+        "note": "Disponível via dumpsys wifi"
+      },
+      "ssid": {
+        "available": true,
+        "example": "TI",
+        "note": "Disponível via dumpsys wifi"
+      },
+      "bssid": {
+        "available": true,
+        "example": "86:45:58:7b:33:cc",
+        "note": "Disponível via dumpsys wifi"
+      },
+      "frequency": {
+        "available": true,
+        "example": 5200,
+        "unit": "MHz",
+        "note": "Disponível via dumpsys wifi"
+      }
+    },
+    "cellular": {
+      "available": true,
+      "networkType": {
+        "available": true,
+        "example": "LTE",
+        "note": "Disponível via dumpsys telephony.registry"
+      },
+      "operator": {
+        "available": true,
+        "example": "Teleamazon Cel",
+        "note": "Disponível via getprop gsm.operator.alpha"
+      },
+      "signalStrength": {
+        "available": true,
+        "rsrp": {
+          "example": -89,
+          "unit": "dBm",
+          "note": "Reference Signal Received Power (LTE)"
+        },
+        "rsrq": {
+          "example": -9,
+          "unit": "dB",
+          "note": "Reference Signal Received Quality (LTE)"
+        },
+        "rssnr": {
+          "example": 26,
+          "unit": "dB",
+          "note": "Reference Signal Signal-to-Noise Ratio (LTE)"
+        },
+        "rssi": {
+          "example": -63,
+          "unit": "dBm",
+          "note": "Received Signal Strength Indicator"
+        },
+        "level": {
+          "example": 4,
+          "unit": "0-4 scale",
+          "note": "Nível de sinal (0=pior, 4=melhor)"
+        }
+      },
+      "cellInfo": {
+        "available": true,
+        "ci": {
+          "example": 69284324,
+          "note": "Cell Identity"
+        },
+        "pci": {
+          "example": 52,
+          "note": "Physical Cell Identity"
+        },
+        "tac": {
+          "example": 1,
+          "note": "Tracking Area Code"
+        },
+        "earfcn": {
+          "example": 39600,
+          "note": "E-UTRAN Absolute Radio Frequency Channel Number"
+        },
+        "band": {
+          "example": [40],
+          "note": "LTE Band"
+        },
+        "bandwidth": {
+          "example": 10000,
+          "unit": "kHz",
+          "note": "Channel bandwidth"
+        }
+      }
+    }
+  },
+  "summary": {
+    "totalSensors": 55,
+    "sensorsRelevantForTracking": {
+      "critical": [
+        "accelerometer",
+        "gyroscope",
+        "magnetometer",
+        "linearAcceleration",
+        "gravity",
+        "rotationVector",
+        "orientation"
+      ],
+      "useful": [
+        "significantMotion",
+        "stationaryDetect",
+        "motionDetect",
+        "flatUp",
+        "flatDown",
+        "stowed"
+      ],
+      "notRelevant": [
+        "ambientLight",
+        "proximity",
+        "stepDetector",
+        "stepCounter",
+        "capSense",
+        "doubleTap",
+        "cameraGesture"
+      ]
+    },
+    "dataAvailable": {
+      "gps": {
+        "basic": true,
+        "satellites": true,
+        "accuracy": true,
+        "hdopVdopPdop": "unknown"
+      },
+      "imu": {
+        "basic": true,
+        "magnetometer": true,
+        "linearAcceleration": true,
+        "gravity": true,
+        "rotationVector": true,
+        "pressure": false
+      },
+      "battery": true,
+      "connectivity": true
+    },
+    "recommendations": {
+      "mustImplement": [
+        "magnetometer",
+        "linearAcceleration",
+        "orientation (calculated)",
+        "gpsSatellites",
+        "batteryLevel",
+        "batteryStatus"
+      ],
+      "shouldImplement": [
+        "gravity",
+        "rotationVector",
+        "batteryTemperature",
+        "connectivityNetworkType",
+        "connectivitySignalStrength"
+      ],
+      "couldImplement": [
+        "significantMotion",
+        "stationaryDetect",
+        "motionDetect",
+        "flatUp",
+        "flatDown",
+        "stowed"
+      ],
+      "cannotImplement": [
+        "pressure (barometer not available)",
+        "ambientTemperature",
+        "humidity"
+      ]
+    }
+  }
+}
+

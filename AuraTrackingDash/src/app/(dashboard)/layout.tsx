@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { Separator } from "@/components/ui/separator"
+import { UserMenu } from "@/components/auth/UserMenu"
 
 export default function DashboardLayout({
   children,
@@ -15,6 +16,7 @@ export default function DashboardLayout({
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex-1" />
+          <UserMenu />
         </header>
         <main className="flex-1 overflow-auto p-6">
           {children}

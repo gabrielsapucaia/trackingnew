@@ -1,0 +1,24 @@
+
+12-11 14:53:19.975 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6991021, lon=-47.1671753
+12-11 14:53:20.153 13984 17917 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=2fcebb9e..., mode=online)
+12-11 14:53:20.956 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990997, lon=-47.1671771
+12-11 14:53:21.226 13984 17041 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=ee9eb156..., mode=online)
+12-11 14:53:21.993 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990984, lon=-47.167178
+12-11 14:53:22.166 13984 14060 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=72f18dfd..., mode=online)
+12-11 14:53:22.968 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990979, lon=-47.1671784
+12-11 14:53:23.177 13984 17136 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=0d4c4934..., mode=online)
+12-11 14:53:23.965 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990977, lon=-47.1671785
+12-11 14:53:24.228 13984 17136 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=b29a9509..., mode=online)
+12-11 14:53:24.972 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990977, lon=-47.1671785
+12-11 14:53:25.255 13984 14611 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=86549c39..., mode=online)
+12-11 14:53:25.969 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990976, lon=-47.1671785
+12-11 14:53:26.273 13984 15720 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=c7f9ab6e..., mode=online)
+12-11 14:53:26.970 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990978, lon=-47.1671784
+12-11 14:53:27.369 13984 17917 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=ffb9f37c..., mode=online)
+12-11 14:53:27.957 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.699098, lon=-47.1671783
+12-11 14:53:28.267 13984 14060 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=3f5a8f0a..., mode=online)
+12-11 14:53:28.978 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990976, lon=-47.1671781
+12-11 14:53:29.203 13984 17136 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=55339ad2..., mode=online)
+12-11 14:53:29.975 13984 13984 D TelemetryAggregator: GPS updated: lat=-11.6990951, lon=-47.1671809
+12-11 14:53:30.155 13984 16801 D TelemetryAggregator: Telemetry sent: aura/tracking/TRK-101/telemetry (msgId=506a575d..., mode=online)
+

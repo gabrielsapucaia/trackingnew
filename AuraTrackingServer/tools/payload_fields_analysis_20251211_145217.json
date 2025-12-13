@@ -1,0 +1,85 @@
+{
+  "sections": {
+    "system_cellular_cellinfo": {
+      "bandwidth": true,
+      "pci": true,
+      "band": true,
+      "earfcn": true,
+      "tac": true,
+      "ci": true
+    },
+    "imu": {
+      "accelX": true,
+      "gyroY": true,
+      "accelZ": true,
+      "accelY": true,
+      "rotationVectorZ": true,
+      "accelMagnitude": true,
+      "gravityY": true,
+      "magZ": true,
+      "rotationVectorX": true,
+      "linearAccelMagnitude": true,
+      "gyroMagnitude": true,
+      "gyroX": true,
+      "linearAccelZ": true,
+      "linearAccelY": true,
+      "gyroZ": true,
+      "linearAccelX": true,
+      "gravityX": true,
+      "rotationVectorW": true,
+      "magMagnitude": true,
+      "rotationVectorY": true,
+      "magY": true,
+      "magX": true,
+      "gravityZ": true
+    },
+    "motion": {},
+    "system_battery": {
+      "temperature": true,
+      "fullCapacity": true,
+      "voltage": true,
+      "chargeCounter": true,
+      "level": true,
+      "health": true,
+      "technology": true,
+      "status": true
+    },
+    "gps": {
+      "gpsTimestamp": true,
+      "vdop": false,
+      "satellites": false,
+      "vAcc": false,
+      "sAcc": false,
+      "alt": true,
+      "hAcc": false,
+      "bearing": true,
+      "pdop": false,
+      "lon": true,
+      "hdop": false,
+      "accuracy": true,
+      "speed": true,
+      "lat": true
+    },
+    "orientation": {
+      "pitch": true,
+      "azimuth": true,
+      "roll": true
+    },
+    "system_wifi": {
+      "ssid": true,
+      "channel": true,
+      "bssid": true,
+      "frequency": true,
+      "rssi": true
+    },
+    "system_cellular_signal": {
+      "rsrp": true,
+      "rssnr": false,
+      "level": true,
+      "rsrq": true,
+      "rssi": true
+    }
+  },
+  "timestamp": "2025-12-11 14:52:17",
+  "samples": 5
+}

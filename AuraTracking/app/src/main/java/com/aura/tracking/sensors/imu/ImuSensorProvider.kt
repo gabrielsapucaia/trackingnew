@@ -47,16 +47,28 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
 
     private var accelerometer: Sensor? = null
     private var gyroscope: Sensor? = null
+    private var magnetometer: Sensor? = null
+    private var linearAccelerometer: Sensor? = null
+    private var gravitySensor: Sensor? = null
+    private var rotationVectorSensor: Sensor? = null
     private var isRunning = false
 
     // Buffers para média
     private val accelBuffer = mutableListOf<FloatArray>()
     private val gyroBuffer = mutableListOf<FloatArray>()
+    private val magBuffer = mutableListOf<FloatArray>()
+    private val linearAccelBuffer = mutableListOf<FloatArray>()
+    private val gravityBuffer = mutableListOf<FloatArray>()
+    private val rotationVectorBuffer = mutableListOf<FloatArray>()
     private val bufferLock = Any()
     
     // Timestamps para detecção de starvation
     private var lastAccelTimestamp: Long = 0L
     private var lastGyroTimestamp: Long = 0L
+    private var lastMagTimestamp: Long = 0L
+    private var lastLinearAccelTimestamp: Long = 0L
+    private var lastGravityTimestamp: Long = 0L
+    private var lastRotationVectorTimestamp: Long = 0L
     private var recoveryAttempts: Int = 0
 
     // Handler para output a 1Hz
@@ -82,12 +94,28 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
     init {
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        linearAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+        gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
+        rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
         if (accelerometer == null) {
             AuraLog.IMU.w("Accelerometer not available on this device")
         }
         if (gyroscope == null) {
             AuraLog.IMU.w("Gyroscope not available on this device")
+        }
+        if (magnetometer == null) {
+            AuraLog.IMU.w("Magnetometer not available on this device")
+        }
+        if (linearAccelerometer == null) {
+            AuraLog.IMU.w("Linear Accelerometer not available on this device")
+        }
+        if (gravitySensor == null) {
+            AuraLog.IMU.w("Gravity sensor not available on this device")
+        }
+        if (rotationVectorSensor == null) {
+            AuraLog.IMU.w("Rotation Vector sensor not available on this device")
         }
     }
 
@@ -131,7 +159,14 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
                 
                 synchronized(localAccelBuffer) {
                     synchronized(localGyroBuffer) {
-                        imuData = computeAverage(localAccelBuffer, localGyroBuffer)
+                        imuData = computeAverage(
+                            localAccelBuffer, 
+                            localGyroBuffer,
+                            emptyList(), // magBuffer
+                            emptyList(), // linearAccelBuffer
+                            emptyList(), // gravityBuffer
+                            emptyList()  // rotationVectorBuffer
+                        )
                         localAccelBuffer.clear()
                         localGyroBuffer.clear()
                     }
@@ -179,6 +214,26 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
             sensorManager.registerListener(this, sensor, SENSOR_DELAY)
             AuraLog.IMU.i("Gyroscope registered with DELAY_FASTEST")
         }
+        
+        magnetometer?.let { sensor ->
+            sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            AuraLog.IMU.i("Magnetometer registered with DELAY_FASTEST")
+        }
+        
+        linearAccelerometer?.let { sensor ->
+            sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            AuraLog.IMU.i("Linear Accelerometer registered with DELAY_FASTEST")
+        }
+        
+        gravitySensor?.let { sensor ->
+            sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            AuraLog.IMU.i("Gravity sensor registered with DELAY_FASTEST")
+        }
+        
+        rotationVectorSensor?.let { sensor ->
+            sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            AuraLog.IMU.i("Rotation Vector sensor registered with DELAY_FASTEST")
+        }
 
         // Inicia thread para output a 1Hz
         handlerThread = HandlerThread("ImuOutputThread").apply { start() }
@@ -221,6 +276,10 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
         synchronized(bufferLock) {
             accelBuffer.clear()
             gyroBuffer.clear()
+            magBuffer.clear()
+            linearAccelBuffer.clear()
+            gravityBuffer.clear()
+            rotationVectorBuffer.clear()
         }
         
         isRunning = false
@@ -249,6 +308,22 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
             }
             
             gyroscope?.let { sensor ->
+                sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            }
+            
+            magnetometer?.let { sensor ->
+                sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            }
+            
+            linearAccelerometer?.let { sensor ->
+                sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            }
+            
+            gravitySensor?.let { sensor ->
+                sensorManager.registerListener(this, sensor, SENSOR_DELAY)
+            }
+            
+            rotationVectorSensor?.let { sensor ->
                 sensorManager.registerListener(this, sensor, SENSOR_DELAY)
             }
             
@@ -287,6 +362,30 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
                     gyroBuffer.add(event.values.copyOf())
                 }
             }
+            Sensor.TYPE_MAGNETIC_FIELD -> {
+                lastMagTimestamp = now
+                synchronized(bufferLock) {
+                    magBuffer.add(event.values.copyOf())
+                }
+            }
+            Sensor.TYPE_LINEAR_ACCELERATION -> {
+                lastLinearAccelTimestamp = now
+                synchronized(bufferLock) {
+                    linearAccelBuffer.add(event.values.copyOf())
+                }
+            }
+            Sensor.TYPE_GRAVITY -> {
+                lastGravityTimestamp = now
+                synchronized(bufferLock) {
+                    gravityBuffer.add(event.values.copyOf())
+                }
+            }
+            Sensor.TYPE_ROTATION_VECTOR -> {
+                lastRotationVectorTimestamp = now
+                synchronized(bufferLock) {
+                    rotationVectorBuffer.add(event.values.copyOf())
+                }
+            }
         }
         
         // Reset recovery attempts ao receber dados
@@ -309,9 +408,20 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
         
         synchronized(bufferLock) {
             sampleCount = accelBuffer.size.coerceAtLeast(gyroBuffer.size)
-            imuData = computeAverage(accelBuffer, gyroBuffer)
+            imuData = computeAverage(
+                accelBuffer, 
+                gyroBuffer,
+                magBuffer,
+                linearAccelBuffer,
+                gravityBuffer,
+                rotationVectorBuffer
+            )
             accelBuffer.clear()
             gyroBuffer.clear()
+            magBuffer.clear()
+            linearAccelBuffer.clear()
+            gravityBuffer.clear()
+            rotationVectorBuffer.clear()
         }
         
         _lastImuData.value = imuData
@@ -330,7 +440,11 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
      */
     private fun computeAverage(
         accelBuffer: List<FloatArray>,
-        gyroBuffer: List<FloatArray>
+        gyroBuffer: List<FloatArray>,
+        magBuffer: List<FloatArray>,
+        linearAccelBuffer: List<FloatArray>,
+        gravityBuffer: List<FloatArray>,
+        rotationVectorBuffer: List<FloatArray>
     ): ImuData {
         val accelAvg = if (accelBuffer.isNotEmpty()) {
             floatArrayOf(
@@ -351,6 +465,39 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
         } else {
             floatArrayOf(0f, 0f, 0f)
         }
+        
+        val magAvg = if (magBuffer.isNotEmpty()) {
+            floatArrayOf(
+                magBuffer.map { it[0] }.average().toFloat(),
+                magBuffer.map { it[1] }.average().toFloat(),
+                magBuffer.map { it[2] }.average().toFloat()
+            )
+        } else null
+        
+        val linearAccelAvg = if (linearAccelBuffer.isNotEmpty()) {
+            floatArrayOf(
+                linearAccelBuffer.map { it[0] }.average().toFloat(),
+                linearAccelBuffer.map { it[1] }.average().toFloat(),
+                linearAccelBuffer.map { it[2] }.average().toFloat()
+            )
+        } else null
+        
+        val gravityAvg = if (gravityBuffer.isNotEmpty()) {
+            floatArrayOf(
+                gravityBuffer.map { it[0] }.average().toFloat(),
+                gravityBuffer.map { it[1] }.average().toFloat(),
+                gravityBuffer.map { it[2] }.average().toFloat()
+            )
+        } else null
+        
+        val rotationVectorAvg = if (rotationVectorBuffer.isNotEmpty()) {
+            floatArrayOf(
+                rotationVectorBuffer.map { it[0] }.average().toFloat(),
+                rotationVectorBuffer.map { it[1] }.average().toFloat(),
+                rotationVectorBuffer.map { it[2] }.average().toFloat(),
+                rotationVectorBuffer.map { it.getOrNull(3) ?: 0f }.average().toFloat() // W component
+            )
+        } else null
 
         return ImuData(
             accelX = accelAvg[0],
@@ -358,7 +505,20 @@ class ImuSensorProvider(private val context: Context) : SensorEventListener {
             accelZ = accelAvg[2],
             gyroX = gyroAvg[0],
             gyroY = gyroAvg[1],
-            gyroZ = gyroAvg[2]
+            gyroZ = gyroAvg[2],
+            magX = magAvg?.get(0),
+            magY = magAvg?.get(1),
+            magZ = magAvg?.get(2),
+            linearAccelX = linearAccelAvg?.get(0),
+            linearAccelY = linearAccelAvg?.get(1),
+            linearAccelZ = linearAccelAvg?.get(2),
+            gravityX = gravityAvg?.get(0),
+            gravityY = gravityAvg?.get(1),
+            gravityZ = gravityAvg?.get(2),
+            rotationVectorX = rotationVectorAvg?.get(0),
+            rotationVectorY = rotationVectorAvg?.get(1),
+            rotationVectorZ = rotationVectorAvg?.get(2),
+            rotationVectorW = rotationVectorAvg?.get(3)
         )
     }
 
