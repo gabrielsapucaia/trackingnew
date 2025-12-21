@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Carregamentos - Caminhao Mineracao</title>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Leaflet CSS/JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #e94560;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(233, 69, 96, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #e94560;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .chart-title {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #e94560;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #timeline-chart {
+            height: 250px;
+        }
+
+        #detail-chart {
+            height: 300px;
+        }
+
+        #map {
+            height: 350px;
+            border-radius: 8px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .events-panel {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .events-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .event-card {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid #e94560;
+        }
+
+        .event-card:hover {
+            background: #1a4a7a;
+            transform: translateX(5px);
+        }
+
+        .event-card.selected {
+            background: #e94560;
+            color: white;
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .event-id {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .event-duration {
+            background: rgba(233, 69, 96, 0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.85em;
+        }
+
+        .event-time {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .event-metrics {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8em;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .metric-value {
+            color: #4ecca3;
+            font-weight: 500;
+        }
+
+        .filter-bar {
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .filter-bar input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: #16213e;
+            color: #eee;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #888;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .events-list {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h1>Visualizador de Eventos de Carregamento</h1>
+            <nav style="display: flex; gap: 5px;">
+                <a href="visualizacao_ciclos.html" style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; color: #888; border: 1px solid transparent;">Ciclos</a>
+                <a href="visualizacao_carregamentos.html" style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; color: #4fc3f7; border: 1px solid #4fc3f7; background: rgba(79,195,247,0.1);">Carregamentos</a>
+                <a href="editor_poligonos.html" style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; color: #888; border: 1px solid transparent;">Editor</a>
+            </nav>
+        </div>
+        <div class="stats-bar" id="stats-bar">
+            <div class="stat-item">Carregando dados...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Timeline de Operacao (Velocidade e Aceleracao)</span>
+                </div>
+                <div id="timeline-chart"><div class="loading">Carregando...</div></div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span>Velocidade (km/h)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e74c3c;"></div>
+                        <span>Aceleracao (g)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(233, 69, 96, 0.3);"></div>
+                        <span>Carregamentos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Detalhe do Evento Selecionado (segundo a segundo)</span>
+                </div>
+                <div id="detail-chart"><div class="loading">Selecione um evento na lista</div></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Mapa de Localizacoes</span>
+                </div>
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="events-panel">
+                <div class="chart-title">
+                    <span>Eventos Detectados</span>
+                    <span id="event-count" style="font-size: 0.8em; color: #888;"></span>
+                </div>
+                <div class="filter-bar">
+                    <input type="text" id="event-filter" placeholder="Filtrar por horario...">
+                </div>
+                <div class="events-list" id="events-list">
+                    <div class="loading">Carregando eventos...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let data = null;
+        let map = null;
+        let markers = [];
+        let selectedEventId = null;
+        let orthoLayer = null;
+
+        // Carregar dados
+        async function loadData() {
+            try {
+                const response = await fetch('visualization_data.json');
+                data = await response.json();
+                initializeVisualization();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                document.getElementById('stats-bar').innerHTML =
+                    '<div class="stat-item" style="color: #e74c3c;">Erro ao carregar dados. Verifique se visualization_data.json existe.</div>';
+            }
+        }
+
+        function initializeVisualization() {
+            updateStats();
+            renderTimeline();
+            renderEventsList();
+            initializeMap();
+        }
+
+        function updateStats() {
+            const stats = data.stats;
+            const eventsCount = data.events.length;
+            const avgDuration = data.events.reduce((sum, e) => sum + e.duration_sec, 0) / eventsCount;
+
+            document.getElementById('stats-bar').innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-value">${eventsCount}</span> Carregamentos
+                </div>
+                <div class="stat-item">
+                    Duracao Media: <span class="stat-value">${Math.round(avgDuration)}s</span>
+                </div>
+                <div class="stat-item">
+                    Periodo: <span class="stat-value">${formatDateTime(stats.period_start)}</span> a <span class="stat-value">${formatDateTime(stats.period_end)}</span>
+                </div>
+            `;
+        }
+
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function renderTimeline() {
+            const times = data.telemetry_sampled.time.map(t => new Date(t));
+
+            // Criar shapes para os eventos
+            const shapes = data.events.map(event => ({
+                type: 'rect',
+                xref: 'x',
+                yref: 'paper',
+                x0: new Date(event.start),
+                x1: new Date(event.end),
+                y0: 0,
+                y1: 1,
+                fillcolor: 'rgba(233, 69, 96, 0.3)',
+                line: { width: 0 }
+            }));
+
+            const traces = [
+                {
+                    x: times,
+                    y: data.telemetry_sampled.speed_kmh,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Velocidade (km/h)',
+                    line: { color: '#3498db', width: 1 },
+                    yaxis: 'y'
+                },
+                {
+                    x: times,
+                    y: data.telemetry_sampled.accel,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Aceleracao (g)',
+                    line: { color: '#e74c3c', width: 1 },
+                    yaxis: 'y2'
+                }
+            ];
+
+            const layout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: '#0f3460',
+                margin: { l: 50, r: 50, t: 10, b: 40 },
+                xaxis: {
+                    gridcolor: '#1a4a7a',
+                    tickfont: { color: '#aaa' }
+                },
+                yaxis: {
+                    title: 'Velocidade (km/h)',
+                    titlefont: { color: '#3498db' },
+                    tickfont: { color: '#3498db' },
+                    gridcolor: '#1a4a7a',
+                    side: 'left'
+                },
+                yaxis2: {
+                    title: 'Aceleracao (g)',
+                    titlefont: { color: '#e74c3c' },
+                    tickfont: { color: '#e74c3c' },
+                    overlaying: 'y',
+                    side: 'right',
+                    gridcolor: 'transparent'
+                },
+                shapes: shapes,
+                showlegend: false,
+                hovermode: 'x unified'
+            };
+
+            Plotly.newPlot('timeline-chart', traces, layout, { responsive: true });
+        }
+
+        function renderEventsList() {
+            const container = document.getElementById('events-list');
+
+            let html = '';
+            data.events.forEach(event => {
+                html += `
+                    <div class="event-card" data-id="${event.id}" onclick="selectEvent(${event.id})">
+                        <div class="event-header">
+                            <span class="event-id">#${event.id}</span>
+                            <span class="event-duration">${event.duration_sec}s</span>
+                        </div>
+                        <div class="event-time">
+                            ${formatTime(event.start)} - ${formatTime(event.end)}
+                        </div>
+                        <div class="event-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Variab.</span>
+                                <span class="metric-value">${event.variabilidade.toFixed(4)}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Accel</span>
+                                <span class="metric-value">${event.accel_mean.toFixed(4)}g</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Spikes</span>
+                                <span class="metric-value">${(event.spike_fraction * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('event-count').textContent = `(${data.events.length} eventos)`;
+
+            // Filtro
+            document.getElementById('event-filter').addEventListener('input', (e) => {
+                const filter = e.target.value.toLowerCase();
+                document.querySelectorAll('.event-card').forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    card.style.display = text.includes(filter) ? 'block' : 'none';
+                });
+            });
+        }
+
+        function selectEvent(eventId) {
+            selectedEventId = eventId;
+
+            // Atualizar visual da lista
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.toggle('selected', parseInt(card.dataset.id) === eventId);
+            });
+
+            // Encontrar evento
+            const event = data.events.find(e => e.id === eventId);
+            if (!event) return;
+
+            // Atualizar mapa
+            updateMapForEvent(event);
+
+            // Renderizar detalhe
+            renderEventDetail(event);
+        }
+
+        function renderEventDetail(event) {
+            const eventStart = new Date(event.start);
+            const eventEnd = new Date(event.end);
+
+            // Usar dados completos (segundo a segundo) para o detalhe
+            const telemetry = data.telemetry_full;
+
+            // Encontrar dados do periodo do evento (com margem de 30 segundos)
+            const marginMs = 30000; // 30 segundos de margem
+            const startIdx = telemetry.time.findIndex(t =>
+                new Date(t) >= new Date(eventStart.getTime() - marginMs)
+            );
+            let endIdx = telemetry.time.findIndex(t =>
+                new Date(t) >= new Date(eventEnd.getTime() + marginMs)
+            );
+
+            // Se não encontrar o fim, usar até o final dos dados
+            if (endIdx === -1) endIdx = telemetry.time.length;
+
+            if (startIdx === -1) {
+                document.getElementById('detail-chart').innerHTML =
+                    '<div class="loading">Dados nao encontrados para este evento</div>';
+                return;
+            }
+
+            const times = telemetry.time.slice(startIdx, endIdx).map(t => new Date(t));
+            const speeds = telemetry.speed_kmh.slice(startIdx, endIdx);
+            const accels = telemetry.accel.slice(startIdx, endIdx);
+
+            const traces = [
+                {
+                    x: times,
+                    y: speeds,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Velocidade (km/h)',
+                    line: { color: '#3498db', width: 2 },
+                    yaxis: 'y'
+                },
+                {
+                    x: times,
+                    y: accels,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Aceleracao (g)',
+                    line: { color: '#e74c3c', width: 2 },
+                    yaxis: 'y2'
+                }
+            ];
+
+            const layout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: '#0f3460',
+                margin: { l: 50, r: 50, t: 30, b: 40 },
+                title: {
+                    text: `Evento #${event.id} - ${event.duration_sec}s`,
+                    font: { color: '#e94560', size: 14 }
+                },
+                xaxis: {
+                    gridcolor: '#1a4a7a',
+                    tickfont: { color: '#aaa' }
+                },
+                yaxis: {
+                    title: 'Velocidade (km/h)',
+                    titlefont: { color: '#3498db' },
+                    tickfont: { color: '#3498db' },
+                    gridcolor: '#1a4a7a',
+                    side: 'left'
+                },
+                yaxis2: {
+                    title: 'Aceleracao (g)',
+                    titlefont: { color: '#e74c3c' },
+                    tickfont: { color: '#e74c3c' },
+                    overlaying: 'y',
+                    side: 'right'
+                },
+                shapes: [{
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'paper',
+                    x0: eventStart,
+                    x1: eventEnd,
+                    y0: 0,
+                    y1: 1,
+                    fillcolor: 'rgba(233, 69, 96, 0.3)',
+                    line: { color: '#e94560', width: 2 }
+                }],
+                showlegend: false
+            };
+
+            Plotly.newPlot('detail-chart', traces, layout, { responsive: true });
+        }
+
+        function initializeMap() {
+            // Centro baseado na media das coordenadas
+            const avgLat = data.events.reduce((sum, e) => sum + e.latitude, 0) / data.events.length;
+            const avgLon = data.events.reduce((sum, e) => sum + e.longitude, 0) / data.events.length;
+
+            map = L.map('map').setView([avgLat, avgLon], 15);
+
+            // Camada base OSM
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            });
+
+            // Camada da ortofoto
+            const bounds = data.image_bounds;
+            const imageBounds = [[bounds.south, bounds.west], [bounds.north, bounds.east]];
+            orthoLayer = L.imageOverlay('ortho_sirgas_q5.webp', imageBounds, {
+                opacity: 1.0,
+                interactive: false
+            });
+
+            // Adicionar ortofoto como camada base padrão
+            orthoLayer.addTo(map);
+
+            // Controle de camadas
+            const baseLayers = {
+                "Ortofoto": orthoLayer,
+                "OpenStreetMap": osmLayer
+            };
+            L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+
+            // Ajustar zoom para ver a ortofoto
+            map.fitBounds(imageBounds);
+
+            // Adicionar marcadores para cada evento
+            data.events.forEach(event => {
+                const marker = L.circleMarker([event.latitude, event.longitude], {
+                    radius: 8,
+                    fillColor: '#e94560',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                marker.bindPopup(`
+                    <b>Evento #${event.id}</b><br>
+                    Duracao: ${event.duration_sec}s<br>
+                    Horario: ${formatTime(event.start)}<br>
+                    Variabilidade: ${event.variabilidade.toFixed(4)}
+                `);
+
+                marker.on('click', () => selectEvent(event.id));
+
+                markers.push({ id: event.id, marker });
+            });
+
+            // Trajetoria usando dados amostrados para performance
+            const trajectory = data.telemetry_sampled.latitude.map((lat, i) =>
+                [lat, data.telemetry_sampled.longitude[i]]
+            );
+            L.polyline(trajectory, { color: '#3498db', weight: 2, opacity: 0.7 }).addTo(map);
+        }
+
+        function updateMapForEvent(event) {
+            map.setView([event.latitude, event.longitude], 17);
+
+            // Destacar marcador
+            markers.forEach(m => {
+                const isSelected = m.id === event.id;
+                m.marker.setStyle({
+                    fillColor: isSelected ? '#4ecca3' : '#e94560',
+                    radius: isSelected ? 12 : 8
+                });
+                if (isSelected) {
+                    m.marker.openPopup();
+                }
+            });
+        }
+
+        // Iniciar
+        loadData();
+    </script>
+</body>
+</html>

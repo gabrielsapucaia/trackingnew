@@ -1,0 +1,131 @@
+================================================================================
+🚛 DETECTOR VISUAL DE CARREGAMENTO - INPUT.CSV
+================================================================================
+
+✅ SERVIDOR ESTÁ RODANDO!
+
+📊 Dados carregados: 91.660 registros
+📂 Arquivo: /Users/sapucaia/tracking/BackTest/input.csv
+🌐 Servidor: http://localhost:8080
+📅 Período dos dados: 2025-12-12 10:13:40 até 2025-12-13 11:58:02
+
+================================================================================
+COMO USAR:
+================================================================================
+
+1. ABRIR A INTERFACE VISUAL
+   - A interface já foi aberta no seu navegador
+   - OU acesse manualmente:
+     file:///Users/sapucaia/.claude-worktrees/BackTest/serene-mccarthy/BackendTestes/detector_visual.html
+
+2. CARREGAR OS DADOS
+   - Clique no botão "🔄 Carregar Dados"
+   - Aguarde alguns segundos (são 91 mil registros!)
+   - Você verá os gráficos de Velocidade e Aceleração
+
+3. AJUSTAR OS PARÂMETROS
+   Use os sliders na barra lateral esquerda:
+
+   ⚙️ Velocidade Máxima (parado): 0.5 km/h
+      → Ajuste se veículo tem muito/pouco ruído no GPS
+
+   ⚙️ Magnitude Mínima (pico): 2.0 m/s²
+      → PRINCIPAL PARÂMETRO! Ajuste para detectar as "conchadas"
+      → Aumente se detectar muitos falsos positivos
+      → Diminua se não detectar carregamentos reais
+
+   ⚙️ Distância Mínima Entre Picos: 10 samples
+      → Evita detectar o mesmo pico múltiplas vezes
+
+   ⚙️ Picos Mínimos Consecutivos: 3 picos
+      → Quantas "conchadas" mínimas para ser um carregamento
+
+   ⚙️ Duração Mínima do Evento: 10 segundos
+      → Tempo mínimo do carregamento
+
+   ⚙️ Gap Máximo Entre Picos: 15 segundos
+      → Tempo máximo entre conchadas do mesmo carregamento
+
+4. DETECTAR EVENTOS
+   - Clique em "🔍 Detectar Eventos"
+   - Veja os eventos destacados em VERMELHO no gráfico
+   - Veja a lista de eventos no canto inferior direito
+
+5. VALIDAR RESULTADOS
+   - Clique em um evento da lista para dar ZOOM nele
+   - Verifique se:
+     ✓ Velocidade está próxima de ZERO (parado)
+     ✓ Há múltiplos PICOS consecutivos de vibração
+     ✓ O padrão visual faz sentido como "conchadas"
+
+6. AJUSTAR E REPETIR
+   - Se detectou eventos errados (falsos positivos):
+     → AUMENTE "Magnitude Mínima" para 3.0, 4.0, etc
+     → AUMENTE "Picos Mínimos" para 4 ou 5
+
+   - Se NÃO detectou eventos reais (falsos negativos):
+     → DIMINUA "Magnitude Mínima" para 1.5, 1.0, etc
+     → DIMINUA "Picos Mínimos" para 2
+     → AUMENTE "Gap Máximo" para 20, 25 segundos
+
+================================================================================
+PRESETS RÁPIDOS:
+================================================================================
+
+Use os botões de preset para configurações pré-definidas:
+
+🔹 Caminhão Pesado
+   - Vibrações menores (threshold baixo)
+   - Ideal para caminhões grandes
+
+🔹 Caminhão Leve
+   - Vibrações maiores (threshold alto)
+   - Ideal para caminhões pequenos
+
+🔹 Carregamento Rápido
+   - Gaps curtos entre picos
+   - Escavadeira rápida
+
+🔹 Carregamento Lento
+   - Gaps longos entre picos
+   - Escavadeira lenta
+
+================================================================================
+PARAR O SERVIDOR:
+================================================================================
+
+Para parar o servidor quando terminar:
+
+    pkill -f "servidor_detector_input"
+
+Ou pressione Ctrl+C no terminal onde o servidor está rodando.
+
+================================================================================
+RESUMO DOS ARQUIVOS CRIADOS:
+================================================================================
+
+📄 /Users/sapucaia/tracking/BackTest/servidor_detector_input.py
+   → Servidor HTTP que lê o input.csv
+
+📄 detector_visual.html
+   → Interface visual interativa (já aberta no navegador)
+
+📄 detectar_carregamento.py
+   → Script Python standalone para análise
+
+📄 README_DETECCAO_CARREGAMENTO.md
+   → Documentação técnica completa
+
+📄 COMO_USAR_DETECTOR_VISUAL.md
+   → Guia detalhado de uso
+
+================================================================================
+DÚVIDAS OU PROBLEMAS?
+================================================================================
+
+- Verifique se o servidor está rodando: curl http://localhost:8080/health
+- Veja os logs do servidor no terminal
+- Consulte os arquivos de documentação acima
+
+Bom ajuste dos parâmetros! 🎯
+================================================================================

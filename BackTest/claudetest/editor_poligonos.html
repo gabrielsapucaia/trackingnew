@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Polígonos - Áreas de Carregamento</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #16213e;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #e94560;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff6b6b;
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: #eee;
+        }
+
+        .btn-secondary:hover {
+            background: #1a4a7a;
+        }
+
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+        }
+
+        /* Navegação entre páginas */
+        .nav-menu {
+            display: flex;
+            gap: 5px;
+            margin-right: 20px;
+        }
+
+        .nav-link {
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            color: #888;
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #eee;
+            background: #0f3460;
+        }
+
+        .nav-link.active {
+            color: #e94560;
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+
+        /* Toolbar lateral customizada */
+        .custom-toolbar {
+            position: absolute;
+            top: 70px;
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: #16213e;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .toolbar-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .toolbar-btn:hover {
+            background: #0f3460;
+            transform: scale(1.05);
+        }
+
+        .toolbar-btn.active {
+            background: #e94560;
+            color: white;
+        }
+
+        .toolbar-btn[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 50px;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .toolbar-separator {
+            height: 1px;
+            background: #0f3460;
+            margin: 5px 0;
+        }
+
+        /* Esconder toolbar padrão do Leaflet.Draw */
+        .leaflet-draw-toolbar {
+            display: none !important;
+        }
+
+        /* Polígono selecionado */
+        .polygon-item.selected {
+            border-color: #4fc3f7;
+            background: rgba(79, 195, 247, 0.1);
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #16213e;
+            border-left: 1px solid #0f3460;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .visibility-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .visibility-controls button {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            background: #1a1a2e;
+            color: #888;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .visibility-controls button:hover {
+            background: #0f3460;
+            color: #eee;
+        }
+
+        .polygon-visibility {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .polygon-visibility input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #2ecc71;
+        }
+
+        .polygon-item.hidden-layer {
+            opacity: 0.5;
+        }
+
+        .polygon-item.hidden-layer .polygon-name {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        .polygon-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .polygon-item {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #0f3460;
+        }
+
+        .polygon-item {
+            border-left: 3px solid #2ecc71;
+        }
+
+        .polygon-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .polygon-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .polygon-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .polygon-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .polygon-actions button:hover {
+            background: #0f3460;
+        }
+
+        .polygon-info {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .polygon-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .polygon-type-selector label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .instructions {
+            padding: 15px;
+            background: #1a1a2e;
+            border-top: 1px solid #0f3460;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .instructions h3 {
+            font-size: 0.9rem;
+            color: #eee;
+            margin-bottom: 8px;
+        }
+
+        .instructions ul {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        .status-bar {
+            background: #0f3460;
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-message {
+            color: #2ecc71;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            margin-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 0.95rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Leaflet customization */
+        .leaflet-draw-toolbar a {
+            background-color: #16213e !important;
+        }
+
+        .leaflet-draw-actions a {
+            background-color: #0f3460 !important;
+            color: #eee !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        .empty-state p {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Editor de Polígonos - Áreas de Carregamento</h1>
+        <div style="display: flex; align-items: center;">
+            <nav class="nav-menu">
+                <a href="visualizacao_ciclos.html" class="nav-link">Ciclos</a>
+                <a href="visualizacao_carregamentos.html" class="nav-link">Carregamentos</a>
+                <a href="editor_poligonos.html" class="nav-link active">Editor</a>
+            </nav>
+            <div class="header-buttons">
+                <button class="btn btn-secondary" onclick="loadFromFile()">Carregar JSON</button>
+                <button class="btn btn-primary" onclick="exportToFile()">Exportar JSON</button>
+                <button class="btn btn-success" onclick="copyToClipboard()">Copiar JSON</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div id="map"></div>
+
+        <!-- Toolbar customizada -->
+        <div class="custom-toolbar">
+            <button class="toolbar-btn" id="btnDraw" data-tooltip="Desenhar Polígono" onclick="startDrawing()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="btnEdit" data-tooltip="Editar Polígonos" onclick="startEditing()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="btnDelete" data-tooltip="Excluir Polígonos" onclick="startDeleting()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+            </button>
+            <div class="toolbar-separator"></div>
+            <button class="toolbar-btn" id="btnSave" data-tooltip="Salvar Alterações" onclick="saveEdits()" style="display: none; background: #2ecc71;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="btnCancel" data-tooltip="Cancelar" onclick="cancelAction()" style="display: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <button class="toolbar-btn" data-tooltip="Carregar Existentes" onclick="loadExistingPolygons()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </button>
+        </div>
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Polígonos Definidos</h2>
+                <p>Desenhe áreas de carregamento no mapa</p>
+                <div class="visibility-controls">
+                    <button onclick="showAllPolygons()" title="Mostrar todos">👁 Mostrar Todos</button>
+                    <button onclick="hideAllPolygons()" title="Ocultar todos">👁‍🗨 Ocultar Todos</button>
+                </div>
+            </div>
+
+            <div class="polygon-list" id="polygonList">
+                <div class="empty-state">
+                    <p>Nenhum polígono definido.</p>
+                    <p>Use a ferramenta de desenho no mapa para criar áreas.</p>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <h3>Instruções</h3>
+                <ul>
+                    <li>Clique no ícone de polígono para desenhar</li>
+                    <li>Clique nos vértices do polígono</li>
+                    <li>Finalize clicando no primeiro ponto</li>
+                    <li>Exporte o JSON quando terminar</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <div class="status-bar">
+        <span id="statusMessage" class="status-message">Pronto</span>
+        <span id="coordsDisplay">-</span>
+    </div>
+
+    <!-- Modal para nomear polígono -->
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Configurar Polígono</h3>
+            </div>
+            <div class="form-group">
+                <label>Nome do Polígono</label>
+                <input type="text" id="polygonName" placeholder="Ex: Frente de Lavra Norte">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="cancelPolygon()">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmPolygon()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Draw JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+    <script>
+        // Configuração do mapa
+        // Bounds extraídos do GeoTIFF SIRGAS 2000 (PAI-VO-20251218_sirgas.tif)
+        const bounds = [
+            [-11.7094, -47.1711],  // SW (Lower Left)
+            [-11.6840, -47.1484]   // NE (Upper Right)
+        ];
+
+        const center = [-11.6967, -47.1598];
+
+        // Inicializar mapa
+        const map = L.map('map', {
+            center: center,
+            zoom: 16,
+            maxZoom: 20,
+            minZoom: 14
+        });
+
+        // Camada OSM
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 20
+        });
+
+        // Camada ortofoto SIRGAS 2000
+        const orthoLayer = L.imageOverlay('ortho_sirgas_q5.webp', bounds, {
+            opacity: 1.0
+        });
+
+        // Adicionar camadas
+        orthoLayer.addTo(map);
+
+        // Controle de camadas
+        const baseLayers = {
+            "Ortofoto": orthoLayer,
+            "OpenStreetMap": osmLayer
+        };
+        L.control.layers(baseLayers).addTo(map);
+
+        // Ajustar view
+        map.fitBounds(bounds);
+
+        // Armazenamento de polígonos
+        let polygons = [];
+        let drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        // Polígono temporário aguardando configuração
+        let pendingLayer = null;
+
+        // Polígono selecionado para edição
+        let selectedPolygon = null;
+        let isEditingSelected = false;
+
+        // Cor única para todos os polígonos
+        const polygonColor = '#2ecc71';
+
+        // Configurar controle de desenho
+        const drawControl = new L.Control.Draw({
+            draw: {
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    shapeOptions: {
+                        color: '#e94560',
+                        fillColor: '#e94560',
+                        fillOpacity: 0.3
+                    }
+                },
+                polyline: false,
+                circle: false,
+                rectangle: false,
+                marker: false,
+                circlemarker: false
+            },
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            }
+        });
+        map.addControl(drawControl);
+
+        // Evento: polígono criado
+        map.on('draw:created', function(e) {
+            pendingLayer = e.layer;
+            document.getElementById('nameModal').classList.add('active');
+            document.getElementById('polygonName').value = `Área ${polygons.length + 1}`;
+            document.getElementById('polygonName').focus();
+        });
+
+        // Evento: polígono editado
+        map.on('draw:edited', function(e) {
+            updatePolygonList();
+            setStatus('Polígonos editados');
+        });
+
+        // Evento: polígono deletado
+        map.on('draw:deleted', function(e) {
+            e.layers.eachLayer(function(layer) {
+                const idx = polygons.findIndex(p => p.layer === layer);
+                if (idx !== -1) {
+                    polygons.splice(idx, 1);
+                }
+            });
+            updatePolygonList();
+            setStatus('Polígono removido');
+        });
+
+        // Confirmar criação do polígono
+        function confirmPolygon() {
+            if (!pendingLayer) return;
+
+            const name = document.getElementById('polygonName').value || `Área ${polygons.length + 1}`;
+
+            // Aplicar cor única
+            pendingLayer.setStyle({
+                color: polygonColor,
+                fillColor: polygonColor,
+                fillOpacity: 0.3
+            });
+
+            // Adicionar ao mapa
+            drawnItems.addLayer(pendingLayer);
+
+            // Calcular área
+            const latlngs = pendingLayer.getLatLngs()[0];
+            const area = L.GeometryUtil.geodesicArea(latlngs);
+
+            // Armazenar
+            polygons.push({
+                id: Date.now(),
+                name: name,
+                layer: pendingLayer,
+                area: area
+            });
+
+            pendingLayer = null;
+            document.getElementById('nameModal').classList.remove('active');
+            updatePolygonList();
+            setStatus(`Polígono "${name}" criado`);
+        }
+
+        // Cancelar criação
+        function cancelPolygon() {
+            pendingLayer = null;
+            document.getElementById('nameModal').classList.remove('active');
+            setStatus('Criação cancelada');
+        }
+
+        // Atualizar lista de polígonos
+        function updatePolygonList() {
+            const container = document.getElementById('polygonList');
+
+            if (polygons.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Nenhum polígono definido.</p>
+                        <p>Use a ferramenta de desenho no mapa para criar áreas.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = polygons.map((p, i) => {
+                const isVisible = p.visible !== false;
+                return `
+                <div class="polygon-item ${!isVisible ? 'hidden-layer' : ''}" data-index="${i}">
+                    <div class="polygon-item-header">
+                        <div class="polygon-visibility">
+                            <input type="checkbox" ${isVisible ? 'checked' : ''} onchange="togglePolygonVisibility(${i})" title="Mostrar/Ocultar">
+                            <span class="polygon-name">${p.name}</span>
+                        </div>
+                        <div class="polygon-actions">
+                            <button onclick="focusPolygon(${i})" title="Zoom">🔍</button>
+                            <button onclick="editPolygonName(${i})" title="Editar">✏️</button>
+                            <button onclick="deletePolygon(${i})" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="polygon-info">
+                        Área: ${formatArea(p.area)}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Alternar visibilidade de um polígono
+        function togglePolygonVisibility(index) {
+            const p = polygons[index];
+            if (!p) return;
+
+            p.visible = p.visible === false ? true : false;
+
+            if (p.visible === false) {
+                // Ocultar no mapa
+                if (drawnItems.hasLayer(p.layer)) {
+                    drawnItems.removeLayer(p.layer);
+                }
+            } else {
+                // Mostrar no mapa
+                if (!drawnItems.hasLayer(p.layer)) {
+                    drawnItems.addLayer(p.layer);
+                }
+            }
+
+            updatePolygonList();
+            setupPolygonClickHandlers();
+        }
+
+        // Mostrar todos os polígonos
+        function showAllPolygons() {
+            polygons.forEach((p, i) => {
+                p.visible = true;
+                if (!drawnItems.hasLayer(p.layer)) {
+                    drawnItems.addLayer(p.layer);
+                }
+            });
+            updatePolygonList();
+            setupPolygonClickHandlers();
+            setStatus('Todos os polígonos visíveis');
+        }
+
+        // Ocultar todos os polígonos
+        function hideAllPolygons() {
+            polygons.forEach((p, i) => {
+                p.visible = false;
+                if (drawnItems.hasLayer(p.layer)) {
+                    drawnItems.removeLayer(p.layer);
+                }
+            });
+            updatePolygonList();
+            setStatus('Todos os polígonos ocultos');
+        }
+
+        // Formatar área
+        function formatArea(areaM2) {
+            if (areaM2 > 10000) {
+                return (areaM2 / 10000).toFixed(2) + ' ha';
+            }
+            return Math.round(areaM2) + ' m²';
+        }
+
+        // Focar no polígono
+        function focusPolygon(index) {
+            const p = polygons[index];
+            if (p && p.layer) {
+                map.fitBounds(p.layer.getBounds(), { padding: [50, 50] });
+            }
+        }
+
+        // Editar nome
+        function editPolygonName(index) {
+            const p = polygons[index];
+            const newName = prompt('Novo nome:', p.name);
+            if (newName && newName.trim()) {
+                p.name = newName.trim();
+                updatePolygonList();
+            }
+        }
+
+        // Deletar polígono
+        function deletePolygon(index) {
+            const p = polygons[index];
+            if (!p) return;
+
+            drawnItems.removeLayer(p.layer);
+            polygons.splice(index, 1);
+            updatePolygonList();
+            setupPolygonClickHandlers();
+            saveToFile();
+            setStatus(`Polígono "${p.name}" removido`);
+        }
+
+        // Exportar para GeoJSON
+        function getGeoJSON() {
+            const features = polygons.map(p => {
+                const latlngs = p.layer.getLatLngs()[0];
+                const coordinates = latlngs.map(ll => [ll.lng, ll.lat]);
+                coordinates.push(coordinates[0]); // Fechar o polígono
+
+                return {
+                    type: 'Feature',
+                    properties: {
+                        name: p.name,
+                        type: p.type,
+                        area_m2: p.area
+                    },
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [coordinates]
+                    }
+                };
+            });
+
+            return {
+                type: 'FeatureCollection',
+                features: features,
+                metadata: {
+                    created: new Date().toISOString(),
+                    description: 'Áreas de carregamento e basculamento'
+                }
+            };
+        }
+
+        // Exportar para arquivo
+        function exportToFile() {
+            const geojson = getGeoJSON();
+            const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'areas_carregamento.json';
+            a.click();
+
+            URL.revokeObjectURL(url);
+            setStatus('Arquivo exportado: areas_carregamento.json');
+        }
+
+        // Copiar para clipboard
+        function copyToClipboard() {
+            const geojson = getGeoJSON();
+            navigator.clipboard.writeText(JSON.stringify(geojson, null, 2))
+                .then(() => setStatus('JSON copiado para a área de transferência'))
+                .catch(() => setStatus('Erro ao copiar'));
+        }
+
+        // Carregar de arquivo
+        function loadFromFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,.geojson';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const geojson = JSON.parse(e.target.result);
+                        loadGeoJSON(geojson);
+                        setStatus(`Carregados ${polygons.length} polígonos`);
+                    } catch (err) {
+                        alert('Erro ao carregar arquivo: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Carregar GeoJSON
+        function loadGeoJSON(geojson) {
+            // Limpar existentes
+            drawnItems.clearLayers();
+            polygons = [];
+
+            // Adicionar features
+            if (geojson.features) {
+                geojson.features.forEach(feature => {
+                    if (feature.geometry.type === 'Polygon') {
+                        const coords = feature.geometry.coordinates[0];
+                        const latlngs = coords.slice(0, -1).map(c => [c[1], c[0]]);
+
+                        const type = feature.properties.type || 'carregamento';
+                        const color = polygonColor;
+
+                        const layer = L.polygon(latlngs, {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.3
+                        });
+
+                        drawnItems.addLayer(layer);
+
+                        polygons.push({
+                            id: Date.now() + Math.random(),
+                            name: feature.properties.name || 'Área',
+                            type: type,
+                            layer: layer,
+                            area: feature.properties.area_m2 || L.GeometryUtil.geodesicArea(layer.getLatLngs()[0])
+                        });
+                    }
+                });
+            }
+
+            updatePolygonList();
+
+            if (polygons.length > 0) {
+                const bounds = drawnItems.getBounds();
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        // Mostrar coordenadas
+        map.on('mousemove', function(e) {
+            document.getElementById('coordsDisplay').textContent =
+                `Lat: ${e.latlng.lat.toFixed(6)}, Lon: ${e.latlng.lng.toFixed(6)}`;
+        });
+
+        // Status
+        function setStatus(msg) {
+            document.getElementById('statusMessage').textContent = msg;
+        }
+
+        // ============ Sistema de Seleção/Edição por Clique ============
+        // (movido para antes do carregamento inicial)
+
+        // Adicionar handlers de clique aos polígonos
+        function setupPolygonClickHandlers() {
+            drawnItems.eachLayer(function(layer) {
+                layer.off('click'); // Remover handlers antigos
+                layer.on('click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    handlePolygonClick(layer);
+                });
+            });
+        }
+
+        // Handler de clique no polígono
+        function handlePolygonClick(layer) {
+            const polygonData = polygons.find(p => p.layer === layer);
+            if (!polygonData) return;
+
+            // Se estiver em modo de exclusão, usar handler de exclusão
+            if (deleteMode) {
+                deleteLayerOnClick({ target: layer });
+                return;
+            }
+
+            if (selectedPolygon === polygonData) {
+                // Segundo clique no mesmo polígono - entra em edição
+                if (!isEditingSelected) {
+                    startEditingSelected();
+                }
+            } else {
+                // Primeiro clique - seleciona o polígono
+                if (isEditingSelected) {
+                    saveAndDeselectPolygon();
+                }
+                selectPolygon(polygonData);
+            }
+        }
+
+        // Selecionar polígono
+        function selectPolygon(polygonData) {
+            // Desselecionar anterior
+            if (selectedPolygon && selectedPolygon.layer) {
+                const color = polygonColor;
+                selectedPolygon.layer.setStyle({
+                    color: color,
+                    weight: 2
+                });
+            }
+
+            selectedPolygon = polygonData;
+
+            // Destacar selecionado
+            polygonData.layer.setStyle({
+                color: '#4fc3f7',
+                weight: 4
+            });
+
+            // Atualizar lista visual
+            updatePolygonListSelection();
+
+            setStatus(`Polígono "${polygonData.name}" selecionado. Clique novamente para editar.`);
+        }
+
+        // Iniciar edição do polígono selecionado
+        function startEditingSelected() {
+            if (!selectedPolygon || !selectedPolygon.layer) return;
+
+            isEditingSelected = true;
+
+            if (selectedPolygon.layer.editing) {
+                selectedPolygon.layer.editing.enable();
+            }
+
+            selectedPolygon.layer.setStyle({
+                color: '#e94560',
+                weight: 3,
+                dashArray: '5, 10'
+            });
+
+            setStatus(`Editando "${selectedPolygon.name}". Arraste os vértices. Clique fora para salvar.`);
+        }
+
+        // Salvar e desselecionar polígono
+        function saveAndDeselectPolygon() {
+            if (selectedPolygon && selectedPolygon.layer) {
+                // Desabilitar edição
+                if (selectedPolygon.layer.editing) {
+                    selectedPolygon.layer.editing.disable();
+                }
+
+                // Atualizar área
+                const latlngs = selectedPolygon.layer.getLatLngs()[0];
+                selectedPolygon.area = L.GeometryUtil.geodesicArea(latlngs);
+
+                // Restaurar cor original
+                const color = polygonColor;
+                selectedPolygon.layer.setStyle({
+                    color: color,
+                    weight: 2,
+                    dashArray: null
+                });
+
+                // Salvar no localStorage
+                localStorage.setItem('areas_carregamento', JSON.stringify(getGeoJSON()));
+
+                // Salvar no arquivo JSON via servidor
+                saveToFile();
+
+                setStatus(`Polígono "${selectedPolygon.name}" salvo.`);
+            }
+
+            selectedPolygon = null;
+            isEditingSelected = false;
+            updatePolygonList();
+        }
+
+        // Salvar no arquivo JSON via servidor
+        async function saveToFile() {
+            const geojson = getGeoJSON();
+            try {
+                const response = await fetch('/save_areas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(geojson)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Arquivo salvo:', result.message);
+                } else {
+                    console.error('Erro ao salvar arquivo');
+                    setStatus('Erro ao salvar no arquivo. Use "Exportar JSON" para download manual.');
+                }
+            } catch (err) {
+                console.error('Erro ao salvar:', err);
+                // Silenciosamente falha se o servidor não suportar POST
+            }
+        }
+
+        // Atualizar seleção visual na lista
+        function updatePolygonListSelection() {
+            document.querySelectorAll('.polygon-item').forEach((el, idx) => {
+                if (selectedPolygon && polygons[idx] === selectedPolygon) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+        }
+
+        // Clique no mapa (fora dos polígonos)
+        map.on('click', function(e) {
+            if (isEditingSelected) {
+                saveAndDeselectPolygon();
+            } else if (selectedPolygon) {
+                // Desselecionar
+                const color = polygonColor;
+                selectedPolygon.layer.setStyle({
+                    color: color,
+                    weight: 2
+                });
+                selectedPolygon = null;
+                updatePolygonListSelection();
+                setStatus('Pronto');
+            }
+        });
+
+        // Sobrescrever loadGeoJSON para configurar handlers
+        const originalLoadGeoJSON = loadGeoJSON;
+        loadGeoJSON = function(geojson) {
+            originalLoadGeoJSON(geojson);
+            setupPolygonClickHandlers();
+        };
+
+        // Sobrescrever confirmPolygon para configurar handlers
+        const originalConfirmPolygon = confirmPolygon;
+        confirmPolygon = function() {
+            originalConfirmPolygon();
+            setupPolygonClickHandlers();
+        };
+
+        // Carregar polígonos salvos do localStorage
+        try {
+            const saved = localStorage.getItem('areas_carregamento');
+            if (saved) {
+                loadGeoJSON(JSON.parse(saved));
+            }
+        } catch (e) {}
+
+        // Salvar automaticamente no localStorage
+        setInterval(() => {
+            if (polygons.length > 0) {
+                localStorage.setItem('areas_carregamento', JSON.stringify(getGeoJSON()));
+            }
+        }, 5000);
+
+        // Enter no modal
+        document.getElementById('polygonName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                confirmPolygon();
+            }
+        });
+
+        // ============ Funções da Toolbar Customizada ============
+
+        let currentDrawHandler = null;
+        let editMode = false;
+        let deleteMode = false;
+
+        // Iniciar desenho de polígono
+        function startDrawing() {
+            cancelAction();
+            document.getElementById('btnDraw').classList.add('active');
+            document.getElementById('btnCancel').style.display = 'flex';
+
+            currentDrawHandler = new L.Draw.Polygon(map, {
+                allowIntersection: false,
+                showArea: true,
+                shapeOptions: {
+                    color: '#e94560',
+                    fillColor: '#e94560',
+                    fillOpacity: 0.3
+                }
+            });
+            currentDrawHandler.enable();
+            setStatus('Clique no mapa para desenhar o polígono. Clique no primeiro ponto para fechar.');
+        }
+
+        // Iniciar edição
+        function startEditing() {
+            cancelAction();
+
+            if (polygons.length === 0) {
+                setStatus('Nenhum polígono para editar');
+                return;
+            }
+
+            document.getElementById('btnEdit').classList.add('active');
+            document.getElementById('btnSave').style.display = 'flex';
+            document.getElementById('btnCancel').style.display = 'flex';
+            editMode = true;
+
+            // Habilitar edição em todos os polígonos
+            drawnItems.eachLayer(function(layer) {
+                if (layer.editing) {
+                    layer.editing.enable();
+                }
+            });
+
+            setStatus('Arraste os vértices para editar. Clique em ✓ para salvar ou ✕ para cancelar.');
+        }
+
+        // Salvar edições
+        function saveEdits() {
+            if (!editMode) return;
+
+            // Desabilitar edição em todos os polígonos
+            drawnItems.eachLayer(function(layer) {
+                if (layer.editing) {
+                    layer.editing.disable();
+                }
+            });
+
+            // Atualizar áreas dos polígonos
+            polygons.forEach(p => {
+                if (p.layer) {
+                    const latlngs = p.layer.getLatLngs()[0];
+                    p.area = L.GeometryUtil.geodesicArea(latlngs);
+                }
+            });
+
+            editMode = false;
+            updatePolygonList();
+
+            // Limpar estados visuais
+            document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btnSave').style.display = 'none';
+            document.getElementById('btnCancel').style.display = 'none';
+
+            // Salvar no localStorage
+            localStorage.setItem('areas_carregamento', JSON.stringify(getGeoJSON()));
+
+            setStatus('Alterações salvas com sucesso!');
+        }
+
+        // Iniciar exclusão
+        function startDeleting() {
+            cancelAction();
+
+            if (polygons.length === 0) {
+                setStatus('Nenhum polígono para excluir');
+                return;
+            }
+
+            document.getElementById('btnDelete').classList.add('active');
+            document.getElementById('btnCancel').style.display = 'flex';
+            deleteMode = true;
+
+            // Adicionar evento de clique para excluir
+            drawnItems.eachLayer(function(layer) {
+                layer.on('click', deleteLayerOnClick);
+                layer.setStyle({ fillOpacity: 0.5 });
+            });
+
+            setStatus('Clique em um polígono para excluí-lo. Clique em Cancelar quando terminar.');
+        }
+
+        // Handler de clique para excluir
+        function deleteLayerOnClick(e) {
+            if (!deleteMode) return;
+
+            const layer = e.target;
+            const idx = polygons.findIndex(p => p.layer === layer);
+
+            if (idx !== -1) {
+                const name = polygons[idx].name;
+                drawnItems.removeLayer(layer);
+                polygons.splice(idx, 1);
+                updatePolygonList();
+                setupPolygonClickHandlers();
+                saveToFile();
+                setStatus(`Polígono "${name}" removido`);
+            }
+        }
+
+        // Cancelar ação atual
+        function cancelAction() {
+            // Desabilitar handler de desenho
+            if (currentDrawHandler) {
+                currentDrawHandler.disable();
+                currentDrawHandler = null;
+            }
+
+            // Desabilitar modo de edição
+            if (editMode) {
+                drawnItems.eachLayer(function(layer) {
+                    if (layer.editing) {
+                        layer.editing.disable();
+                    }
+                });
+                editMode = false;
+                updatePolygonList(); // Atualizar áreas após edição
+            }
+
+            // Desabilitar modo de exclusão
+            if (deleteMode) {
+                drawnItems.eachLayer(function(layer) {
+                    layer.off('click', deleteLayerOnClick);
+                    const p = polygons.find(p => p.layer === layer);
+                    if (p) {
+                        layer.setStyle({ fillOpacity: 0.3 });
+                    }
+                });
+                deleteMode = false;
+            }
+
+            // Limpar estados visuais
+            document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btnSave').style.display = 'none';
+            document.getElementById('btnCancel').style.display = 'none';
+            setStatus('Pronto');
+        }
+
+        // Carregar polígonos existentes do arquivo
+        async function loadExistingPolygons() {
+            try {
+                const response = await fetch('areas_carregamento.json');
+                if (response.ok) {
+                    const geojson = await response.json();
+                    loadGeoJSON(geojson);
+                    setStatus(`Carregados ${polygons.length} polígonos do arquivo`);
+                } else {
+                    setStatus('Arquivo areas_carregamento.json não encontrado');
+                }
+            } catch (err) {
+                setStatus('Erro ao carregar: ' + err.message);
+            }
+        }
+
+        // Atualizar área após edição
+        map.on('draw:editstop', function() {
+            polygons.forEach(p => {
+                if (p.layer) {
+                    const latlngs = p.layer.getLatLngs()[0];
+                    p.area = L.GeometryUtil.geodesicArea(latlngs);
+                }
+            });
+            updatePolygonList();
+        });
+
+        // Cancelar com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (isEditingSelected) {
+                    saveAndDeselectPolygon();
+                } else {
+                    cancelAction();
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

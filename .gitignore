@@ -240,3 +240,10 @@ dmypy.json
 *.sql
 !**/init/*.sql
 !**/migrations/*.sql
+# Large data files
+*.csv
+\!**/events_*.csv
+\!**/extrato_*.csv
+\!**/labeled_segments*.csv
+\!**/*_detectados.csv
+\!**/missing_loads_analysis.csv

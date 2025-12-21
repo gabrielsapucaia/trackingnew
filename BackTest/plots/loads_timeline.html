@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Linha do tempo — carregamentos</title>
+    <style>
+      :root {
+        --lane-height: 50px;
+        --lane-gap: 15px;
+        --axis-height: 40px;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        margin: 18px;
+        color: #111;
+        background: #fafafa;
+      }
+
+      h1 {
+        font-size: 20px;
+        margin: 0 0 10px 0;
+      }
+
+      .summary {
+        font-size: 14px;
+        color: #333;
+        margin: 0 0 15px 0;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      .summary strong {
+        color: #0066cc;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        align-items: center;
+        margin: 0 0 12px 0;
+      }
+
+      .toolbar label {
+        font-size: 13px;
+        color: #222;
+      }
+
+      .toolbar select, .toolbar input {
+        font-size: 13px;
+        padding: 6px 8px;
+        border: 1px solid #D0D7DE;
+        border-radius: 8px;
+        background: white;
+      }
+
+      .toolbar button {
+        font-size: 13px;
+        padding: 6px 10px;
+        border: 1px solid #D0D7DE;
+        border-radius: 8px;
+        background: #F6F8FA;
+        cursor: pointer;
+      }
+      .toolbar button:hover { background: #EEF1F4; }
+
+      .hint {
+        font-size: 13px;
+        color: #444;
+        margin: 0 0 14px 0;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        font-size: 12px;
+        color: #222;
+        margin: 0 0 10px 0;
+      }
+      .legend-item {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .swatch {
+        width: 28px;
+        height: 16px;
+        border: 1px solid #1113;
+        border-radius: 4px;
+      }
+      .swatch.complete {
+        background: linear-gradient(135deg, rgba(34, 139, 34, 0.7), rgba(50, 205, 50, 0.7));
+        border-color: rgba(34, 139, 34, 0.8);
+      }
+      .swatch.incomplete {
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.6), rgba(255, 99, 71, 0.6));
+        border-color: rgba(220, 20, 60, 0.8);
+      }
+
+      .timeline {
+        border: 1px solid #E6E6E6;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+
+      .scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        background: white;
+      }
+
+      .svg-wrap {
+        position: relative;
+        height: calc(var(--axis-height) + var(--lane-height) + 20px);
+      }
+
+      svg {
+        display: block;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 10px 0;
+        font-size: 12px;
+        color: #333;
+      }
+      .topbar code {
+        background: #F6F8FA;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      .tooltip {
+        position: fixed;
+        z-index: 9999;
+        pointer-events: none;
+        display: none;
+        max-width: 360px;
+        background: rgba(20, 20, 20, 0.95);
+        color: #fff;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+        line-height: 1.4;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      .tooltip .k {
+        color: rgba(255,255,255,0.75);
+      }
+      .tooltip .status {
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 4px;
+      }
+      .tooltip .status.complete {
+        background: rgba(34, 139, 34, 0.3);
+        color: #90EE90;
+      }
+      .tooltip .status.incomplete {
+        background: rgba(220, 20, 60, 0.3);
+        color: #FFB6C1;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Linha do tempo dos carregamentos</h1>
+    
+    <div class="summary">
+      Total: <strong>44</strong> carregamentos detectados • 
+      Completos: <strong style="color: #228B22;">26</strong> • 
+      Incompletos: <strong style="color: #DC143C;">18</strong>
+    </div>
+
+    <div class="toolbar">
+      <label>Janela visível:
+        <select id="windowHours">
+          <option value="0.25">15 min</option>
+          <option value="0.5">30 min</option>
+          <option value="1" selected>1 hora</option>
+          <option value="2">2 horas</option>
+          <option value="4">4 horas</option>
+          <option value="6">6 horas</option>
+          <option value="8">8 horas</option>
+          <option value="10">10 horas</option>
+          <option value="12">12 horas</option>
+        </select>
+      </label>
+      <button id="backBtn" type="button">← Voltar 1 janela</button>
+      <button id="fwdBtn" type="button">Avançar 1 janela →</button>
+      <label>Ir para ciclo:
+        <input id="gotoCycle" type="number" min="1" step="1" style="width: 90px" placeholder="ex: 7" />
+      </label>
+      <button id="gotoCycleBtn" type="button">Ir</button>
+      <label style="display:inline-flex; gap: 8px; align-items:center;">
+        <input id="toggleIncomplete" type="checkbox" checked />
+        mostrar incompletos
+      </label>
+    </div>
+    <p class="hint">Dica: a janela visível é proporcional à largura da sua tela. Use trackpad/scroll horizontal para navegar. Passe o mouse sobre um bloco para ver detalhes.</p>
+
+    <div class="legend">
+      <span class="legend-item"><span class="swatch complete"></span>carregamento completo (com basculamento)</span>
+      <span class="legend-item"><span class="swatch incomplete"></span>carregamento incompleto (sem basculamento)</span>
+    </div>
+
+    <div class="topbar">
+      <div>Arquivo: <code>carregamentos_detectados.csv</code></div>
+      <div id="visibleRange"></div>
+    </div>
+
+    <div class="timeline">
+      <div class="scroll" id="scroll">
+        <div class="svg-wrap">
+          <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+      const LOADS = [{"idx":1,"cycle_id":1,"start_ms":1765550052000,"end_ms":1765550191000,"duration_sec":140,"lat":-11.697981,"lon":-47.155153,"cluster_key":"-11.698,-47.155","is_complete":1},{"idx":2,"cycle_id":2,"start_ms":1765555991000,"end_ms":1765556287000,"duration_sec":297,"lat":-11.698043,"lon":-47.155153,"cluster_key":"-11.698,-47.155","is_complete":0},{"idx":3,"cycle_id":3,"start_ms":1765558153000,"end_ms":1765558308000,"duration_sec":156,"lat":-11.698018,"lon":-47.155192,"cluster_key":"-11.698,-47.155","is_complete":1},{"idx":4,"cycle_id":4,"start_ms":1765560673000,"end_ms":1765561119000,"duration_sec":407,"lat":-11.699316,"lon":-47.157626,"cluster_key":"-11.699,-47.158","is_complete":0},{"idx":5,"cycle_id":null,"start_ms":1765562249000,"end_ms":1765562462000,"duration_sec":214,"lat":-11.699181,"lon":-47.157536,"cluster_key":"-11.699,-47.158","is_complete":0},{"idx":6,"cycle_id":5,"start_ms":1765563568000,"end_ms":1765563817000,"duration_sec":249,"lat":-11.699077,"lon":-47.157274,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":7,"cycle_id":6,"start_ms":1765564911000,"end_ms":1765564993000,"duration_sec":83,"lat":-11.699038,"lon":-47.157277,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":8,"cycle_id":null,"start_ms":1765566202000,"end_ms":1765566328000,"duration_sec":127,"lat":-11.699045,"lon":-47.157301,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":9,"cycle_id":null,"start_ms":1765567411000,"end_ms":1765567527000,"duration_sec":117,"lat":-11.698995,"lon":-47.157245,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":10,"cycle_id":null,"start_ms":1765568559000,"end_ms":1765568705000,"duration_sec":147,"lat":-11.699025,"lon":-47.157313,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":11,"cycle_id":7,"start_ms":1765569781000,"end_ms":1765569924000,"duration_sec":144,"lat":-11.69903,"lon":-47.157321,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":12,"cycle_id":8,"start_ms":1765570946000,"end_ms":1765571079000,"duration_sec":134,"lat":-11.699023,"lon":-47.157368,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":13,"cycle_id":9,"start_ms":1765572113000,"end_ms":1765572269000,"duration_sec":157,"lat":-11.699023,"lon":-47.157377,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":14,"cycle_id":null,"start_ms":1765573352000,"end_ms":1765573507000,"duration_sec":156,"lat":-11.699022,"lon":-47.157374,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":15,"cycle_id":10,"start_ms":1765575616000,"end_ms":1765575792000,"duration_sec":177,"lat":-11.699031,"lon":-47.157352,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":16,"cycle_id":11,"start_ms":1765578753000,"end_ms":1765578921000,"duration_sec":169,"lat":-11.699027,"lon":-47.157382,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":17,"cycle_id":12,"start_ms":1765579984000,"end_ms":1765580100000,"duration_sec":117,"lat":-11.699014,"lon":-47.157425,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":18,"cycle_id":13,"start_ms":1765581108000,"end_ms":1765581261000,"duration_sec":154,"lat":-11.699067,"lon":-47.157442,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":19,"cycle_id":14,"start_ms":1765582332000,"end_ms":1765582530000,"duration_sec":199,"lat":-11.699055,"lon":-47.157445,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":20,"cycle_id":15,"start_ms":1765583568000,"end_ms":1765583871000,"duration_sec":278,"lat":-11.698985,"lon":-47.157301,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":21,"cycle_id":16,"start_ms":1765585179000,"end_ms":1765585372000,"duration_sec":194,"lat":-11.698929,"lon":-47.15738,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":22,"cycle_id":17,"start_ms":1765586942000,"end_ms":1765587134000,"duration_sec":193,"lat":-11.698985,"lon":-47.157285,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":23,"cycle_id":18,"start_ms":1765588610000,"end_ms":1765588797000,"duration_sec":188,"lat":-11.699055,"lon":-47.1574,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":24,"cycle_id":19,"start_ms":1765589930000,"end_ms":1765590105000,"duration_sec":176,"lat":-11.699099,"lon":-47.157502,"cluster_key":"-11.699,-47.158","is_complete":0},{"idx":25,"cycle_id":null,"start_ms":1765595931000,"end_ms":1765596086000,"duration_sec":156,"lat":-11.698992,"lon":-47.157455,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":26,"cycle_id":null,"start_ms":1765597500000,"end_ms":1765597712000,"duration_sec":213,"lat":-11.699105,"lon":-47.157464,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":27,"cycle_id":20,"start_ms":1765599214000,"end_ms":1765599742000,"duration_sec":307,"lat":-11.699127,"lon":-47.15747,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":28,"cycle_id":21,"start_ms":1765601174000,"end_ms":1765601407000,"duration_sec":234,"lat":-11.699196,"lon":-47.157579,"cluster_key":"-11.699,-47.158","is_complete":1},{"idx":29,"cycle_id":22,"start_ms":1765602498000,"end_ms":1765602870000,"duration_sec":311,"lat":-11.699083,"lon":-47.157521,"cluster_key":"-11.699,-47.158","is_complete":0},{"idx":30,"cycle_id":23,"start_ms":1765603926000,"end_ms":1765604175000,"duration_sec":250,"lat":-11.699201,"lon":-47.157564,"cluster_key":"-11.699,-47.158","is_complete":1},{"idx":31,"cycle_id":24,"start_ms":1765605213000,"end_ms":1765605541000,"duration_sec":285,"lat":-11.699108,"lon":-47.157567,"cluster_key":"-11.699,-47.158","is_complete":1},{"idx":32,"cycle_id":25,"start_ms":1765606710000,"end_ms":1765606858000,"duration_sec":149,"lat":-11.699032,"lon":-47.157515,"cluster_key":"-11.699,-47.158","is_complete":1},{"idx":33,"cycle_id":26,"start_ms":1765609156000,"end_ms":1765609302000,"duration_sec":147,"lat":-11.699051,"lon":-47.157661,"cluster_key":"-11.699,-47.158","is_complete":1},{"idx":34,"cycle_id":27,"start_ms":1765610466000,"end_ms":1765610822000,"duration_sec":301,"lat":-11.698989,"lon":-47.157561,"cluster_key":"-11.699,-47.158","is_complete":1},{"idx":35,"cycle_id":28,"start_ms":1765612091000,"end_ms":1765612216000,"duration_sec":126,"lat":-11.698917,"lon":-47.157211,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":36,"cycle_id":29,"start_ms":1765613746000,"end_ms":1765613876000,"duration_sec":131,"lat":-11.698908,"lon":-47.157252,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":37,"cycle_id":30,"start_ms":1765614814000,"end_ms":1765615085000,"duration_sec":249,"lat":-11.69901,"lon":-47.157185,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":38,"cycle_id":31,"start_ms":1765616034000,"end_ms":1765616196000,"duration_sec":163,"lat":-11.69887,"lon":-47.157215,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":39,"cycle_id":32,"start_ms":1765617129000,"end_ms":1765617269000,"duration_sec":141,"lat":-11.698856,"lon":-47.157199,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":40,"cycle_id":33,"start_ms":1765618317000,"end_ms":1765618557000,"duration_sec":241,"lat":-11.698893,"lon":-47.157225,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":41,"cycle_id":null,"start_ms":1765621495000,"end_ms":1765621626000,"duration_sec":132,"lat":-11.698886,"lon":-47.157097,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":42,"cycle_id":null,"start_ms":1765622711000,"end_ms":1765622921000,"duration_sec":211,"lat":-11.698858,"lon":-47.157194,"cluster_key":"-11.699,-47.157","is_complete":0},{"idx":43,"cycle_id":34,"start_ms":1765625090000,"end_ms":1765625248000,"duration_sec":159,"lat":-11.698923,"lon":-47.157099,"cluster_key":"-11.699,-47.157","is_complete":1},{"idx":44,"cycle_id":35,"start_ms":1765635154000,"end_ms":1765635483000,"duration_sec":330,"lat":-11.698387,"lon":-47.15544,"cluster_key":"-11.698,-47.155","is_complete":1}];
+
+      const svg = document.getElementById("svg");
+      const scroll = document.getElementById("scroll");
+      const tooltip = document.getElementById("tooltip");
+      const visibleRange = document.getElementById("visibleRange");
+      const windowHoursEl = document.getElementById("windowHours");
+      const backBtn = document.getElementById("backBtn");
+      const fwdBtn = document.getElementById("fwdBtn");
+      const gotoCycleEl = document.getElementById("gotoCycle");
+      const gotoCycleBtn = document.getElementById("gotoCycleBtn");
+      const toggleIncompleteEl = document.getElementById("toggleIncomplete");
+
+      function msToHhmm(ms) {
+        const d = new Date(ms);
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+      }
+
+      function msToPtBr(ms) {
+        const d = new Date(ms);
+        const fmt = new Intl.DateTimeFormat("pt-BR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+        return fmt.format(d);
+      }
+
+      function niceTickStepMs(pxPerMs) {
+        const targetPx = 110;
+        const raw = targetPx / pxPerMs;
+        const steps = [
+          60_000, 2*60_000, 5*60_000, 10*60_000, 15*60_000, 30*60_000,
+          60*60_000, 2*60*60_000, 4*60*60_000,
+        ];
+        for (const s of steps) {
+          if (s >= raw) return s;
+        }
+        return steps[steps.length - 1];
+      }
+
+      function clearSvg() {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+      }
+
+      function createSvgEl(name) {
+        return document.createElementNS("http://www.w3.org/2000/svg", name);
+      }
+
+      function render() {
+        if (!LOADS.length) return;
+
+        const showIncomplete = toggleIncompleteEl.checked;
+        const filtered = showIncomplete 
+          ? LOADS 
+          : LOADS.filter(l => l.is_complete === 1);
+
+        const minStart = Math.min(...LOADS.map(l => l.start_ms));
+        const maxEnd = Math.max(...LOADS.map(l => l.end_ms));
+
+        const viewHours = parseFloat(windowHoursEl.value || "1");
+        const viewMs = viewHours * 3600 * 1000;
+
+        const viewWidth = Math.max(1, scroll.clientWidth - 2);
+        const pxPerMs = viewWidth / viewMs;
+        const totalWidth = Math.ceil((maxEnd - minStart) * pxPerMs) + 1;
+
+        const axisH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--axis-height"));
+        const laneH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lane-height"));
+
+        const height = Math.ceil(axisH + laneH + 20);
+
+        const currentScrollRatio = (scroll.scrollLeft || 0) / Math.max(1, (svg.viewBox?.baseVal?.width || totalWidth));
+
+        clearSvg();
+        svg.setAttribute("width", String(totalWidth));
+        svg.setAttribute("height", String(height));
+        svg.setAttribute("viewBox", `0 0 ${totalWidth} ${height}`);
+
+        // Gradients (must be created before use)
+        const defs = createSvgEl("defs");
+        const gradComplete = createSvgEl("linearGradient");
+        gradComplete.setAttribute("id", "grad-complete");
+        gradComplete.setAttribute("x1", "0%");
+        gradComplete.setAttribute("y1", "0%");
+        gradComplete.setAttribute("x2", "100%");
+        gradComplete.setAttribute("y2", "100%");
+        const stop1 = createSvgEl("stop");
+        stop1.setAttribute("offset", "0%");
+        stop1.setAttribute("stop-color", "rgba(34, 139, 34, 0.7)");
+        const stop2 = createSvgEl("stop");
+        stop2.setAttribute("offset", "100%");
+        stop2.setAttribute("stop-color", "rgba(50, 205, 50, 0.7)");
+        gradComplete.appendChild(stop1);
+        gradComplete.appendChild(stop2);
+        defs.appendChild(gradComplete);
+
+        const gradIncomplete = createSvgEl("linearGradient");
+        gradIncomplete.setAttribute("id", "grad-incomplete");
+        gradIncomplete.setAttribute("x1", "0%");
+        gradIncomplete.setAttribute("y1", "0%");
+        gradIncomplete.setAttribute("x2", "100%");
+        gradIncomplete.setAttribute("y2", "100%");
+        const stop3 = createSvgEl("stop");
+        stop3.setAttribute("offset", "0%");
+        stop3.setAttribute("stop-color", "rgba(220, 20, 60, 0.6)");
+        const stop4 = createSvgEl("stop");
+        stop4.setAttribute("offset", "100%");
+        stop4.setAttribute("stop-color", "rgba(255, 99, 71, 0.6)");
+        gradIncomplete.appendChild(stop3);
+        gradIncomplete.appendChild(stop4);
+        defs.appendChild(gradIncomplete);
+        svg.appendChild(defs);
+
+        // Background
+        const bg = createSvgEl("rect");
+        bg.setAttribute("x", "0");
+        bg.setAttribute("y", "0");
+        bg.setAttribute("width", String(totalWidth));
+        bg.setAttribute("height", String(height));
+        bg.setAttribute("fill", "#FFFFFF");
+        svg.appendChild(bg);
+
+        // Grid + axis
+        const tickStep = niceTickStepMs(pxPerMs);
+        const firstTick = Math.floor(minStart / tickStep) * tickStep;
+
+        for (let t = firstTick; t <= maxEnd; t += tickStep) {
+          const x = (t - minStart) * pxPerMs;
+          const line = createSvgEl("line");
+          line.setAttribute("x1", String(x));
+          line.setAttribute("x2", String(x));
+          line.setAttribute("y1", "0");
+          line.setAttribute("y2", String(height));
+          line.setAttribute("stroke", "#EDEDED");
+          line.setAttribute("stroke-width", "1");
+          svg.appendChild(line);
+
+          const txt = createSvgEl("text");
+          txt.textContent = msToHhmm(t);
+          txt.setAttribute("x", String(x + 4));
+          txt.setAttribute("y", String(24));
+          txt.setAttribute("font-size", "12");
+          txt.setAttribute("fill", "#333");
+          txt.setAttribute("font-family", "inherit");
+          svg.appendChild(txt);
+        }
+
+        // Lane band
+        const band = createSvgEl("rect");
+        band.setAttribute("x", "0");
+        band.setAttribute("y", String(axisH));
+        band.setAttribute("width", String(totalWidth));
+        band.setAttribute("height", String(laneH + 12));
+        band.setAttribute("fill", "#FBFCFD");
+        svg.appendChild(band);
+
+        // Loads
+        for (const load of filtered) {
+          const x = Math.max(0, (load.start_ms - minStart) * pxPerMs);
+          const w = Math.max(1, (load.end_ms - load.start_ms) * pxPerMs);
+          const y = axisH + 8;
+          const h = laneH;
+
+          const rect = createSvgEl("rect");
+          rect.setAttribute("x", String(x));
+          rect.setAttribute("y", String(y));
+          rect.setAttribute("width", String(w));
+          rect.setAttribute("height", String(h));
+          rect.setAttribute("rx", "8");
+          rect.setAttribute("ry", "8");
+          
+          if (load.is_complete === 1) {
+            rect.setAttribute("fill", "url(#grad-complete)");
+            rect.setAttribute("stroke", "#228B22");
+            rect.setAttribute("stroke-width", "2");
+          } else {
+            rect.setAttribute("fill", "url(#grad-incomplete)");
+            rect.setAttribute("stroke", "#DC143C");
+            rect.setAttribute("stroke-width", "2");
+            rect.setAttribute("stroke-dasharray", "4,2");
+          }
+
+          rect.style.cursor = "pointer";
+
+          // Native tooltip
+          const title = createSvgEl("title");
+          const status = load.is_complete === 1 ? "completo" : "incompleto";
+          title.textContent = `Carregamento ${status} (ciclo: ${load.cycle_id ?? "-"}) • ${load.duration_sec}s`;
+          rect.appendChild(title);
+
+          rect.addEventListener("mousemove", (ev) => {
+            tooltip.style.display = "block";
+            tooltip.style.left = `${ev.clientX + 12}px`;
+            tooltip.style.top = `${ev.clientY + 12}px`;
+            const status = load.is_complete === 1 ? "completo" : "incompleto";
+            const statusClass = load.is_complete === 1 ? "complete" : "incomplete";
+            tooltip.innerHTML = `
+              <div><span class="k">evento:</span> <b>carregamento</b></div>
+              <div><span class="k">status:</span> <span class="status ${statusClass}">${status}</span></div>
+              <div><span class="k">ciclo:</span> <b>${load.cycle_id ?? "-"}</b></div>
+              <div><span class="k">início:</span> ${msToPtBr(load.start_ms)}</div>
+              <div><span class="k">fim:</span> ${msToPtBr(load.end_ms)}</div>
+              <div><span class="k">duração:</span> ${load.duration_sec}s</div>
+              <div><span class="k">lat/lon:</span> ${load.lat.toFixed(6)}, ${load.lon.toFixed(6)}</div>
+              <div><span class="k">cluster:</span> ${load.cluster_key}</div>
+            `;
+          });
+          rect.addEventListener("mouseleave", () => {
+            tooltip.style.display = "none";
+          });
+
+          svg.appendChild(rect);
+        }
+
+        // Keep scroll roughly where it was
+        const desiredLeft = Math.floor(currentScrollRatio * totalWidth);
+        scroll.scrollLeft = Math.max(0, Math.min(totalWidth - viewWidth, desiredLeft));
+
+        function updateVisibleRange() {
+          const leftMs = minStart + (scroll.scrollLeft / pxPerMs);
+          const rightMs = leftMs + viewMs;
+          visibleRange.textContent = `visível: ${msToPtBr(leftMs)} → ${msToPtBr(rightMs)}`;
+        }
+        scroll.onscroll = updateVisibleRange;
+        updateVisibleRange();
+
+        backBtn.onclick = () => {
+          scroll.scrollLeft = Math.max(0, scroll.scrollLeft - viewWidth);
+        };
+        fwdBtn.onclick = () => {
+          scroll.scrollLeft = Math.min(totalWidth, scroll.scrollLeft + viewWidth);
+        };
+
+        gotoCycleBtn.onclick = () => {
+          const cid = parseInt(gotoCycleEl.value || "", 10);
+          if (!Number.isFinite(cid)) return;
+          const first = filtered.find(load => load.cycle_id === cid);
+          if (!first) return;
+          const x = (first.start_ms - minStart) * pxPerMs;
+          scroll.scrollLeft = Math.max(0, x - 30);
+        };
+      }
+
+      let resizeTimer = null;
+      window.addEventListener("resize", () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => render(), 120);
+      });
+      windowHoursEl.addEventListener("change", () => render());
+      toggleIncompleteEl.addEventListener("change", () => render());
+
+      render();
+    </script>
+  </body>
+</html>
