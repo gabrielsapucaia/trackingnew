@@ -1,0 +1,49 @@
+ANÁLISE DE PADRÕES DE CARREGAMENTO - CURTO_ALTA
+============================================================
+
+Total de períodos analisados: 74
+Períodos identificados como carregamento: 22
+.1f
+
+CRITÉRIOS PARA IDENTIFICAÇÃO DE CARREGAMENTO:
+• Pelo menos 3 picos significativos
+• Pelo menos 2 picos por minuto
+• Regularidade moderada (score >= 0.3)
+• Variabilidade controlada (<= 1.5)
+
+ESTATÍSTICAS DOS PADRÕES IDENTIFICADOS:
+• Picos por minuto médio: 2.51
+• Regularidade média: 0.836
+• Variabilidade média: 0.521
+• Confiança média: 0.795
+
+INTERPRETAÇÃO DO PADRÃO:
+Os picos identificados representam ciclos de carregamento,
+provavelmente 'conchadas' de uma escavadeira ou similar.
+A regularidade indica um processo mecânico controlado,
+enquanto as pausas entre picos sugerem tempo de
+posicionamento ou deslocamento do equipamento.
+
+PERÍODOS IDENTIFICADOS:
+• Período 7: 5 picos, 2.1 p/min, regularidade 0.851
+• Período 44: 6 picos, 2.3 p/min, regularidade 0.907
+• Período 48: 3 picos, 2.9 p/min, regularidade 0.700
+• Período 68: 9 picos, 2.5 p/min, regularidade 0.932
+• Período 71: 3 picos, 2.9 p/min, regularidade 0.833
+• Período 76: 5 picos, 2.1 p/min, regularidade 0.954
+• Período 82: 4 picos, 2.6 p/min, regularidade 0.856
+• Período 94: 5 picos, 2.4 p/min, regularidade 0.930
+• Período 115: 5 picos, 2.1 p/min, regularidade 0.936
+• Período 135: 3 picos, 2.8 p/min, regularidade 0.581
+• Período 149: 6 picos, 2.0 p/min, regularidade 0.884
+• Período 189: 7 picos, 2.1 p/min, regularidade 0.912
+• Período 218: 7 picos, 2.2 p/min, regularidade 0.678
+• Período 334: 6 picos, 2.4 p/min, regularidade 0.763
+• Período 349: 7 picos, 2.9 p/min, regularidade 0.884
+• Período 365: 7 picos, 2.7 p/min, regularidade 0.787
+• Período 377: 5 picos, 2.4 p/min, regularidade 0.800
+• Período 394: 8 picos, 3.1 p/min, regularidade 0.898
+• Período 407: 5 picos, 2.1 p/min, regularidade 0.741
+• Período 450: 6 picos, 2.3 p/min, regularidade 0.891
+• Período 467: 3 picos, 2.6 p/min, regularidade 1.000
+• Período 501: 5 picos, 3.8 p/min, regularidade 0.683

@@ -1,0 +1,69 @@
+RESUMO COMPLETO DAS CLASSIFICAÇÕES DE PARADA
+============================================================
+
+Total de arquivos gerados: 545
+
+Muito_Curto_Muito_Alta:
+  Tipo: Muito Curto (< 1 min) + Muito Alta (> 0.1)
+  Total de períodos: 295
+  Gráficos gerados: 295
+  Duração média: 0.07 min
+  Vibração média: 0.255499
+  Pasta: amostra/classificacoes_completo\Muito_Curto_Muito_Alta
+
+Muito_Curto_Alta:
+  Tipo: Muito Curto (< 1 min) + Alta (0.01 - 0.1)
+  Total de períodos: 152
+  Gráficos gerados: 152
+  Duração média: 0.35 min
+  Vibração média: 0.060171
+  Pasta: amostra/classificacoes_completo\Muito_Curto_Alta
+
+Curto_Alta:
+  Tipo: Curto (1-5 min) + Alta (0.01 - 0.1)
+  Total de períodos: 74
+  Gráficos gerados: 74
+  Duração média: 2.44 min
+  Vibração média: 0.025259
+  Pasta: amostra/classificacoes_completo\Curto_Alta
+
+Curto_Media:
+  Tipo: Curto (1-5 min) + Média (0.001 - 0.01)
+  Total de períodos: 8
+  Gráficos gerados: 8
+  Duração média: 2.96 min
+  Vibração média: 0.007414
+  Pasta: amostra/classificacoes_completo\Curto_Media
+
+Medio_Media:
+  Tipo: Médio (5-15 min) + Média (0.001 - 0.01)
+  Total de períodos: 7
+  Gráficos gerados: 7
+  Duração média: 6.28 min
+  Vibração média: 0.008085
+  Pasta: amostra/classificacoes_completo\Medio_Media
+
+Longo_Media:
+  Tipo: Longo (15-60 min) + Média (0.001 - 0.01)
+  Total de períodos: 6
+  Gráficos gerados: 6
+  Duração média: 27.43 min
+  Vibração média: 0.003530
+  Pasta: amostra/classificacoes_completo\Longo_Media
+
+Medio_Alta:
+  Tipo: Médio (5-15 min) + Alta (0.01 - 0.1)
+  Total de períodos: 2
+  Gráficos gerados: 2
+  Duração média: 7.18 min
+  Vibração média: 0.035917
+  Pasta: amostra/classificacoes_completo\Medio_Alta
+
+Muito_Longo_Media:
+  Tipo: Muito Longo (> 1h) + Média (0.001 - 0.01)
+  Total de períodos: 1
+  Gráficos gerados: 1
+  Duração média: 78.08 min
+  Vibração média: 0.001990
+  Pasta: amostra/classificacoes_completo\Muito_Longo_Media
+

@@ -1,0 +1,16 @@
+# Dependências do Dashboard Streamlit - AuraTracking
+# Instalar com: pip install -r requirements.txt
+
+# Framework web
+streamlit>=1.28.0
+
+# Visualização de dados
+plotly>=5.17.0
+pandas>=2.0.0
+
+# Banco de dados
+psycopg2-binary>=2.9.9
+
+# Utilitários
+numpy>=1.24.0
+
