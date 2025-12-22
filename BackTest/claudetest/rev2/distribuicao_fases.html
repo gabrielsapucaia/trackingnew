@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distribuição das Fases do Ciclo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .chart-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-title .badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: normal;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+        .stat {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 0.75rem;
+        }
+        canvas {
+            max-height: 250px;
+        }
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Distribuição das Fases do Ciclo Operacional</h1>
+    <p class="subtitle">Histograma com curva de densidade (KDE) - 46 ciclos | Deslocamentos normalizados por km</p>
+
+    <div class="grid">
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>Carregamento</span>
+                <span class="badge" style="background: #4CAF50">Carga</span>
+            </div>
+            <canvas id="chart-carga"></canvas>
+            <div class="stats" id="stats-carga"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>Deslocamento Carregado</span>
+                <span class="badge" style="background: #2196F3">Trajeto</span>
+            </div>
+            <canvas id="chart-desloc-carregado"></canvas>
+            <div class="stats" id="stats-desloc-carregado"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>Basculamento</span>
+                <span class="badge" style="background: #FF9800">Descarga</span>
+            </div>
+            <canvas id="chart-basc"></canvas>
+            <div class="stats" id="stats-basc"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>Deslocamento Vazio</span>
+                <span class="badge" style="background: #E91E63">Retorno</span>
+            </div>
+            <canvas id="chart-desloc-vazio"></canvas>
+            <div class="stats" id="stats-desloc-vazio"></div>
+        </div>
+    </div>
+
+    <script>
+        // Gaussian KDE function
+        function gaussianKDE(data, bandwidth) {
+            const n = data.length;
+            return function(x) {
+                let sum = 0;
+                for (let i = 0; i < n; i++) {
+                    const z = (x - data[i]) / bandwidth;
+                    sum += Math.exp(-0.5 * z * z);
+                }
+                return sum / (n * bandwidth * Math.sqrt(2 * Math.PI));
+            };
+        }
+
+        // Calculate bandwidth using Silverman's rule
+        function silvermanBandwidth(data) {
+            const n = data.length;
+            const std = Math.sqrt(data.reduce((s, x) => s + Math.pow(x - data.reduce((a, b) => a + b) / n, 2), 0) / n);
+            const iqr = percentile(data, 75) - percentile(data, 25);
+            const h = 0.9 * Math.min(std, iqr / 1.34) * Math.pow(n, -0.2);
+            return h || std * 0.5;
+        }
+
+        function percentile(arr, p) {
+            const sorted = [...arr].sort((a, b) => a - b);
+            const pos = (p / 100) * (sorted.length - 1);
+            const lower = Math.floor(pos);
+            const upper = Math.ceil(pos);
+            return sorted[lower] + (sorted[upper] - sorted[lower]) * (pos - lower);
+        }
+
+        function createChart(canvasId, statsId, data, color) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const valores = data.valores;
+
+            // Create histogram bins
+            const numBins = 12;
+            const min = Math.min(...valores);
+            const max = Math.max(...valores);
+            const binWidth = (max - min) / numBins;
+            const bins = Array(numBins).fill(0);
+            const binCenters = [];
+
+            for (let i = 0; i < numBins; i++) {
+                binCenters.push(min + binWidth * (i + 0.5));
+            }
+
+            valores.forEach(v => {
+                const binIndex = Math.min(Math.floor((v - min) / binWidth), numBins - 1);
+                bins[binIndex]++;
+            });
+
+            // Normalize histogram
+            const total = valores.length * binWidth;
+            const normalizedBins = bins.map(b => b / total);
+
+            // Generate KDE curve
+            const bandwidth = silvermanBandwidth(valores);
+            const kde = gaussianKDE(valores, bandwidth);
+            const kdeX = [];
+            const kdeY = [];
+            const step = (max - min) / 50;
+            for (let x = min - binWidth; x <= max + binWidth; x += step) {
+                kdeX.push(x);
+                kdeY.push(kde(x));
+            }
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: binCenters.map(x => x.toFixed(1)),
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Frequência',
+                            data: normalizedBins,
+                            backgroundColor: color + '99',
+                            borderColor: color,
+                            borderWidth: 1,
+                            barPercentage: 1,
+                            categoryPercentage: 0.95
+                        },
+                        {
+                            type: 'line',
+                            label: 'KDE',
+                            data: kdeX.map((x, i) => ({x: x, y: kdeY[i]})),
+                            borderColor: '#ff5555',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        return `Densidade: ${context.raw.toFixed(3)}`;
+                                    }
+                                    return '';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: data.unidade === 'min/km' ? 'Tempo por km (min/km)' : 'Duração (minutos)',
+                                color: '#888'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            },
+                            ticks: { color: '#888' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Densidade',
+                                color: '#888'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            },
+                            ticks: { color: '#888' }
+                        }
+                    }
+                }
+            });
+
+            // Add stats
+            const unit = data.unidade || 'min';
+            document.getElementById(statsId).innerHTML = `
+                <div class="stat">
+                    <div class="stat-value" style="color: ${color}">${data.media.toFixed(1)}</div>
+                    <div class="stat-label">Média (${unit})</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: ${color}">${data.mediana.toFixed(1)}</div>
+                    <div class="stat-label">Mediana (${unit})</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: ${color}">${data.std.toFixed(1)}</div>
+                    <div class="stat-label">Desvio (${unit})</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" style="color: ${color}">${data.min.toFixed(1)}-${data.max.toFixed(1)}</div>
+                    <div class="stat-label">Min-Max (${unit})</div>
+                </div>
+            `;
+        }
+
+        // Load data and create charts
+        fetch('distribuicao_data.json')
+            .then(r => r.json())
+            .then(data => {
+                createChart('chart-carga', 'stats-carga', data['Carregamento'], '#4CAF50');
+                createChart('chart-desloc-carregado', 'stats-desloc-carregado', data['Desloc. Carregado'], '#2196F3');
+                createChart('chart-basc', 'stats-basc', data['Basculamento'], '#FF9800');
+                createChart('chart-desloc-vazio', 'stats-desloc-vazio', data['Desloc. Vazio'], '#E91E63');
+            });
+    </script>
+</body>
+</html>
