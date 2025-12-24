@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraTracking - BackTest Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d9ff;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .card {
+            background: rgba(22, 33, 62, 0.8);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #0f3460;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #00d9ff;
+            box-shadow: 0 10px 40px rgba(0, 217, 255, 0.2);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .card p {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .card-tag {
+            display: inline-block;
+            background: #0f3460;
+            color: #00d9ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-top: 15px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: #00d9ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            margin-top: 50px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #0f3460;
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        /* Cores por categoria */
+        .card.analise { border-left: 4px solid #e94560; }
+        .card.visualizacao { border-left: 4px solid #00d9ff; }
+        .card.config { border-left: 4px solid #2ecc71; }
+        .card.dados { border-left: 4px solid #f39c12; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AuraTracking BackTest</h1>
+            <p>Sistema de Analise de Ciclos Operacionais de Caminhoes</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value">46</div>
+                <div class="stat-label">Ciclos Detectados</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">46</div>
+                <div class="stat-label">Carregamentos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">71</div>
+                <div class="stat-label">Paradas Ociosas</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">25.4h</div>
+                <div class="stat-label">Dados Analisados</div>
+            </div>
+        </div>
+
+        <div class="section-title">Visualizacoes</div>
+        <div class="cards">
+            <a href="visualizacao_ciclos_rev2.html" class="card visualizacao">
+                <div class="card-icon">📊</div>
+                <h3>Timeline de Ciclos</h3>
+                <p>Visualizacao completa dos ciclos operacionais com mapa, timeline interativa e lista de ciclos.</p>
+                <span class="card-tag">46 ciclos</span>
+            </a>
+
+            <a href="distribuicao_fases.html" class="card visualizacao">
+                <div class="card-icon">📈</div>
+                <h3>Distribuicao de Fases</h3>
+                <p>Histogramas e estatisticas de cada fase: carregamento, deslocamento, basculamento.</p>
+                <span class="card-tag">Estatisticas</span>
+            </a>
+
+            <a href="visualizacao_carregamentos.html" class="card visualizacao">
+                <div class="card-icon">🚛</div>
+                <h3>Eventos de Carregamento</h3>
+                <p>Timeline de velocidade e aceleracao com lista de eventos detectados.</p>
+                <span class="card-tag">46 eventos</span>
+            </a>
+
+            <a href="explorador_dados.html" class="card dados">
+                <div class="card-icon">🔍</div>
+                <h3>Explorador de Dados</h3>
+                <p>Carregue qualquer CSV e visualize graficos interativos das variaveis selecionadas.</p>
+                <span class="card-tag">Interativo</span>
+            </a>
+        </div>
+
+        <div class="section-title">Configuracao</div>
+        <div class="cards">
+            <a href="editor_poligonos.html" class="card config">
+                <div class="card-icon">🗺️</div>
+                <h3>Editor de Poligonos</h3>
+                <p>Defina areas de carregamento e basculamento no mapa com ortofoto de alta resolucao.</p>
+                <span class="card-tag">7 areas</span>
+            </a>
+        </div>
+
+        <div class="section-title">Arquivos de Dados</div>
+        <div class="cards">
+            <a href="extrato_ciclos.csv" class="card dados" download>
+                <div class="card-icon">📄</div>
+                <h3>Extrato de Ciclos (CSV)</h3>
+                <p>Tabela com todos os ciclos extraidos, tempos e distancias por fase.</p>
+                <span class="card-tag">Download</span>
+            </a>
+
+            <a href="input.csv" class="card dados" download>
+                <div class="card-icon">📄</div>
+                <h3>Telemetria Bruta (CSV)</h3>
+                <p>Dados de GPS e IMU a 1 Hz - 91.660 registros (~25 horas).</p>
+                <span class="card-tag">17 MB</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            AuraTracking BackTest - Sistema de Analise de Telemetria<br>
+            Servidor: http://localhost:8888
+        </div>
+    </div>
+</body>
+</html>

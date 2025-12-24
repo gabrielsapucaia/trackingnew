@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Dados de Telemetria</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #16213e;
+            padding: 15px 20px;
+            border-bottom: 1px solid #0f3460;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            color: #00d9ff;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            background: #16213e;
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #0f3460;
+        }
+
+        .main {
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #00d9ff;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-btn {
+            background: #0f3460;
+            color: #fff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            display: block;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px dashed #00d9ff;
+        }
+
+        .file-btn:hover {
+            background: #1a4a7a;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #aaa;
+            word-break: break-all;
+        }
+
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category-header {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-header button {
+            background: none;
+            border: none;
+            color: #00d9ff;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            accent-color: #00d9ff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: #16213e;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: #00d9ff;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #0f3460;
+        }
+
+        .btn {
+            background: #00d9ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #00b8d4;
+        }
+
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .time-range {
+            margin-top: 15px;
+        }
+
+        .time-range input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+
+        #chart {
+            width: 100%;
+            height: 500px;
+        }
+
+        .info-bar {
+            background: #0f3460;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .color-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Explorador de Dados de Telemetria</h1>
+        <span id="status">Carregue um arquivo CSV</span>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="section">
+                <div class="section-title">Arquivo CSV</div>
+                <div class="file-input-wrapper">
+                    <div class="file-btn">Selecionar arquivo CSV</div>
+                    <input type="file" id="fileInput" accept=".csv">
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+
+            <div class="section" id="variablesSection" style="display: none;">
+                <div class="section-title">Variaveis</div>
+                <div id="variablesList"></div>
+                <button class="btn" onclick="plotChart()" id="plotBtn" disabled>Plotar Grafico</button>
+            </div>
+
+            <div class="section time-range" id="timeSection" style="display: none;">
+                <div class="section-title">Periodo</div>
+                <input type="range" id="startRange" min="0" max="100" value="0">
+                <input type="range" id="endRange" min="0" max="100" value="100">
+                <div class="time-labels">
+                    <span id="startLabel">-</span>
+                    <span id="endLabel">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-label">Registros</div>
+                    <div class="stat-value" id="statRegistros">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Duracao</div>
+                    <div class="stat-value" id="statDuracao">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Frequencia</div>
+                    <div class="stat-value" id="statFreq">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Colunas</div>
+                    <div class="stat-value" id="statColunas">-</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div id="chart">
+                    <div class="loading">Carregue um arquivo CSV para visualizar</div>
+                </div>
+            </div>
+
+            <div class="info-bar" id="infoBar" style="display: none;">
+                <strong>Variaveis selecionadas:</strong> <span id="selectedVars">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let csvData = null;
+        let columns = [];
+        let timeColumn = null;
+
+        const COLORS = [
+            '#00d9ff', '#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3',
+            '#f38181', '#aa96da', '#fcbad3', '#a8e6cf', '#dfe6e9'
+        ];
+
+        const CATEGORIES = {
+            'GPS': ['latitude', 'longitude', 'altitude', 'speed', 'speed_kmh', 'bearing', 'gps_accuracy', 'satellites'],
+            'Acelerometro': ['accel_x', 'accel_y', 'accel_z', 'accel_magnitude'],
+            'Giroscopio': ['gyro_x', 'gyro_y', 'gyro_z'],
+            'Orientacao': ['pitch', 'roll', 'azimuth'],
+            'Sistema': ['battery_level', 'battery_temperature', 'wifi_rssi']
+        };
+
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        document.getElementById('startRange').addEventListener('input', updateTimeLabels);
+        document.getElementById('endRange').addEventListener('input', updateTimeLabels);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('status').textContent = 'Carregando...';
+
+            Papa.parse(file, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    csvData = results.data;
+                    columns = results.meta.fields;
+                    processData();
+                },
+                error: function(error) {
+                    alert('Erro ao ler CSV: ' + error.message);
+                }
+            });
+        }
+
+        function processData() {
+            // Encontra coluna de tempo
+            timeColumn = columns.find(c => c.toLowerCase() === 'time' || c.toLowerCase() === 'timestamp');
+
+            if (timeColumn) {
+                // Converte strings de tempo para Date
+                csvData.forEach(row => {
+                    if (row[timeColumn]) {
+                        row[timeColumn] = new Date(row[timeColumn]);
+                    }
+                });
+
+                // Ordena por tempo
+                csvData.sort((a, b) => a[timeColumn] - b[timeColumn]);
+            }
+
+            // Atualiza estatisticas
+            updateStats();
+
+            // Gera lista de variaveis
+            generateVariablesList();
+
+            // Mostra secoes
+            document.getElementById('variablesSection').style.display = 'block';
+            document.getElementById('timeSection').style.display = 'block';
+            document.getElementById('plotBtn').disabled = false;
+
+            // Atualiza labels de tempo
+            updateTimeLabels();
+
+            document.getElementById('status').textContent = `${csvData.length} registros carregados`;
+
+            // Plota automaticamente se tiver poucas variaveis
+            if (columns.length <= 10) {
+                plotChart();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('statRegistros').textContent = csvData.length.toLocaleString();
+            document.getElementById('statColunas').textContent = columns.length;
+
+            if (timeColumn && csvData.length > 1) {
+                const start = csvData[0][timeColumn];
+                const end = csvData[csvData.length - 1][timeColumn];
+                const durationMs = end - start;
+                const durationSec = durationMs / 1000;
+
+                if (durationSec < 60) {
+                    document.getElementById('statDuracao').textContent = `${durationSec.toFixed(0)}s`;
+                } else if (durationSec < 3600) {
+                    document.getElementById('statDuracao').textContent = `${(durationSec / 60).toFixed(1)}min`;
+                } else {
+                    document.getElementById('statDuracao').textContent = `${(durationSec / 3600).toFixed(1)}h`;
+                }
+
+                const freq = csvData.length / durationSec;
+                document.getElementById('statFreq').textContent = `${freq.toFixed(1)} Hz`;
+            }
+        }
+
+        function generateVariablesList() {
+            const container = document.getElementById('variablesList');
+            container.innerHTML = '';
+
+            // Agrupa por categoria
+            const categorized = {};
+            const uncategorized = [];
+
+            columns.forEach(col => {
+                if (col === timeColumn || col === 'device_id' || col === 'operator_id') return;
+
+                let found = false;
+                for (const [cat, vars] of Object.entries(CATEGORIES)) {
+                    if (vars.includes(col)) {
+                        if (!categorized[cat]) categorized[cat] = [];
+                        categorized[cat].push(col);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) uncategorized.push(col);
+            });
+
+            // Gera HTML para cada categoria
+            for (const [cat, vars] of Object.entries(categorized)) {
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category';
+                catDiv.innerHTML = `
+                    <div class="category-header">
+                        <span>${cat}</span>
+                        <button onclick="toggleCategory('${cat}')">todos</button>
+                    </div>
+                    <div class="checkbox-grid" data-category="${cat}">
+                        ${vars.map(v => `
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="${v}" onchange="updateSelectedVars()">
+                                <span>${v}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(catDiv);
+            }
+
+            // Outros
+            if (uncategorized.length > 0) {
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category';
+                catDiv.innerHTML = `
+                    <div class="category-header">
+                        <span>Outros</span>
+                        <button onclick="toggleCategory('outros')">todos</button>
+                    </div>
+                    <div class="checkbox-grid" data-category="outros">
+                        ${uncategorized.map(v => `
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="${v}" onchange="updateSelectedVars()">
+                                <span>${v}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(catDiv);
+            }
+        }
+
+        function toggleCategory(cat) {
+            const checkboxes = document.querySelectorAll(`[data-category="${cat}"] input[type="checkbox"]`);
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            updateSelectedVars();
+        }
+
+        function updateSelectedVars() {
+            const selected = getSelectedVariables();
+            document.getElementById('selectedVars').textContent = selected.length > 0 ? selected.join(', ') : '-';
+            document.getElementById('infoBar').style.display = selected.length > 0 ? 'block' : 'none';
+        }
+
+        function getSelectedVariables() {
+            const checkboxes = document.querySelectorAll('#variablesList input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        function updateTimeLabels() {
+            if (!csvData || !timeColumn) return;
+
+            const startIdx = Math.floor((document.getElementById('startRange').value / 100) * csvData.length);
+            const endIdx = Math.floor((document.getElementById('endRange').value / 100) * csvData.length);
+
+            const start = csvData[Math.max(0, startIdx)][timeColumn];
+            const end = csvData[Math.min(csvData.length - 1, endIdx - 1)][timeColumn];
+
+            document.getElementById('startLabel').textContent = formatTime(start);
+            document.getElementById('endLabel').textContent = formatTime(end);
+        }
+
+        function formatTime(date) {
+            if (!(date instanceof Date)) return '-';
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function plotChart() {
+            const selected = getSelectedVariables();
+
+            if (selected.length === 0) {
+                // Se nenhuma variavel selecionada, seleciona as primeiras numericas
+                const numericCols = columns.filter(c => {
+                    if (c === timeColumn) return false;
+                    return typeof csvData[0][c] === 'number';
+                }).slice(0, 3);
+
+                if (numericCols.length === 0) {
+                    alert('Selecione pelo menos uma variavel para plotar');
+                    return;
+                }
+
+                numericCols.forEach(col => {
+                    const cb = document.querySelector(`input[value="${col}"]`);
+                    if (cb) cb.checked = true;
+                });
+                updateSelectedVars();
+            }
+
+            const varsToPlot = getSelectedVariables();
+
+            // Filtra por periodo
+            const startPct = parseInt(document.getElementById('startRange').value);
+            const endPct = parseInt(document.getElementById('endRange').value);
+            const startIdx = Math.floor((startPct / 100) * csvData.length);
+            const endIdx = Math.floor((endPct / 100) * csvData.length);
+            const filteredData = csvData.slice(startIdx, endIdx);
+
+            if (filteredData.length === 0) {
+                alert('Nenhum dado no periodo selecionado');
+                return;
+            }
+
+            // Prepara traces
+            const traces = varsToPlot.map((varName, i) => ({
+                x: filteredData.map(row => row[timeColumn]),
+                y: filteredData.map(row => row[varName]),
+                type: 'scatter',
+                mode: 'lines',
+                name: varName,
+                line: { color: COLORS[i % COLORS.length], width: 1.5 }
+            }));
+
+            const layout = {
+                paper_bgcolor: '#16213e',
+                plot_bgcolor: '#1a1a2e',
+                font: { color: '#eee' },
+                xaxis: {
+                    title: 'Tempo',
+                    gridcolor: '#0f3460',
+                    linecolor: '#0f3460'
+                },
+                yaxis: {
+                    title: varsToPlot.length === 1 ? varsToPlot[0] : 'Valor',
+                    gridcolor: '#0f3460',
+                    linecolor: '#0f3460'
+                },
+                legend: {
+                    orientation: 'h',
+                    y: -0.15
+                },
+                margin: { t: 30, r: 30, b: 80, l: 60 },
+                hovermode: 'x unified'
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+
+            Plotly.newPlot('chart', traces, layout, config);
+        }
+    </script>
+</body>
+</html>

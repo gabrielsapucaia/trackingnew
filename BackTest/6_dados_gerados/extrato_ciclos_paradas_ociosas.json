@@ -1,0 +1,643 @@
+{
+  "paradas_ociosas": [
+    {
+      "inicio": "2025-12-12T11:58:26-03:00",
+      "fim": "2025-12-12T12:54:25-03:00",
+      "duracao_sec": 3359,
+      "latitude": -11.698179889613094,
+      "longitude": -47.16446608241071,
+      "ciclo_num": 1,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T13:01:46-03:00",
+      "fim": "2025-12-12T13:08:15-03:00",
+      "duracao_sec": 389,
+      "latitude": -11.698740202051281,
+      "longitude": -47.15518328948718,
+      "ciclo_num": 1,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T13:08:36-03:00",
+      "fim": "2025-12-12T13:09:15-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.6984657575,
+      "longitude": -47.15505688,
+      "ciclo_num": 1,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T13:09:36-03:00",
+      "fim": "2025-12-12T13:10:08-03:00",
+      "duracao_sec": 32,
+      "latitude": -11.698174775833335,
+      "longitude": -47.155008115,
+      "ciclo_num": 1,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T18:21:34-03:00",
+      "fim": "2025-12-12T18:23:13-03:00",
+      "duracao_sec": 99,
+      "latitude": -11.698094621,
+      "longitude": -47.16359151300001,
+      "ciclo_num": 14,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T18:23:34-03:00",
+      "fim": "2025-12-12T18:34:33-03:00",
+      "duracao_sec": 659,
+      "latitude": -11.698251366212123,
+      "longitude": -47.16374111454545,
+      "ciclo_num": 14,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T18:59:07-03:00",
+      "fim": "2025-12-12T19:25:36-03:00",
+      "duracao_sec": 1589,
+      "latitude": -11.697536311320755,
+      "longitude": -47.16427345597484,
+      "ciclo_num": 15,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T19:31:17-03:00",
+      "fim": "2025-12-12T19:32:30-03:00",
+      "duracao_sec": 73,
+      "latitude": -11.699064222499999,
+      "longitude": -47.1572699825,
+      "ciclo_num": 15,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T22:06:41-03:00",
+      "fim": "2025-12-12T22:08:30-03:00",
+      "duracao_sec": 109,
+      "latitude": -11.692077126363637,
+      "longitude": -47.16423445181818,
+      "ciclo_num": 22,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T22:53:30-03:00",
+      "fim": "2025-12-13T00:01:49-03:00",
+      "duracao_sec": 4099,
+      "latitude": -11.692750178,
+      "longitude": -47.165135702560974,
+      "ciclo_num": 24,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T00:02:00-03:00",
+      "fim": "2025-12-13T00:10:39-03:00",
+      "duracao_sec": 519,
+      "latitude": -11.692758960192311,
+      "longitude": -47.165129565,
+      "ciclo_num": 24,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T01:01:36-03:00",
+      "fim": "2025-12-13T01:03:35-03:00",
+      "duracao_sec": 119,
+      "latitude": -11.693516806666667,
+      "longitude": -47.16425034833333,
+      "ciclo_num": 26,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T01:04:16-03:00",
+      "fim": "2025-12-13T01:07:45-03:00",
+      "duracao_sec": 209,
+      "latitude": -11.693582564285714,
+      "longitude": -47.164309303333326,
+      "ciclo_num": 26,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T01:13:44-03:00",
+      "fim": "2025-12-13T01:15:13-03:00",
+      "duracao_sec": 89,
+      "latitude": -11.699099177777775,
+      "longitude": -47.157267034444445,
+      "ciclo_num": 27,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T01:17:24-03:00",
+      "fim": "2025-12-13T01:18:03-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.69931645,
+      "longitude": -47.1574952,
+      "ciclo_num": 27,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T01:21:04-03:00",
+      "fim": "2025-12-13T01:21:43-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.69914151,
+      "longitude": -47.157577675,
+      "ciclo_num": 27,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T03:30:33-03:00",
+      "fim": "2025-12-13T03:47:32-03:00",
+      "duracao_sec": 1019,
+      "latitude": -11.694532570588231,
+      "longitude": -47.165957190098034,
+      "ciclo_num": 32,
+      "fase": "entre_carga_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T04:18:48-03:00",
+      "fim": "2025-12-13T04:20:07-03:00",
+      "duracao_sec": 79,
+      "latitude": -11.69929004125,
+      "longitude": -47.157385106250004,
+      "ciclo_num": 34,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T04:21:18-03:00",
+      "fim": "2025-12-13T04:23:27-03:00",
+      "duracao_sec": 129,
+      "latitude": -11.698918520769231,
+      "longitude": -47.15743812461539,
+      "ciclo_num": 34,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T05:01:09-03:00",
+      "fim": "2025-12-13T05:04:18-03:00",
+      "duracao_sec": 189,
+      "latitude": -11.693031474736841,
+      "longitude": -47.16514894421052,
+      "ciclo_num": 35,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T06:47:27-03:00",
+      "fim": "2025-12-13T06:50:36-03:00",
+      "duracao_sec": 189,
+      "latitude": -11.69428154473684,
+      "longitude": -47.16524738894737,
+      "ciclo_num": 40,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T06:50:47-03:00",
+      "fim": "2025-12-13T06:54:06-03:00",
+      "duracao_sec": 199,
+      "latitude": -11.694281420000003,
+      "longitude": -47.1652474785,
+      "ciclo_num": 40,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T06:58:24-03:00",
+      "fim": "2025-12-13T07:18:13-03:00",
+      "duracao_sec": 1189,
+      "latitude": -11.697852713949581,
+      "longitude": -47.164349318655454,
+      "ciclo_num": 40,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T08:06:28-03:00",
+      "fim": "2025-12-13T08:07:07-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.699289915000001,
+      "longitude": -47.157271635,
+      "ciclo_num": 42,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T08:07:38-03:00",
+      "fim": "2025-12-13T08:24:12-03:00",
+      "duracao_sec": 994,
+      "latitude": -11.699154532900002,
+      "longitude": -47.15722009900001,
+      "ciclo_num": 42,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:05:29-03:00",
+      "fim": "2025-12-13T09:09:08-03:00",
+      "duracao_sec": 219,
+      "latitude": -11.694223786818183,
+      "longitude": -47.16505184681819,
+      "ciclo_num": 44,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:15:00-03:00",
+      "fim": "2025-12-13T09:16:49-03:00",
+      "duracao_sec": 109,
+      "latitude": -11.694477543636365,
+      "longitude": -47.15659130272727,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:17:00-03:00",
+      "fim": "2025-12-13T09:22:19-03:00",
+      "duracao_sec": 319,
+      "latitude": -11.6944134571875,
+      "longitude": -47.1567236878125,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:27:30-03:00",
+      "fim": "2025-12-13T09:29:09-03:00",
+      "duracao_sec": 99,
+      "latitude": -11.702257201262627,
+      "longitude": -47.15736053332828,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:30:00-03:00",
+      "fim": "2025-12-13T09:30:39-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.702845335,
+      "longitude": -47.1576462775,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:30:50-03:00",
+      "fim": "2025-12-13T09:31:39-03:00",
+      "duracao_sec": 49,
+      "latitude": -11.702713850565658,
+      "longitude": -47.15758638632323,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:36:30-03:00",
+      "fim": "2025-12-13T09:38:19-03:00",
+      "duracao_sec": 109,
+      "latitude": -11.698242883636363,
+      "longitude": -47.15467035727273,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:39:20-03:00",
+      "fim": "2025-12-13T09:40:29-03:00",
+      "duracao_sec": 69,
+      "latitude": -11.698258127142855,
+      "longitude": -47.15469727714286,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:42:30-03:00",
+      "fim": "2025-12-13T09:43:09-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.698026277499999,
+      "longitude": -47.155145622499994,
+      "ciclo_num": 44,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T10:14:01-03:00",
+      "fim": "2025-12-13T10:15:20-03:00",
+      "duracao_sec": 79,
+      "latitude": -11.69400749875,
+      "longitude": -47.16418945875,
+      "ciclo_num": 45,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:50:55-03:00",
+      "fim": "2025-12-13T09:51:34-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.6981873075,
+      "longitude": -47.155007870000006,
+      "ciclo_num": 45,
+      "fase": "entre_carga_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T09:52:15-03:00",
+      "fim": "2025-12-13T09:53:04-03:00",
+      "duracao_sec": 49,
+      "latitude": -11.698828152,
+      "longitude": -47.15527367599999,
+      "ciclo_num": 45,
+      "fase": "entre_carga_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T10:19:28-03:00",
+      "fim": "2025-12-13T10:57:17-03:00",
+      "duracao_sec": 2269,
+      "latitude": -11.697933198314866,
+      "longitude": -47.163801607192624,
+      "ciclo_num": 45,
+      "fase": "apos_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-13T11:05:41-03:00",
+      "fim": "2025-12-13T11:07:10-03:00",
+      "duracao_sec": 89,
+      "latitude": -11.698228591947249,
+      "longitude": -47.15470141998317,
+      "ciclo_num": 46,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T11:11:21-03:00",
+      "fim": "2025-12-13T11:12:30-03:00",
+      "duracao_sec": 69,
+      "latitude": -11.698390881111111,
+      "longitude": -47.155439393492074,
+      "ciclo_num": 46,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T11:13:11-03:00",
+      "fim": "2025-12-13T11:14:00-03:00",
+      "duracao_sec": 49,
+      "latitude": -11.698390782,
+      "longitude": -47.155439892000004,
+      "ciclo_num": 46,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T11:14:51-03:00",
+      "fim": "2025-12-13T11:15:30-03:00",
+      "duracao_sec": 39,
+      "latitude": -11.6983878175,
+      "longitude": -47.155439920000006,
+      "ciclo_num": 46,
+      "fase": "durante_carga_embutida"
+    },
+    {
+      "inicio": "2025-12-13T11:43:49-03:00",
+      "fim": "2025-12-13T11:47:58-03:00",
+      "duracao_sec": 249,
+      "latitude": -11.69411119801905,
+      "longitude": -47.16435713062857,
+      "ciclo_num": 46,
+      "fase": "durante_basc_embutida"
+    },
+    {
+      "inicio": "2025-12-12T10:22:37-03:00",
+      "fim": "2025-12-12T10:29:27-03:00",
+      "duracao_sec": 411,
+      "latitude": -11.69899649075426,
+      "longitude": -47.16733673722627,
+      "ciclo_num": 0,
+      "fase": "pre_ciclo"
+    },
+    {
+      "inicio": "2025-12-12T10:30:12-03:00",
+      "fim": "2025-12-12T10:40:05-03:00",
+      "duracao_sec": 594,
+      "latitude": -11.698985759595958,
+      "longitude": -47.16733392744108,
+      "ciclo_num": 0,
+      "fase": "pre_ciclo"
+    },
+    {
+      "inicio": "2025-12-12T10:40:26-03:00",
+      "fim": "2025-12-12T10:41:33-03:00",
+      "duracao_sec": 68,
+      "latitude": -11.69898333235294,
+      "longitude": -47.167335747058814,
+      "ciclo_num": 0,
+      "fase": "pre_ciclo"
+    },
+    {
+      "inicio": "2025-12-12T10:41:48-03:00",
+      "fim": "2025-12-12T10:43:02-03:00",
+      "duracao_sec": 75,
+      "latitude": -11.698982694666668,
+      "longitude": -47.16733648,
+      "ciclo_num": 0,
+      "fase": "pre_ciclo"
+    },
+    {
+      "inicio": "2025-12-12T11:58:41-03:00",
+      "fim": "2025-12-12T12:54:28-03:00",
+      "duracao_sec": 3850,
+      "latitude": -11.6982289,
+      "longitude": -47.164527,
+      "ciclo_num": 1,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-12T14:24:26-03:00",
+      "fim": "2025-12-12T14:30:14-03:00",
+      "duracao_sec": 579,
+      "latitude": -11.6997351,
+      "longitude": -47.1573516,
+      "ciclo_num": 3,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-12T18:25:40-03:00",
+      "fim": "2025-12-12T18:34:31-03:00",
+      "duracao_sec": 811,
+      "latitude": -11.6982327,
+      "longitude": -47.1637293,
+      "ciclo_num": 14,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-12T18:59:09-03:00",
+      "fim": "2025-12-12T19:25:33-03:00",
+      "duracao_sec": 1715,
+      "latitude": -11.6975811,
+      "longitude": -47.1643081,
+      "ciclo_num": 15,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-12T21:16:23-03:00",
+      "fim": "2025-12-12T21:19:02-03:00",
+      "duracao_sec": 203,
+      "latitude": -11.6990528,
+      "longitude": -47.1572491,
+      "ciclo_num": 20,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-12T22:06:30-03:00",
+      "fim": "2025-12-12T22:09:15-03:00",
+      "duracao_sec": 166,
+      "latitude": -11.6920969,
+      "longitude": -47.1642507,
+      "ciclo_num": 22,
+      "fase": "durante_basc"
+    },
+    {
+      "inicio": "2025-12-12T22:53:07-03:00",
+      "fim": "2025-12-13T00:11:15-03:00",
+      "duracao_sec": 4658,
+      "latitude": -11.6927496,
+      "longitude": -47.1651564,
+      "ciclo_num": 24,
+      "fase": "durante_basc"
+    },
+    {
+      "inicio": "2025-12-13T00:39:13-03:00",
+      "fim": "2025-12-13T00:43:45-03:00",
+      "duracao_sec": 297,
+      "latitude": -11.699219,
+      "longitude": -47.1575711,
+      "ciclo_num": 25,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-13T01:03:59-03:00",
+      "fim": "2025-12-13T01:07:53-03:00",
+      "duracao_sec": 301,
+      "latitude": -11.6935797,
+      "longitude": -47.1642997,
+      "ciclo_num": 26,
+      "fase": "durante_basc"
+    },
+    {
+      "inicio": "2025-12-13T01:18:58-03:00",
+      "fim": "2025-12-13T01:22:23-03:00",
+      "duracao_sec": 315,
+      "latitude": -11.6991719,
+      "longitude": -47.1575467,
+      "ciclo_num": 27,
+      "fase": "durante_carga"
+    },
+    {
+      "inicio": "2025-12-13T01:39:30-03:00",
+      "fim": "2025-12-13T01:45:21-03:00",
+      "duracao_sec": 325,
+      "latitude": -11.6990108,
+      "longitude": -47.1573897,
+      "ciclo_num": 27,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-13T03:30:31-03:00",
+      "fim": "2025-12-13T03:47:34-03:00",
+      "duracao_sec": 1051,
+      "latitude": -11.6945448,
+      "longitude": -47.165951,
+      "ciclo_num": 32,
+      "fase": "entre_carga_basc"
+    },
+    {
+      "inicio": "2025-12-13T05:00:47-03:00",
+      "fim": "2025-12-13T05:04:41-03:00",
+      "duracao_sec": 221,
+      "latitude": -11.6930163,
+      "longitude": -47.1651678,
+      "ciclo_num": 35,
+      "fase": "durante_basc"
+    },
+    {
+      "inicio": "2025-12-13T05:09:24-03:00",
+      "fim": "2025-12-13T05:13:29-03:00",
+      "duracao_sec": 211,
+      "latitude": -11.699071,
+      "longitude": -47.1575424,
+      "ciclo_num": 35,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-13T06:47:02-03:00",
+      "fim": "2025-12-13T06:54:14-03:00",
+      "duracao_sec": 398,
+      "latitude": -11.6942984,
+      "longitude": -47.1652495,
+      "ciclo_num": 40,
+      "fase": "durante_basc"
+    },
+    {
+      "inicio": "2025-12-13T06:58:22-03:00",
+      "fim": "2025-12-13T07:18:21-03:00",
+      "duracao_sec": 1294,
+      "latitude": -11.6978642,
+      "longitude": -47.1643648,
+      "ciclo_num": 40,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-13T09:05:16-03:00",
+      "fim": "2025-12-13T09:09:20-03:00",
+      "duracao_sec": 303,
+      "latitude": -11.6942404,
+      "longitude": -47.1650437,
+      "ciclo_num": 44,
+      "fase": "durante_basc"
+    },
+    {
+      "inicio": "2025-12-13T09:16:58-03:00",
+      "fim": "2025-12-13T09:22:23-03:00",
+      "duracao_sec": 1218,
+      "latitude": -11.6944199,
+      "longitude": -47.1566956,
+      "ciclo_num": 44,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-13T09:52:18-03:00",
+      "fim": "2025-12-13T09:53:05-03:00",
+      "duracao_sec": 440,
+      "latitude": -11.6988028,
+      "longitude": -47.155267,
+      "ciclo_num": 45,
+      "fase": "entre_carga_basc"
+    },
+    {
+      "inicio": "2025-12-13T10:11:44-03:00",
+      "fim": "2025-12-13T10:15:28-03:00",
+      "duracao_sec": 152,
+      "latitude": -11.6940086,
+      "longitude": -47.1642543,
+      "ciclo_num": 45,
+      "fase": "durante_basc"
+    },
+    {
+      "inicio": "2025-12-13T10:24:49-03:00",
+      "fim": "2025-12-13T10:57:17-03:00",
+      "duracao_sec": 2342,
+      "latitude": -11.6979608,
+      "longitude": -47.1638601,
+      "ciclo_num": 45,
+      "fase": "apos_basc"
+    },
+    {
+      "inicio": "2025-12-13T11:11:07-03:00",
+      "fim": "2025-12-13T11:18:42-03:00",
+      "duracao_sec": 856,
+      "latitude": -11.6983296,
+      "longitude": -47.155394,
+      "ciclo_num": 46,
+      "fase": "durante_carga"
+    },
+    {
+      "inicio": "2025-12-13T11:25:12-03:00",
+      "fim": "2025-12-13T11:25:46-03:00",
+      "duracao_sec": 233,
+      "latitude": -11.6979387,
+      "longitude": -47.1544487,
+      "ciclo_num": 46,
+      "fase": "entre_carga_basc"
+    },
+    {
+      "inicio": "2025-12-13T11:40:39-03:00",
+      "fim": "2025-12-13T11:48:09-03:00",
+      "duracao_sec": 350,
+      "latitude": -11.6941375,
+      "longitude": -47.1643852,
+      "ciclo_num": 46,
+      "fase": "durante_basc"
+    }
+  ]
+}

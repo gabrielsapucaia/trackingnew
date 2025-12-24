@@ -1,0 +1,56 @@
+# Configuracao do banco de dados TimescaleDB
+database:
+  host: 10.135.22.3
+  port: 5432
+  database: auratracking
+  user: aura
+  password: AuraTrack@DB2024!
+
+# Variaveis disponiveis para exportacao
+variaveis:
+  # Sempre incluidas
+  obrigatorias:
+    - time
+    - device_id
+
+  # GPS
+  gps:
+    - latitude
+    - longitude
+    - altitude
+    - speed
+    - speed_kmh
+    - bearing
+    - gps_accuracy
+    - satellites
+
+  # Acelerometro
+  acelerometro:
+    - accel_x
+    - accel_y
+    - accel_z
+    - accel_magnitude
+
+  # Giroscopio
+  giroscopio:
+    - gyro_x
+    - gyro_y
+    - gyro_z
+
+  # Orientacao
+  orientacao:
+    - pitch
+    - roll
+    - azimuth
+
+  # Sistema
+  sistema:
+    - battery_level
+    - battery_temperature
+    - wifi_rssi
+    - operator_id
+
+# Configuracao de exportacao
+exportacao:
+  frequencia_hz: 1
+  diretorio_saida: ../6_dados_gerados

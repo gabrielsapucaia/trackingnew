@@ -1,6 +1,0 @@
-pytest
-requests
-paho-mqtt
-psycopg2-binary
-sseclient-py
-pandas

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(python exportar_telemetria.py:*)",
+      "Bash(pip install:*)",
+      "Bash(python gerar_extrato_ciclos_rev2.py:*)",
+      "Bash(PYTHONIOENCODING=utf-8 python:*)",
+      "Bash(start chrome:*)",
+      "Bash(playwright install:*)",
+      "Bash(python -m playwright:*)",
+      "Bash(python:*)",
+      "Bash(cat:*)",
+      "Bash(dir:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
