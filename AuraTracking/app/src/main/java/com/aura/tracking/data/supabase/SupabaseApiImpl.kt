@@ -5,6 +5,7 @@ import com.aura.tracking.BuildConfig
 import com.aura.tracking.data.model.Equipment
 import com.aura.tracking.data.model.EquipmentType
 import com.aura.tracking.data.model.Fleet
+import com.aura.tracking.data.model.Geofence
 import com.aura.tracking.data.model.Operator
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -287,6 +288,27 @@ class SupabaseApiImpl : SupabaseApi {
             Result.success(isValid)
         } catch (e: Exception) {
             Log.e(TAG, "Error validating session: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Fetch all active geofence zones.
+     */
+    override suspend fun getGeofences(): Result<List<Geofence>> {
+        return try {
+            Log.d(TAG, "Fetching geofences")
+
+            val geofences: List<Geofence> = client.get(tableUrl("geofence")) {
+                parameter("is_active", "eq.true")
+                parameter("select", "*")
+                parameter("order", "id.asc")
+            }.body()
+
+            Log.d(TAG, "Fetched ${geofences.size} geofences")
+            Result.success(geofences)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching geofences: ${e.message}", e)
             Result.failure(e)
         }
     }

@@ -6,6 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.aura.tracking.sync.SyncStateDao
+import com.aura.tracking.sync.SyncStateEntity
 
 /**
  * Room database for AuraTracking.
@@ -24,9 +26,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         OperatorEntity::class,
         TelemetryQueueEntity::class,
         ZoneEntity::class,
-        GeofenceEventEntity::class
+        GeofenceEventEntity::class,
+        SyncStateEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -36,6 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun telemetryQueueDao(): TelemetryQueueDao
     abstract fun zoneDao(): ZoneDao
     abstract fun geofenceEventDao(): GeofenceEventDao
+    abstract fun syncStateDao(): SyncStateDao
 
     companion object {
         private const val DATABASE_NAME = "aura_tracking_db"
@@ -46,6 +50,27 @@ abstract class AppDatabase : RoomDatabase() {
         fun getInstance(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: buildDatabase(context).also { instance = it }
+            }
+        }
+
+        /**
+         * Migration 5 → 6: SyncOrchestrator
+         *
+         * Mudanças:
+         * 1. Cria tabela sync_state para estado de sincronização
+         */
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS sync_state (
+                        data_type TEXT PRIMARY KEY NOT NULL,
+                        last_sync_at INTEGER NOT NULL,
+                        last_sync_status TEXT NOT NULL,
+                        item_count INTEGER NOT NULL DEFAULT 0,
+                        error_message TEXT,
+                        consecutive_failures INTEGER NOT NULL DEFAULT 0
+                    )
+                """)
             }
         }
 
@@ -159,7 +184,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 // Callback para otimizações SQLite
                 .addCallback(object : Callback() {
                     override fun onOpen(db: SupportSQLiteDatabase) {

@@ -317,4 +317,12 @@ object AuraLog {
         fun w(msg: String) = w(TAG, msg)
         fun e(msg: String, t: Throwable? = null) = e(TAG, msg, t)
     }
+
+    object Sync {
+        private const val TAG = "Sync"
+        fun d(msg: String) = d(TAG, msg)
+        fun i(msg: String) = i(TAG, msg)
+        fun w(msg: String) = w(TAG, msg)
+        fun e(msg: String, t: Throwable? = null) = e(TAG, msg, t)
+    }
 }

@@ -112,6 +112,40 @@ data class LoginRequest(
 )
 
 /**
+ * Data class representing a Geofence zone from Supabase.
+ * Matches the 'geofence' table in Supabase.
+ */
+@Serializable
+data class Geofence(
+    @SerialName("id")
+    val id: Long,
+
+    @SerialName("name")
+    val name: String,
+
+    @SerialName("zone_type")
+    val zoneType: String,
+
+    @SerialName("area_m2")
+    val areaM2: Float? = null,
+
+    @SerialName("polygon_json")
+    val polygonJson: String,
+
+    @SerialName("color")
+    val color: String = "#4CAF50",
+
+    @SerialName("is_active")
+    val isActive: Boolean = true,
+
+    @SerialName("created_at")
+    val createdAt: String? = null,
+
+    @SerialName("updated_at")
+    val updatedAt: String? = null
+)
+
+/**
  * Telemetry data point for GPS + IMU.
  */
 @Serializable

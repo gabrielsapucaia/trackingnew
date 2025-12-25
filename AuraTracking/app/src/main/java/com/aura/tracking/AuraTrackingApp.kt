@@ -10,7 +10,7 @@ import android.provider.Settings
 import android.view.WindowManager
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import com.aura.tracking.background.SyncDataWorker
+import com.aura.tracking.sync.UnifiedSyncWorker
 import com.aura.tracking.data.model.Operator
 import com.aura.tracking.data.room.AppDatabase
 import com.aura.tracking.data.supabase.SupabaseApi
@@ -61,8 +61,9 @@ class AuraTrackingApp : Application() {
             .build()
         WorkManager.initialize(this, config)
 
-        // Agenda sincronização automática de dados
-        SyncDataWorker.schedule(this)
+        // Cancela workers legados e agenda o novo worker unificado
+        UnifiedSyncWorker.cancelLegacyWorkers(this)
+        UnifiedSyncWorker.schedule(this)
     }
 
     /**

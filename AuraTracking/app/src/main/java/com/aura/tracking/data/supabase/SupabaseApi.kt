@@ -3,6 +3,7 @@ package com.aura.tracking.data.supabase
 import com.aura.tracking.data.model.Equipment
 import com.aura.tracking.data.model.EquipmentType
 import com.aura.tracking.data.model.Fleet
+import com.aura.tracking.data.model.Geofence
 import com.aura.tracking.data.model.Operator
 
 /**
@@ -76,4 +77,10 @@ interface SupabaseApi {
      * @return Result containing Boolean (true if valid).
      */
     suspend fun validateSession(operatorId: Long): Result<Boolean>
+
+    /**
+     * Fetch all active geofence zones.
+     * @return Result containing list of Geofences on success.
+     */
+    suspend fun getGeofences(): Result<List<Geofence>>
 }

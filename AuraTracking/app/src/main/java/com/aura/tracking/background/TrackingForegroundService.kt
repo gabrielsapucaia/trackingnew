@@ -261,14 +261,10 @@ class TrackingForegroundService : Service() {
             mqttReconnectWork
         )
 
-        // QueueFlushWorker
-        QueueFlushWorker.schedule(this)
+        // NOTA: Workers de sync (QueueFlush, ZoneSync, GeofenceEventFlush) foram
+        // consolidados no UnifiedSyncWorker, agendado em AuraTrackingApp.onCreate()
 
-        // Geofence workers
-        ZoneSyncWorker.schedule(this)
-        GeofenceEventFlushWorker.schedule(this)
-
-        AuraLog.Service.i("Workers scheduled: Watchdog, MQTT Reconnect, Queue Flush, Zone Sync, Geofence Flush")
+        AuraLog.Service.i("Workers scheduled: Watchdog, MQTT Reconnect (UnifiedSync via App)")
     }
 
     /**
@@ -278,8 +274,7 @@ class TrackingForegroundService : Service() {
         val workManager = WorkManager.getInstance(this)
         workManager.cancelUniqueWork(ServiceWatchdogWorker.WORK_NAME)
         workManager.cancelUniqueWork(MqttReconnectWorker.WORK_NAME)
-        ZoneSyncWorker.cancel(this)
-        GeofenceEventFlushWorker.cancel(this)
+        // NOTA: UnifiedSyncWorker NÃO é cancelado aqui pois é gerenciado pelo App lifecycle
     }
 
     private fun startForegroundWithNotification() {
