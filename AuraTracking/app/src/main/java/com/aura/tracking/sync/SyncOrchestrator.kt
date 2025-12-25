@@ -308,8 +308,8 @@ class SyncOrchestrator(
                 }
 
                 val payload = json.encodeToString(
-                    com.aura.tracking.geofence.GeofenceEventFlushWorker.GeofenceEventPayload.serializer(),
-                    com.aura.tracking.geofence.GeofenceEventFlushWorker.GeofenceEventPayload(
+                    GeofenceEventPayload.serializer(),
+                    GeofenceEventPayload(
                         eventId = event.eventId,
                         zoneId = event.zoneId,
                         zoneName = event.zoneName,

@@ -27,9 +27,8 @@ import com.aura.tracking.sensors.orientation.OrientationProvider
 import com.aura.tracking.sensors.system.SystemDataProvider
 import com.aura.tracking.sensors.motion.MotionDetectorProvider
 import com.aura.tracking.geofence.GeofenceContext
-import com.aura.tracking.geofence.GeofenceEventFlushWorker
 import com.aura.tracking.geofence.GeofenceManager
-import com.aura.tracking.geofence.ZoneSyncWorker
+import com.aura.tracking.sync.SyncConfig
 import com.aura.tracking.ui.dashboard.DashboardActivity
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
@@ -221,7 +220,6 @@ class TrackingForegroundService : Service() {
         wakeLock = null
 
         // Cancela workers
-        QueueFlushWorker.cancel(this)
         cancelWorkers()
 
         // Limpa scope
@@ -633,7 +631,7 @@ class TrackingForegroundService : Service() {
         serviceScope.launch {
             try {
                 val aggregator = telemetryAggregator ?: return@launch
-                val acquired = QueueFlushWorker.tryFlushWithLock {
+                val acquired = SyncConfig.tryFlushWithLock {
                     var totalSent = 0
                     var iterations = 0
                     val maxIterations = 100 // Limite de segurança

@@ -187,14 +187,14 @@ class MqttReconnectWorker(
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val request = androidx.work.OneTimeWorkRequestBuilder<QueueFlushWorker>()
+            val request = androidx.work.OneTimeWorkRequestBuilder<com.aura.tracking.sync.UnifiedSyncWorker>()
                 .setConstraints(constraints)
                 .build()
 
             WorkManager.getInstance(applicationContext).enqueue(request)
-            AuraLog.MQTT.d("Queue flush triggered after reconnection")
+            AuraLog.MQTT.d("Sync triggered after reconnection")
         } catch (e: Exception) {
-            AuraLog.MQTT.e("Failed to trigger queue flush", e)
+            AuraLog.MQTT.e("Failed to trigger sync", e)
         }
     }
 }

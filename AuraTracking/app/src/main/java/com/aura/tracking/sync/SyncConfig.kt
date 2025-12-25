@@ -1,10 +1,33 @@
 package com.aura.tracking.sync
 
+import com.aura.tracking.logging.AuraLog
+import kotlinx.coroutines.sync.Mutex
+
 /**
  * SyncConfig - Configurações para o SyncOrchestrator.
  * Valores configuráveis para controle de sync.
  */
 object SyncConfig {
+    // Mutex global para evitar flush concorrente
+    private val flushMutex = Mutex()
+
+    /**
+     * Tenta adquirir lock para flush.
+     * Retorna true se conseguiu, false se outro flush já está em andamento.
+     */
+    suspend fun tryFlushWithLock(block: suspend () -> Unit): Boolean {
+        return if (flushMutex.tryLock()) {
+            try {
+                block()
+                true
+            } finally {
+                flushMutex.unlock()
+            }
+        } else {
+            AuraLog.Sync.d("Flush already in progress, skipping")
+            false
+        }
+    }
     // Intervalo entre syncs (WorkManager)
     const val SYNC_INTERVAL_MINUTES = 15L
     const val SYNC_FLEX_INTERVAL_MINUTES = 5L
