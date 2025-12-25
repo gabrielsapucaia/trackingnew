@@ -301,4 +301,12 @@ object AuraLog {
         fun w(msg: String) = w(TAG, msg)
         fun e(msg: String, t: Throwable? = null) = e(TAG, msg, t)
     }
+
+    object Analytics {
+        private const val TAG = "Analytics"
+        fun d(msg: String) = d(TAG, msg)
+        fun i(msg: String) = i(TAG, msg)
+        fun w(msg: String) = w(TAG, msg)
+        fun e(msg: String, t: Throwable? = null) = e(TAG, msg, t)
+    }
 }

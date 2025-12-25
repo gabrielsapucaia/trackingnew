@@ -1,7 +1,10 @@
 package com.aura.tracking.mqtt
 
 import android.content.Context
+import com.aura.tracking.analytics.TelemetryAnalytics
 import com.aura.tracking.logging.AuraLog
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -142,7 +145,23 @@ class MqttClientManager(private val context: Context) {
                     AuraLog.MQTT.w("Connection lost: ${cause?.message}")
                     _isConnected.value = false
                     onConnectionStatusChange?.invoke(false)
-                    
+
+                    // ANALYTICS: Registra desconexão
+                    TelemetryAnalytics.recordConnectionChange(
+                        connected = false,
+                        host = host,
+                        port = port,
+                        attemptNumber = reconnectAttempts
+                    )
+
+                    // Log non-fatal error to Crashlytics
+                    cause?.let {
+                        Firebase.crashlytics.apply {
+                            log("MQTT connection lost to $host:$port")
+                            recordException(Exception("MQTT connection lost: ${it.message}", it))
+                        }
+                    }
+
                     if (shouldReconnect) {
                         scope.launch { scheduleReconnect() }
                     }
@@ -178,6 +197,13 @@ class MqttClientManager(private val context: Context) {
 
                     override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
                         AuraLog.MQTT.e("MQTT connection failed: ${exception?.message}")
+
+                        // Log non-fatal error to Crashlytics
+                        Firebase.crashlytics.apply {
+                            log("MQTT connection failed to $host:$port (attempt $reconnectAttempts)")
+                            exception?.let { recordException(Exception("MQTT connect failed: ${it.message}", it)) }
+                        }
+
                         cont.resume(false)
                     }
                 })
@@ -188,6 +214,13 @@ class MqttClientManager(private val context: Context) {
                 reconnectAttempts = 0
                 onConnectionStatusChange?.invoke(true)
                 AuraLog.MQTT.i("MQTT connected to $host:$port")
+
+                // ANALYTICS: Registra conexão bem-sucedida
+                TelemetryAnalytics.recordConnectionChange(
+                    connected = true,
+                    host = host,
+                    port = port
+                )
             } else {
                 scheduleReconnect()
             }
@@ -314,6 +347,15 @@ class MqttClientManager(private val context: Context) {
                         AuraLog.MQTT.e("Publish failed: ${exception?.message}")
                         messagesFailed++
                         val reason = mapFailureReason(exception)
+
+                        // Log non-fatal error to Crashlytics (only for persistent failures)
+                        if (messagesFailed % 10 == 0L) {
+                            Firebase.crashlytics.apply {
+                                log("MQTT publish failures: $messagesFailed total, reason: $reason")
+                                exception?.let { recordException(Exception("MQTT publish failed: ${it.message}", it)) }
+                            }
+                        }
+
                         cont.resume(PublishResult(success = false, failureReason = reason))
                     }
                 })

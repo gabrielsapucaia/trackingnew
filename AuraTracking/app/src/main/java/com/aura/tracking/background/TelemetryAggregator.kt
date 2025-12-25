@@ -1,6 +1,7 @@
 package com.aura.tracking.background
 
 import android.util.Log
+import com.aura.tracking.analytics.TelemetryAnalytics
 import com.aura.tracking.data.room.TelemetryQueueDao
 import com.aura.tracking.data.room.TelemetryQueueEntity
 import com.aura.tracking.diagnostics.LatencyDiagnostics
@@ -316,15 +317,25 @@ class TelemetryAggregator(
      */
     private suspend fun publishOrQueue(topic: String, payload: String, messageId: String, transmissionMode: String, t3PacketCreation: Long = 0) {
         if (mqttClient.isConnected.value) {
+            val publishStart = System.currentTimeMillis()
             val result = mqttClient.publishWithResult(topic, payload)
+            val publishLatency = System.currentTimeMillis() - publishStart
+
             if (result.success) {
                 // LATENCY DIAGNOSTICS: T4 - MQTT Publish
                 if (t3PacketCreation > 0) {
                     LatencyDiagnostics.recordMqttPublish(messageId, t3PacketCreation)
                 }
                 _packetsSent.value++
+
+                // ANALYTICS: Registra sucesso de publicação
+                TelemetryAnalytics.recordPublishSuccess(topic, payload.length, publishLatency)
+
                 Log.d(TAG, "Telemetry sent: $topic (msgId=${messageId.take(8)}..., mode=$transmissionMode)")
             } else {
+                // ANALYTICS: Registra falha de publicação
+                TelemetryAnalytics.recordPublishFailure(result.failureReason, topic, payload.length)
+
                 if (result.failureReason == PublishFailureReason.MAX_INFLIGHT) {
                     Log.w(TAG, "Publish blocked (max inflight), queuing message ${messageId.take(8)}")
                 }

@@ -215,6 +215,9 @@ class PinActivity : AppCompatActivity() {
                         )
                         AuraTrackingApp.database.operatorDao().insertOperator(operatorEntity)
 
+                        // Set operator context for Firebase Crashlytics
+                        AuraTrackingApp.getInstance().setOperatorContext(operator)
+
                         // Check if config exists
                         val hasConfig = AuraTrackingApp.database.configDao().hasConfig()
 

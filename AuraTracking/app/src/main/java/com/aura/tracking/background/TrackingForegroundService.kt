@@ -26,6 +26,8 @@ import com.aura.tracking.sensors.orientation.OrientationProvider
 import com.aura.tracking.sensors.system.SystemDataProvider
 import com.aura.tracking.sensors.motion.MotionDetectorProvider
 import com.aura.tracking.ui.dashboard.DashboardActivity
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -265,16 +267,54 @@ class TrackingForegroundService : Service() {
     private fun startForegroundWithNotification() {
         val notification = createNotification()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            ServiceCompat.startForeground(
-                this,
-                AuraTrackingApp.NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
-            )
-        } else {
-            startForeground(AuraTrackingApp.NOTIFICATION_ID, notification)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                // Android 14+: Verificar permissões de localização antes de usar FOREGROUND_SERVICE_TYPE_LOCATION
+                if (hasLocationPermissions()) {
+                    ServiceCompat.startForeground(
+                        this,
+                        AuraTrackingApp.NOTIFICATION_ID,
+                        notification,
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+                    )
+                } else {
+                    // Fallback: iniciar sem tipo específico (funciona mas não pode acessar localização)
+                    AuraLog.Service.w("Starting foreground without location type - missing permissions")
+                    startForeground(AuraTrackingApp.NOTIFICATION_ID, notification)
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10-13: Usar ServiceCompat com tipo location
+                ServiceCompat.startForeground(
+                    this,
+                    AuraTrackingApp.NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+                )
+            } else {
+                startForeground(AuraTrackingApp.NOTIFICATION_ID, notification)
+            }
+        } catch (e: Exception) {
+            AuraLog.Service.e("Failed to start foreground with location type: ${e.message}", e)
+            // Fallback: tentar iniciar sem tipo específico
+            try {
+                startForeground(AuraTrackingApp.NOTIFICATION_ID, notification)
+                AuraLog.Service.w("Started foreground without location type (fallback)")
+            } catch (fallbackError: Exception) {
+                AuraLog.Service.e("Failed to start foreground service: ${fallbackError.message}", fallbackError)
+                // Reportar para Crashlytics mas não crashar
+                Firebase.crashlytics.recordException(fallbackError)
+            }
         }
+    }
+
+    /**
+     * Verifica se as permissões de localização foram concedidas.
+     */
+    private fun hasLocationPermissions(): Boolean {
+        return androidx.core.content.ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
     private fun createNotification(): Notification {

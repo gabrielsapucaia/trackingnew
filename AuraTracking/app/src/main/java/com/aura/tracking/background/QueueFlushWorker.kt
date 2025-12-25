@@ -11,8 +11,12 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.aura.tracking.data.room.AppDatabase
 import com.aura.tracking.data.room.TelemetryQueueDao
+import com.aura.tracking.analytics.QueueAction
+import com.aura.tracking.analytics.TelemetryAnalytics
 import com.aura.tracking.logging.AuraLog
 import com.aura.tracking.mqtt.MqttClientManager
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -138,7 +142,7 @@ class QueueFlushWorker(
             }
             
             // Log com threshold warnings
-            logQueueStatus(initialCount)
+            logQueueStatus(initialCount, queueDao)
 
             // Obtém instância do MQTT (se o serviço estiver rodando)
             val mqttClient = TrackingForegroundService.getMqttClient()
@@ -182,6 +186,14 @@ class QueueFlushWorker(
             val finalCount = queueDao.getCount()
             AuraLog.Queue.i("Queue flush completed: sent=${result.sent}, failed=${result.failed}, remaining=$finalCount")
 
+            // ANALYTICS: Registra resultado do flush
+            TelemetryAnalytics.recordQueueFlush(
+                batchSize = BATCH_SIZE,
+                sent = result.sent,
+                failed = result.failed,
+                remainingSize = finalCount
+            )
+
             if (result.failed > 0 && result.sent == 0) {
                 Result.retry()
             } else {
@@ -189,6 +201,11 @@ class QueueFlushWorker(
             }
         } catch (e: Exception) {
             AuraLog.Queue.e("Queue flush worker failed: ${e.message}")
+            // Report worker failure to Crashlytics
+            Firebase.crashlytics.apply {
+                log("QueueFlushWorker failed: ${e.message}")
+                recordException(e)
+            }
             Result.retry()
         }
     }
@@ -208,13 +225,36 @@ class QueueFlushWorker(
     /**
      * Log do status da fila com warnings de threshold
      */
-    private fun logQueueStatus(count: Int) {
+    private suspend fun logQueueStatus(count: Int, queueDao: TelemetryQueueDao) {
+        val percentage = count * 100 / TelemetryQueueDao.MAX_QUEUE_SIZE
+
+        // ANALYTICS: Registra métricas da fila
+        val oldestTimestamp = try { queueDao.getOldestTimestamp() } catch (_: Exception) { null }
+        TelemetryAnalytics.recordQueueMetrics(
+            size = count,
+            oldestTimestampMs = oldestTimestamp,
+            action = QueueAction.FLUSH_START
+        )
+
         when {
             count >= TelemetryQueueDao.QUEUE_CRITICAL_THRESHOLD -> {
-                AuraLog.Queue.w("⚠️ CRITICAL: Queue at ${count}/${TelemetryQueueDao.MAX_QUEUE_SIZE} (${(count * 100 / TelemetryQueueDao.MAX_QUEUE_SIZE)}%)")
+                AuraLog.Queue.w("CRITICAL: Queue at ${count}/${TelemetryQueueDao.MAX_QUEUE_SIZE} ($percentage%)")
+                // Report critical queue status to Crashlytics
+                Firebase.crashlytics.apply {
+                    log("Queue CRITICAL: $count messages ($percentage% capacity)")
+                    setCustomKey("queue_size", count.toLong())
+                    setCustomKey("queue_percentage", percentage.toLong())
+                    recordException(Exception("Queue critical threshold reached: $count messages"))
+                }
             }
             count >= TelemetryQueueDao.QUEUE_WARNING_THRESHOLD -> {
-                AuraLog.Queue.w("⚠️ WARNING: Queue at ${count}/${TelemetryQueueDao.MAX_QUEUE_SIZE} (${(count * 100 / TelemetryQueueDao.MAX_QUEUE_SIZE)}%)")
+                AuraLog.Queue.w("WARNING: Queue at ${count}/${TelemetryQueueDao.MAX_QUEUE_SIZE} ($percentage%)")
+                // Report warning queue status to Crashlytics
+                Firebase.crashlytics.apply {
+                    log("Queue WARNING: $count messages ($percentage% capacity)")
+                    setCustomKey("queue_size", count.toLong())
+                    setCustomKey("queue_percentage", percentage.toLong())
+                }
             }
             else -> {
                 AuraLog.Queue.i("Queue has $count items, attempting flush")

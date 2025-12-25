@@ -6,14 +6,19 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.WindowManager
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.aura.tracking.background.SyncDataWorker
+import com.aura.tracking.data.model.Operator
 import com.aura.tracking.data.room.AppDatabase
 import com.aura.tracking.data.supabase.SupabaseApi
+import com.aura.tracking.analytics.TelemetryAnalytics
 import com.aura.tracking.data.supabase.SupabaseApiImpl
 import com.aura.tracking.logging.LogWriter
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 
 /**
  * Application class for AuraTracking.
@@ -41,6 +46,12 @@ class AuraTrackingApp : Application() {
         LogWriter.getInstance(this)
         keepScreenAwake()
 
+        // Inicializa Firebase Crashlytics
+        initializeCrashlytics()
+
+        // Inicializa TelemetryAnalytics (métricas de qualidade)
+        TelemetryAnalytics.initialize()
+
         createNotificationChannel()
         createWatchdogNotificationChannel()
 
@@ -52,6 +63,52 @@ class AuraTrackingApp : Application() {
 
         // Agenda sincronização automática de dados
         SyncDataWorker.schedule(this)
+    }
+
+    /**
+     * Inicializa Firebase Crashlytics com contexto do dispositivo.
+     * Permite identificar crashes por device e versão do app.
+     */
+    private fun initializeCrashlytics() {
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
+        Firebase.crashlytics.apply {
+            setCrashlyticsCollectionEnabled(true)
+
+            // Contexto para identificar device
+            setCustomKey("device_id", deviceId ?: "unknown")
+            setCustomKey("app_version", BuildConfig.VERSION_NAME)
+            setCustomKey("build_type", BuildConfig.BUILD_TYPE)
+
+            // Device info
+            setCustomKey("device_model", Build.MODEL)
+            setCustomKey("device_manufacturer", Build.MANUFACTURER)
+            setCustomKey("android_version", Build.VERSION.RELEASE)
+            setCustomKey("sdk_version", Build.VERSION.SDK_INT)
+        }
+    }
+
+    /**
+     * Atualiza contexto do Crashlytics quando operador faz login.
+     * Permite correlacionar crashes com operadores específicos.
+     */
+    fun setOperatorContext(operator: Operator) {
+        Firebase.crashlytics.apply {
+            setUserId(operator.id.toString())
+            setCustomKey("operator_name", operator.name)
+            setCustomKey("operator_registration", operator.registration)
+        }
+    }
+
+    /**
+     * Limpa contexto do operador no logout.
+     */
+    fun clearOperatorContext() {
+        Firebase.crashlytics.apply {
+            setUserId("")
+            setCustomKey("operator_name", "")
+            setCustomKey("operator_registration", "")
+        }
     }
 
     /**
