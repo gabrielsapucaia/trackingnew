@@ -16,6 +16,7 @@ import androidx.work.WorkManager
 import com.aura.tracking.AuraTrackingApp
 import com.aura.tracking.R
 import com.aura.tracking.data.room.AppDatabase
+import com.aura.tracking.data.room.ZoneEntity
 import com.aura.tracking.logging.AuraLog
 import com.aura.tracking.mqtt.MqttClientManager
 import com.aura.tracking.sensors.gps.GpsData
@@ -25,6 +26,10 @@ import com.aura.tracking.sensors.imu.ImuSensorProvider
 import com.aura.tracking.sensors.orientation.OrientationProvider
 import com.aura.tracking.sensors.system.SystemDataProvider
 import com.aura.tracking.sensors.motion.MotionDetectorProvider
+import com.aura.tracking.geofence.GeofenceContext
+import com.aura.tracking.geofence.GeofenceEventFlushWorker
+import com.aura.tracking.geofence.GeofenceManager
+import com.aura.tracking.geofence.ZoneSyncWorker
 import com.aura.tracking.ui.dashboard.DashboardActivity
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
@@ -95,6 +100,12 @@ class TrackingForegroundService : Service() {
         
         private val _packetsSent = MutableStateFlow(0L)
         val packetsSent: StateFlow<Long> = _packetsSent.asStateFlow()
+
+        // Geofencing
+        private val _currentZone = MutableStateFlow<ZoneEntity?>(null)
+        val currentZone: StateFlow<ZoneEntity?> = _currentZone.asStateFlow()
+
+        fun getGeofenceContext(): GeofenceContext? = instance?.geofenceManager?.getGeofenceContext()
     }
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -107,6 +118,7 @@ class TrackingForegroundService : Service() {
     private var motionDetectorProvider: MotionDetectorProvider? = null
     private var mqttClient: MqttClientManager? = null
     private var telemetryAggregator: TelemetryAggregator? = null
+    private var geofenceManager: GeofenceManager? = null
     private var wakeLock: PowerManager.WakeLock? = null
 
     @Volatile
@@ -252,7 +264,11 @@ class TrackingForegroundService : Service() {
         // QueueFlushWorker
         QueueFlushWorker.schedule(this)
 
-        AuraLog.Service.i("Workers scheduled: Watchdog, MQTT Reconnect, Queue Flush")
+        // Geofence workers
+        ZoneSyncWorker.schedule(this)
+        GeofenceEventFlushWorker.schedule(this)
+
+        AuraLog.Service.i("Workers scheduled: Watchdog, MQTT Reconnect, Queue Flush, Zone Sync, Geofence Flush")
     }
 
     /**
@@ -262,6 +278,8 @@ class TrackingForegroundService : Service() {
         val workManager = WorkManager.getInstance(this)
         workManager.cancelUniqueWork(ServiceWatchdogWorker.WORK_NAME)
         workManager.cancelUniqueWork(MqttReconnectWorker.WORK_NAME)
+        ZoneSyncWorker.cancel(this)
+        GeofenceEventFlushWorker.cancel(this)
     }
 
     private fun startForegroundWithNotification() {
@@ -446,8 +464,25 @@ class TrackingForegroundService : Service() {
                     deviceId = deviceId,
                     operatorId = operatorId
                 )
-                
+
                 AuraLog.Service.i("TelemetryAggregator instance created (hashCode=${telemetryAggregator.hashCode()})")
+
+                // Inicializa GeofenceManager
+                geofenceManager = GeofenceManager(
+                    zoneDao = database.zoneDao(),
+                    eventDao = database.geofenceEventDao(),
+                    deviceId = deviceId,
+                    operatorId = operatorId
+                )
+                geofenceManager?.loadZones()
+                AuraLog.Service.i("GeofenceManager initialized")
+
+                // Observa zona atual
+                launch {
+                    geofenceManager?.currentZone?.collect { zone ->
+                        _currentZone.value = zone
+                    }
+                }
                 
                 // IMPORTANTE: Inicia o timer de 1Hz do agregador
                 telemetryAggregator?.start()
@@ -541,11 +576,15 @@ class TrackingForegroundService : Service() {
         gpsProvider?.onGpsDataUpdate = { gpsData ->
             _lastGpsData.value = gpsData
             lastGpsTimestamp = System.currentTimeMillis()
-            
+
             // Valida precisão - descarta se >25m (Moto G34 optimization)
             if (gpsData.accuracy <= 25f) {
                 gpsAcceptedAfterAccuracy++
                 telemetryAggregator?.updateGps(gpsData)
+
+                // Verifica geofencing a cada update GPS válido
+                geofenceManager?.checkLocation(gpsData)
+
                 if (gpsAcceptedAfterAccuracy % 50L == 0L) {
                     AuraLog.GPS.d("GPS accepted (acc<=25m) count=$gpsAcceptedAfterAccuracy discarded_acc=$gpsDiscardedAccuracy")
                 }
@@ -650,6 +689,7 @@ class TrackingForegroundService : Service() {
         systemDataProvider?.stopSystemUpdates()
         // REMOVIDO: motionDetectorProvider?.stopMotionDetection()  // Sensores não disponíveis
         mqttClient?.disconnect()
+        geofenceManager?.reset()
 
         gpsProvider = null
         imuProvider = null
@@ -658,6 +698,7 @@ class TrackingForegroundService : Service() {
         // REMOVIDO: motionDetectorProvider = null  // Sensores não disponíveis
         mqttClient = null
         telemetryAggregator = null
+        geofenceManager = null
     }
 
     /**
