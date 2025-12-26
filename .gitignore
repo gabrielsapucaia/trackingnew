@@ -247,3 +247,16 @@ dmypy.json
 \!**/labeled_segments*.csv
 \!**/*_detectados.csv
 \!**/missing_loads_analysis.csv
+
+# ==============================================
+# Exceções para AuraTrackingDash (Next.js)
+# ==============================================
+# Os padrões acima (lib/, public, *.webp) vêm de templates
+# Python/Gatsby mas conflitam com a estrutura Next.js.
+# Estas exceções permitem esses arquivos no projeto dashboard.
+
+!AuraTrackingDash/public/
+!AuraTrackingDash/public/**
+!AuraTrackingDash/src/lib/
+!AuraTrackingDash/src/lib/**
+!AuraTrackingDash/**/*.webp
