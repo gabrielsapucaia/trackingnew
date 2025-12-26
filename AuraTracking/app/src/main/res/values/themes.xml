@@ -1,50 +1,257 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ============================================ -->
+    <!-- AuraTracking - Tema Industrial/Corporativo   -->
+    <!-- ============================================ -->
 
     <!-- Base Application Theme -->
     <style name="Theme.AuraTracking" parent="Theme.Material3.Light.NoActionBar">
-        <!-- Primary brand color -->
+        <!-- Primary brand color: Azul Petróleo -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorPrimaryContainer">@color/primary_light</item>
         <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
 
-        <!-- Secondary brand color -->
+        <!-- Secondary brand color: Laranja Segurança -->
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorSecondaryContainer">@color/secondary_light</item>
         <item name="colorOnSecondary">@color/on_secondary</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+
+        <!-- Tertiary: Accent Âmbar -->
+        <item name="colorTertiary">@color/accent</item>
+        <item name="colorTertiaryContainer">@color/accent_light</item>
+        <item name="colorOnTertiary">@color/black</item>
 
         <!-- Background and surface -->
         <item name="android:colorBackground">@color/background</item>
         <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
         <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
 
-        <!-- Status bar -->
+        <!-- Status bar: Azul escuro -->
         <item name="android:statusBarColor">@color/primary_dark</item>
         <item name="android:navigationBarColor">@color/primary_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
 
         <!-- Error color -->
         <item name="colorError">@color/error</item>
+        <item name="colorErrorContainer">@color/status_error_bg</item>
+        <item name="colorOnError">@color/white</item>
+
+        <!-- Outline -->
+        <item name="colorOutline">@color/card_stroke</item>
+        <item name="colorOutlineVariant">@color/divider_light</item>
+
+        <!-- Ripple -->
+        <item name="android:colorControlHighlight">@color/ripple_primary</item>
+
+        <!-- Default button style -->
+        <item name="materialButtonStyle">@style/AuraTracking.Button.Primary</item>
+        <item name="materialButtonOutlinedStyle">@style/AuraTracking.Button.Outlined</item>
+
+        <!-- Card style -->
+        <item name="materialCardViewStyle">@style/AuraTracking.Card</item>
+
+        <!-- Text input style -->
+        <item name="textInputStyle">@style/AuraTracking.TextInputLayout</item>
     </style>
 
-    <!-- Toolbar Style -->
-    <style name="Theme.AuraTracking.Toolbar" parent="Widget.Material3.Toolbar">
+    <!-- ============================================ -->
+    <!-- Base Style (required for dot notation)       -->
+    <!-- ============================================ -->
+
+    <!-- Base style for all AuraTracking component styles -->
+    <style name="AuraTracking" parent="Theme.AuraTracking" />
+
+    <!-- ============================================ -->
+    <!-- Toolbar Styles                               -->
+    <!-- ============================================ -->
+
+    <style name="AuraTracking.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="android:background">@color/primary</item>
         <item name="titleTextColor">@color/white</item>
+        <item name="subtitleTextColor">@color/white</item>
+        <item name="navigationIconTint">@color/white</item>
+        <item name="android:elevation">4dp</item>
     </style>
 
-    <!-- Button Styles -->
-    <style name="Theme.AuraTracking.Button" parent="Widget.Material3.Button">
+    <style name="AuraTracking.Toolbar.Transparent" parent="AuraTracking.Toolbar">
+        <item name="android:background">@color/transparent</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- Button Styles                                -->
+    <!-- ============================================ -->
+
+    <!-- Primary Button: Laranja (CTA principal) -->
+    <style name="AuraTracking.Button.Primary" parent="Widget.Material3.Button">
         <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">@color/button_primary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="rippleColor">@color/ripple_secondary</item>
     </style>
 
-    <style name="Theme.AuraTracking.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+    <!-- Secondary Button: Azul Petróleo -->
+    <style name="AuraTracking.Button.Secondary" parent="Widget.Material3.Button">
         <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">@color/button_secondary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="rippleColor">@color/ripple_primary</item>
     </style>
 
-    <!-- Text Input Style -->
-    <style name="Theme.AuraTracking.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
-        <item name="boxStrokeColor">@color/primary</item>
+    <!-- Outlined Button -->
+    <style name="AuraTracking.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="strokeColor">@color/primary</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="rippleColor">@color/ripple_primary</item>
+    </style>
+
+    <!-- Text Button -->
+    <style name="AuraTracking.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="rippleColor">@color/ripple_primary</item>
+    </style>
+
+    <!-- Icon Button -->
+    <style name="AuraTracking.Button.Icon" parent="Widget.Material3.Button.IconButton">
+        <item name="iconTint">@color/primary</item>
+        <item name="rippleColor">@color/ripple_primary</item>
+    </style>
+
+    <!-- FAB Style: Laranja -->
+    <style name="AuraTracking.FAB" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/secondary</item>
+        <item name="tint">@color/white</item>
+        <item name="rippleColor">@color/ripple_secondary</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- Card Styles                                  -->
+    <!-- ============================================ -->
+
+    <style name="AuraTracking.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/card_background</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="strokeColor">@color/card_stroke</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+    <style name="AuraTracking.Card.Outlined" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/card_background</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/card_stroke</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+    <style name="AuraTracking.Card.Status" parent="AuraTracking.Card">
+        <item name="cardCornerRadius">8dp</item>
+        <item name="contentPadding">12dp</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- Text Input Styles                            -->
+    <!-- ============================================ -->
+
+    <style name="AuraTracking.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/input_stroke_focused</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
         <item name="hintTextColor">@color/primary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
     </style>
+
+    <style name="AuraTracking.TextInputLayout.Dense" parent="AuraTracking.TextInputLayout">
+        <item name="boxCornerRadiusTopStart">4dp</item>
+        <item name="boxCornerRadiusTopEnd">4dp</item>
+        <item name="boxCornerRadiusBottomStart">4dp</item>
+        <item name="boxCornerRadiusBottomEnd">4dp</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- Text Styles                                  -->
+    <!-- ============================================ -->
+
+    <style name="AuraTracking.Text.Headline" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="AuraTracking.Text.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="AuraTracking.Text.Subtitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="AuraTracking.Text.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="AuraTracking.Text.Label" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.05</item>
+    </style>
+
+    <style name="AuraTracking.Text.Value" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="AuraTracking.Text.Status" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- Divider Style                                -->
+    <!-- ============================================ -->
+
+    <style name="AuraTracking.Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/divider</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- Legacy compatibility (manter nome antigo)    -->
+    <!-- ============================================ -->
+
+    <style name="Theme.AuraTracking.Toolbar" parent="AuraTracking.Toolbar" />
+    <style name="Theme.AuraTracking.Button" parent="AuraTracking.Button.Primary" />
+    <style name="Theme.AuraTracking.Button.Outlined" parent="AuraTracking.Button.Outlined" />
+    <style name="Theme.AuraTracking.TextInputLayout" parent="AuraTracking.TextInputLayout" />
 
 </resources>

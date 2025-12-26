@@ -109,4 +109,7 @@
     <string name="error_generic">Ocorreu um erro. Tente novamente.</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>
+    <string name="settings">Configurações</string>
+    <string name="app_version">v1.0.0</string>
+    <string name="back">Voltar</string>
 </resources>

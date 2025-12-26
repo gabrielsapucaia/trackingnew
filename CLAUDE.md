@@ -180,6 +180,41 @@ Logs saved to: `/storage/emulated/0/Android/data/com.aura.tracking/files/logs/`
 - `ZoneSyncWorker`: (deprecated) Replaced by UnifiedSyncWorker
 - `GeofenceEventFlushWorker`: (deprecated) Replaced by UnifiedSyncWorker
 
+### UI/UX Design System (Dec 2024)
+
+**Tema Industrial/Corporativo** implementado com Material Design 3:
+
+| Cor | Hex | Uso |
+|-----|-----|-----|
+| Primary (Azul Petróleo) | `#1A3A52` | Toolbar, textos principais |
+| Secondary (Laranja Segurança) | `#E65100` | CTAs, botões primários |
+| Accent (Âmbar) | `#FFC107` | Destaques, alertas |
+| Background | `#F5F7FA` | Fundo das telas |
+| Surface | `#FFFFFF` | Cards |
+
+**Arquivos de estilo:**
+- `res/values/colors.xml` - Paleta de cores completa
+- `res/values/themes.xml` - Tema e estilos de componentes
+- `res/drawable/` - Ícones vetoriais (ic_*.xml)
+
+**Estilos de botões:**
+- `AuraTracking.Button.Primary` - Laranja, CTAs principais
+- `AuraTracking.Button.Secondary` - Azul petróleo
+- `AuraTracking.Button.Outlined` - Borda azul, fundo transparente
+
+**Padrão para botões:** Sempre usar `wrap_content` para altura (nunca altura fixa como 40dp/48dp) para evitar truncamento de texto em diferentes densidades de tela.
+
+**Telas do app:**
+| Activity | Descrição |
+|----------|-----------|
+| `LoginActivity` | Tela inicial com matrícula |
+| `PinActivity` | Entrada de PIN com ícone de cadeado |
+| `DashboardActivity` | Painel principal com telemetria |
+| `AdminConfigActivity` | Configurações do dispositivo |
+| `SupabasePinActivity` | PIN para acesso Supabase |
+| `SupabaseConfigActivity` | Sync de tabelas Supabase |
+| `DiagnosticsActivity` | Diagnósticos e logs |
+
 ## Supabase Project
 - **Project ID:** `nucqowewuqeveocmsdnq`
 - **Region:** us-east-1

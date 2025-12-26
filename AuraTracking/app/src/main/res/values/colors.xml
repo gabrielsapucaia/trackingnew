@@ -1,45 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Colors -->
-    <color name="primary">#1976D2</color>
-    <color name="primary_dark">#1565C0</color>
-    <color name="primary_light">#42A5F5</color>
-    <color name="primary_variant">#0D47A1</color>
+    <!-- ============================================ -->
+    <!-- AuraTracking - Paleta Industrial/Corporativa -->
+    <!-- ============================================ -->
 
-    <!-- Secondary Colors -->
-    <color name="secondary">#26A69A</color>
-    <color name="secondary_dark">#00897B</color>
-    <color name="secondary_light">#4DB6AC</color>
-    <color name="secondary_variant">#00796B</color>
+    <!-- Primary: Azul Petróleo (industrial, confiança) -->
+    <color name="primary">#1A3A52</color>
+    <color name="primary_dark">#0F2A3D</color>
+    <color name="primary_light">#2C5570</color>
+    <color name="primary_variant">#0D2235</color>
 
-    <!-- Background Colors -->
-    <color name="background">#FAFAFA</color>
+    <!-- Secondary: Laranja Segurança (visibilidade, mineração) -->
+    <color name="secondary">#E65100</color>
+    <color name="secondary_dark">#BF360C</color>
+    <color name="secondary_light">#FF6D00</color>
+    <color name="secondary_variant">#D84315</color>
+
+    <!-- Accent: Dourado/Âmbar (destaque, premium) -->
+    <color name="accent">#FFA000</color>
+    <color name="accent_dark">#FF8F00</color>
+    <color name="accent_light">#FFB300</color>
+
+    <!-- Background: Cinza Industrial -->
+    <color name="background">#ECEFF1</color>
+    <color name="background_dark">#CFD8DC</color>
     <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F5F5F5</color>
+    <color name="surface_elevated">#FAFAFA</color>
 
     <!-- Text Colors -->
     <color name="on_primary">#FFFFFF</color>
     <color name="on_secondary">#FFFFFF</color>
-    <color name="on_background">#212121</color>
-    <color name="on_surface">#212121</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="text_hint">#9E9E9E</color>
+    <color name="on_background">#263238</color>
+    <color name="on_surface">#263238</color>
+    <color name="text_primary">#263238</color>
+    <color name="text_secondary">#546E7A</color>
+    <color name="text_hint">#90A4AE</color>
+    <color name="text_disabled">#B0BEC5</color>
 
-    <!-- Status Colors -->
-    <color name="success">#4CAF50</color>
-    <color name="warning">#FF9800</color>
-    <color name="error">#F44336</color>
-    <color name="info">#2196F3</color>
+    <!-- Status Colors (universais) -->
+    <color name="success">#2E7D32</color>
+    <color name="success_light">#4CAF50</color>
+    <color name="warning">#F57C00</color>
+    <color name="warning_light">#FFA726</color>
+    <color name="error">#C62828</color>
+    <color name="error_light">#EF5350</color>
+    <color name="info">#1565C0</color>
+    <color name="info_light">#42A5F5</color>
 
     <!-- Tracking Status -->
-    <color name="status_tracking">#4CAF50</color>
-    <color name="status_warning">#FF9800</color>
-    <color name="status_stopped">#9E9E9E</color>
+    <color name="status_active">#2E7D32</color>
+    <color name="status_tracking">#2E7D32</color>
+    <color name="status_tracking_bg">#E8F5E9</color>
+    <color name="status_warning">#F57C00</color>
+    <color name="status_warning_bg">#FFF3E0</color>
+    <color name="status_stopped">#78909C</color>
+    <color name="status_stopped_bg">#ECEFF1</color>
+    <color name="status_error">#C62828</color>
+    <color name="status_error_bg">#FFEBEE</color>
 
-    <!-- Divider -->
-    <color name="divider">#E0E0E0</color>
+    <!-- Card & Dividers -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_stroke">#E0E0E0</color>
+    <color name="divider">#CFD8DC</color>
+    <color name="divider_light">#ECEFF1</color>
+
+    <!-- Input Fields -->
+    <color name="input_background">#FFFFFF</color>
+    <color name="input_stroke">#B0BEC5</color>
+    <color name="input_stroke_focused">#1A3A52</color>
+
+    <!-- Button Colors -->
+    <color name="button_primary">#E65100</color>
+    <color name="button_primary_pressed">#BF360C</color>
+    <color name="button_secondary">#1A3A52</color>
+    <color name="button_secondary_pressed">#0F2A3D</color>
+    <color name="button_disabled">#B0BEC5</color>
+
+    <!-- Ripple -->
+    <color name="ripple_primary">#331A3A52</color>
+    <color name="ripple_secondary">#33E65100</color>
+    <color name="ripple_light">#33000000</color>
 
     <!-- Standard Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
 </resources>

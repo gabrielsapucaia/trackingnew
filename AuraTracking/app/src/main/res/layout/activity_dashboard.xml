@@ -1,511 +1,614 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    android:fillViewport="true"
     tools:context=".ui.dashboard.DashboardActivity">
 
-    <LinearLayout
+    <!-- App Bar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:background="@color/primary"
+        app:elevation="4dp">
 
-        <!-- Toolbar -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/primary"
             app:title="@string/dashboard_title"
             app:titleTextColor="@color/white"
-            app:menu="@menu/menu_dashboard" />
+            app:menu="@menu/menu_dashboard"
+            app:navigationIconTint="@color/white" />
 
-        <!-- Content -->
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/spacing_large">
+            android:padding="16dp"
+            android:paddingBottom="88dp">
 
-            <!-- Operator Card -->
+            <!-- Status Header Card -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStatus"
+                style="@style/AuraTracking.Card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardElevation="@dimen/card_elevation"
-                app:cardCornerRadius="@dimen/card_corner_radius"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp">
+                app:cardBackgroundColor="@color/status_stopped_bg">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/card_content_padding">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
 
-                    <!-- Header Section -->
-                    <TextView
-                        android:id="@+id/tvLabelOperator"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/dashboard_operator_label"
-                        android:textSize="@dimen/text_size_body"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
+                    <!-- Status Indicator -->
                     <View
                         android:id="@+id/viewStatusIndicator"
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:background="@color/status_stopped"
-                        app:layout_constraintEnd_toStartOf="@+id/tvStatus"
-                        app:layout_constraintTop_toTopOf="@+id/tvStatus"
-                        app:layout_constraintBottom_toBottomOf="@+id/tvStatus"
-                        android:layout_marginEnd="@dimen/spacing_small" />
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:background="@drawable/bg_status_stopped" />
 
-                    <TextView
-                        android:id="@+id/tvStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/dashboard_status_stopped"
-                        android:textSize="@dimen/text_size_title"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelOperator" />
-
-                    <TextView
-                        android:id="@+id/tvOperatorName"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small"
-                        android:textSize="@dimen/text_size_large"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        tools:text="João da Silva"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelOperator" />
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvOperatorMatricula"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:textSize="@dimen/text_size_body"
-                        android:textColor="@color/text_secondary"
-                        tools:text="Matrícula: 12345"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvOperatorName" />
+                        <TextView
+                            android:id="@+id/tvStatusLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_status_label"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
 
-                    <!-- Divider -->
-                    <View
-                        android:id="@+id/dividerOperator"
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        android:background="@color/divider"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvOperatorMatricula" />
+                        <TextView
+                            android:id="@+id/tvStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_status_stopped"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/status_stopped" />
 
-                    <!-- Equipment Info -->
-                    <TextView
-                        android:id="@+id/tvLabelEquipmentType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        android:text="Tipo Equipamento"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/dividerOperator" />
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvEquipmentType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_body"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        tools:text="Truck"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelEquipmentType" />
+                    <!-- Config Button -->
+                    <ImageButton
+                        android:id="@+id/btnConfig"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_settings"
+                        app:tint="@color/text_secondary"
+                        android:contentDescription="@string/settings" />
 
-                    <TextView
-                        android:id="@+id/tvLabelEquipmentName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Equipamento"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toEndOf="@+id/barrierEquipment"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelEquipmentType"
-                        android:layout_marginStart="@dimen/spacing_xlarge" />
-
-                    <TextView
-                        android:id="@+id/tvEquipmentName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_body"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        tools:text="TRK-101"
-                        app:layout_constraintStart_toStartOf="@+id/tvLabelEquipmentName"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvEquipmentType" />
-
-                    <androidx.constraintlayout.widget.Barrier
-                        android:id="@+id/barrierEquipment"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:barrierDirection="end"
-                        app:constraint_referenced_ids="tvLabelEquipmentType,tvEquipmentType" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Operator Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/AuraTracking.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Operator Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardBackgroundColor="@color/primary_light"
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="10dp"
+                                android:src="@drawable/ic_operator"
+                                app:tint="@color/white" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvOperatorName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                tools:text="João da Silva" />
+
+                            <TextView
+                                android:id="@+id/tvOperatorMatricula"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_secondary"
+                                tools:text="Matrícula: 12345" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="12dp"
+                        android:background="@color/divider_light" />
+
+                    <!-- Equipment Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <!-- Equipment Type -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvLabelEquipmentType"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tipo"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_hint"
+                                android:textAllCaps="true" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_truck"
+                                    app:tint="@color/primary" />
+
+                                <TextView
+                                    android:id="@+id/tvEquipmentType"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/text_primary"
+                                    tools:text="Truck" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Equipment Name -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvLabelEquipmentName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Equipamento"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_hint"
+                                android:textAllCaps="true" />
+
+                            <TextView
+                                android:id="@+id/tvEquipmentName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/primary"
+                                tools:text="TRK-101" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Telemetry Card (visible when tracking) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTelemetry"
+                style="@style/AuraTracking.Card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
+                android:layout_marginTop="12dp"
                 android:visibility="gone"
-                app:cardElevation="@dimen/card_elevation"
-                app:cardCornerRadius="@dimen/card_corner_radius"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp"
                 tools:visibility="visible">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/card_content_padding">
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
+                    <!-- Telemetry Title -->
                     <TextView
                         android:id="@+id/tvTitleTelemetry"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Telemetry"
-                        android:textSize="@dimen/text_size_title"
+                        android:text="Telemetria"
+                        android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:textColor="@color/text_primary" />
 
                     <!-- GPS Section -->
-                    <View
-                        android:id="@+id/viewGpsIndicator"
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:background="@color/status_stopped"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvTitleTelemetry"
-                        android:layout_marginTop="16dp"/> <!-- visual adjustment -->
-
-                    <TextView
-                        android:id="@+id/tvLabelGps"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_small"
-                        android:text="GPS"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_body"
-                        android:textColor="@color/text_primary"
-                        app:layout_constraintStart_toEndOf="@+id/viewGpsIndicator"
-                        app:layout_constraintTop_toTopOf="@+id/viewGpsIndicator"
-                        app:layout_constraintBottom_toBottomOf="@+id/viewGpsIndicator" />
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <View
+                            android:id="@+id/viewGpsIndicator"
+                            android:layout_width="10dp"
+                            android:layout_height="10dp"
+                            android:background="@drawable/bg_status_stopped" />
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_gps_signal"
+                            app:tint="@color/primary" />
+
+                        <TextView
+                            android:id="@+id/tvLabelGps"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="GPS"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
 
                     <!-- GPS Grid -->
-                    <TextView
-                        android:id="@+id/tvLabelLat"
-                        android:layout_width="wrap_content"
+                    <GridLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small"
-                        android:text="Lat:"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelGps" />
+                        android:layout_marginTop="8dp"
+                        android:layout_marginStart="28dp"
+                        android:columnCount="2"
+                        android:rowCount="3">
 
-                    <TextView
-                        android:id="@+id/tvGpsLat"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_tiny"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="-23.550520"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelLat"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelLat"
-                        app:layout_constraintEnd_toStartOf="@+id/guideVertical50" />
+                        <!-- Lat -->
+                        <TextView
+                            android:id="@+id/tvLabelLat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lat: "
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary" />
 
-                    <TextView
-                        android:id="@+id/tvLabelLon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Lon:"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginStart="@dimen/spacing_small"
-                        app:layout_constraintStart_toStartOf="@+id/guideVertical50"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelLat" />
+                        <TextView
+                            android:id="@+id/tvGpsLat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="-23.550520" />
 
-                    <TextView
-                        android:id="@+id/tvGpsLon"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_tiny"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="-46.633308"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelLon"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelLon"
-                        app:layout_constraintEnd_toEndOf="parent" />
+                        <!-- Lon -->
+                        <TextView
+                            android:id="@+id/tvLabelLon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lon: "
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary" />
 
-                    <TextView
-                        android:id="@+id/tvLabelSpeed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Speed:"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelLat" />
+                        <TextView
+                            android:id="@+id/tvGpsLon"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="-46.633308" />
 
-                    <TextView
-                        android:id="@+id/tvGpsSpeed"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_tiny"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="45.2 km/h"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelSpeed"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelSpeed"
-                        app:layout_constraintEnd_toStartOf="@+id/guideVertical50" />
+                        <!-- Speed & Accuracy -->
+                        <TextView
+                            android:id="@+id/tvLabelSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Vel: "
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary" />
 
-                    <TextView
-                        android:id="@+id/tvLabelAcc"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Acc:"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginStart="@dimen/spacing_small"
-                        app:layout_constraintStart_toStartOf="@+id/guideVertical50"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelSpeed" />
+                        <TextView
+                            android:id="@+id/tvGpsSpeed"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary"
+                            tools:text="45.2 km/h" />
 
-                    <TextView
-                        android:id="@+id/tvGpsAccuracy"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_tiny"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="±5.2m"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelAcc"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelAcc"
-                        app:layout_constraintEnd_toEndOf="parent" />
+                    </GridLayout>
 
-                     <TextView
-                        android:id="@+id/tvGpsTime"
-                        android:layout_width="0dp"
+                    <!-- Accuracy Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        tools:text="14:30:25"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelSpeed" />
+                        android:layout_marginStart="28dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvLabelAcc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Precisão: "
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary" />
+
+                        <TextView
+                            android:id="@+id/tvGpsAccuracy"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_primary"
+                            tools:text="±5.2m" />
+
+                        <TextView
+                            android:id="@+id/tvGpsTime"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_hint"
+                            tools:text="14:30:25" />
+
+                    </LinearLayout>
 
                     <!-- IMU Section -->
-                    <View
-                        android:id="@+id/viewImuIndicator"
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:background="@color/status_stopped"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvGpsTime" />
-
-                    <TextView
-                        android:id="@+id/tvLabelImu"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_small"
-                        android:text="IMU"
-                        android:textStyle="bold"
-                        android:textSize="@dimen/text_size_body"
-                        android:textColor="@color/text_primary"
-                        app:layout_constraintStart_toEndOf="@+id/viewImuIndicator"
-                        app:layout_constraintTop_toTopOf="@+id/viewImuIndicator"
-                        app:layout_constraintBottom_toBottomOf="@+id/viewImuIndicator" />
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                    <TextView
-                        android:id="@+id/tvLabelImuAccel"
-                        android:layout_width="wrap_content"
+                        <View
+                            android:id="@+id/viewImuIndicator"
+                            android:layout_width="10dp"
+                            android:layout_height="10dp"
+                            android:background="@drawable/bg_status_stopped" />
+
+                        <TextView
+                            android:id="@+id/tvLabelImu"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="IMU"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
+
+                    <!-- IMU Data -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small"
-                        android:text="Accel: "
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelImu" />
+                        android:layout_marginTop="4dp"
+                        android:layout_marginStart="28dp"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvImuAccel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="X:0.12 Y:-0.05 Z:9.81"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelImuAccel"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelImuAccel" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/tvLabelImuGyro"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Gyro: "
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelImuAccel" />
+                            <TextView
+                                android:id="@+id/tvLabelImuAccel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Acel: "
+                                android:textSize="13sp"
+                                android:textColor="@color/text_secondary" />
 
-                    <TextView
-                        android:id="@+id/tvImuGyro"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="X:0.01 Y:0.02 Z:-0.01"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelImuGyro"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelImuGyro" />
+                            <TextView
+                                android:id="@+id/tvImuAccel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:textColor="@color/text_primary"
+                                tools:text="X:0.12 Y:-0.05 Z:9.81" />
 
+                        </LinearLayout>
 
-                    <!-- Connection Status Section -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvLabelImuGyro"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Giro: "
+                                android:textSize="13sp"
+                                android:textColor="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvImuGyro"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:textColor="@color/text_primary"
+                                tools:text="X:0.01 Y:0.02 Z:-0.01" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Divider -->
                     <View
                         android:id="@+id/dividerConn"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        android:background="@color/divider"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelImuGyro" />
+                        android:layout_marginVertical="12dp"
+                        android:background="@color/divider_light" />
 
-                    <!-- MQTT -->
-                    <View
-                        android:id="@+id/viewMqttIndicator"
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:background="@color/status_stopped"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/dividerConn" />
-
-                    <TextView
-                        android:id="@+id/tvLabelMqtt"
-                        android:layout_width="wrap_content"
+                    <!-- Connection Status Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:text="MQTT: "
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toEndOf="@+id/viewMqttIndicator"
-                        app:layout_constraintTop_toTopOf="@+id/viewMqttIndicator"
-                        app:layout_constraintBottom_toBottomOf="@+id/viewMqttIndicator" />
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/tvMqttStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="Connected"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelMqtt"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelMqtt" />
+                        <!-- MQTT Status -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
 
-                    <!-- Queue -->
-                    <View
-                        android:id="@+id/viewQueueIndicator"
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:background="@color/status_tracking"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        android:layout_marginStart="@dimen/spacing_large"
-                        app:layout_constraintStart_toEndOf="@+id/tvMqttStatus"
-                        app:layout_constraintTop_toBottomOf="@+id/dividerConn" />
+                            <View
+                                android:id="@+id/viewMqttIndicator"
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@drawable/bg_status_stopped" />
 
-                    <TextView
-                        android:id="@+id/tvLabelQueue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:text="Queue: "
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        app:layout_constraintStart_toEndOf="@+id/viewQueueIndicator"
-                        app:layout_constraintTop_toTopOf="@+id/viewQueueIndicator"
-                        app:layout_constraintBottom_toBottomOf="@+id/viewQueueIndicator" />
+                            <TextView
+                                android:id="@+id/tvLabelMqtt"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="MQTT:"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary" />
 
-                    <TextView
-                        android:id="@+id/tvQueueSize"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_primary"
-                        tools:text="0 pending"
-                        app:layout_constraintStart_toEndOf="@+id/tvLabelQueue"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/tvLabelQueue" />
+                            <TextView
+                                android:id="@+id/tvMqttStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                tools:text="OK" />
 
+                        </LinearLayout>
+
+                        <!-- Queue Status -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <View
+                                android:id="@+id/viewQueueIndicator"
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@drawable/bg_status_tracking" />
+
+                            <TextView
+                                android:id="@+id/tvLabelQueue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="Fila:"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvQueueSize"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                tools:text="0" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Packets Sent -->
                     <TextView
                         android:id="@+id/tvPacketsSent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small"
-                        android:textSize="@dimen/text_size_small"
-                        android:textColor="@color/text_secondary"
-                        tools:text="1234 sent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvLabelMqtt" />
+                        android:layout_marginTop="4dp"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_hint"
+                        tools:text="1234 pacotes enviados" />
 
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guideVertical50"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.5" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Config Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnConfig"
-                style="@style/Theme.AuraTracking.Button.Outlined"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/dashboard_config"
-                android:textSize="@dimen/text_size_title"
-                app:icon="@android:drawable/ic_menu_preferences"
-                app:iconGravity="textStart" />
-
         </LinearLayout>
 
-    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-</ScrollView>
+    <!-- FAB for Start/Stop Tracking -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabTracking"
+        style="@style/AuraTracking.FAB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="16dp"
+        android:text="@string/dashboard_start_tracking"
+        app:icon="@android:drawable/ic_media_play" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
