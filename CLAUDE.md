@@ -8,16 +8,17 @@ AuraTracking is an industrial telemetry platform for GPS/IMU tracking of mining 
 
 ## Repository Structure
 
-This is a monorepo containing five main components:
+This is a monorepo containing four main components:
 
 ```
 trackingnew/
 ├── AuraTracking/          # Android app (Kotlin) - GPS/IMU data collection
 ├── AuraTrackingServer/    # Docker stack - EMQX, TimescaleDB, Ingest Worker, Grafana
-├── AuraTrackingDash/      # Next.js 16 dashboard - main web interface
-├── AuraTrackingFrontend/  # Next.js 14 frontend - map visualization
+├── AuraTrackingDash/      # Next.js 16 dashboard - main web interface (consolidated)
 └── BackTest/              # Python analysis tools - cycle detection, data processing
 ```
+
+> **Note:** AuraTrackingFrontend foi consolidado no AuraTrackingDash (Dez 2024)
 
 ## Architecture
 
@@ -46,15 +47,6 @@ npm install
 npm run dev          # Starts on http://localhost:3000
 npm run build        # Production build
 npm run lint         # ESLint
-```
-
-### AuraTrackingFrontend (Map Visualization)
-```bash
-cd AuraTrackingFrontend
-npm install
-npm run dev          # Starts on http://localhost:3001
-npm run build
-npm run lint
 ```
 
 ### AuraTrackingServer (Docker Stack)
@@ -88,7 +80,7 @@ python 4_servidor/server.py                     # Run analysis server
 - **Android**: Kotlin, Room, Ktor, Play Services Location, MQTT (Paho)
 - **Server Stack**: EMQX 5.x, TimescaleDB (PostgreSQL 15), Grafana 11.x
 - **Ingest Worker**: Python 3.12, FastAPI, paho-mqtt, asyncpg, Pydantic
-- **Dashboards**: Next.js (16 and 14), React, TypeScript, Tailwind CSS, deck.gl, MapLibre GL
+- **Dashboard**: Next.js 16, React 19, TypeScript, Tailwind CSS v4, deck.gl, MapLibre GL
 - **Database**: Supabase (operators, equipment), TimescaleDB (telemetry hypertable)
 
 ## Server Stack Ports
@@ -219,3 +211,67 @@ Logs saved to: `/storage/emulated/0/Android/data/com.aura.tracking/files/logs/`
 - **Project ID:** `nucqowewuqeveocmsdnq`
 - **Region:** us-east-1
 - **API:** REST via Ktor HTTP Client in Android app
+
+## Dashboard Consolidation (Dec 2024)
+
+Os projetos AuraTrackingDash e AuraTrackingFrontend foram consolidados em um único dashboard.
+
+### Arquitetura de Dados Unificada
+
+```
+┌──────────────────────────────────────────────┐
+│        AuraTrackingDash (Consolidado)        │
+├──────────────────────────────────────────────┤
+│  Autenticação: Supabase                      │
+│  Dados de Configuração: Supabase             │
+│    • operators, equipment, geofences         │
+│    • equipment_types, material_types         │
+│    • profiles (usuários)                     │
+├──────────────────────────────────────────────┤
+│  Telemetria: Ingest Worker (port 8080)       │
+│    • SSE: /api/events/stream                 │
+│    • REST: /api/devices                      │
+│    • Histórico: /api/offline/positions       │
+└──────────────────────────────────────────────┘
+```
+
+### Recursos do Dashboard
+
+| Página | Rota | Descrição |
+|--------|------|-----------|
+| Login | `/login` | Autenticação com restrição de domínio (@auraminerals.com) |
+| Tempo Real | `/monitoramento/tempo-real` | Mapa com posições ao vivo via SSE |
+| Offline | `/monitoramento/offline*` | Análise histórica (heatmap, hex, scatter, etc.) |
+| Cadastro | `/cadastro/*` | CRUD de operadores, equipamentos, tipos |
+| Admin | `/admin/usuarios` | Gerenciamento de usuários |
+
+### Melhorias Técnicas Incorporadas
+
+- **SSE Connection**: Singleton global, idle timeout (30s), auto-reconnect com delay
+- **DeviceTooltip**: Segue dispositivo em pan/zoom do mapa
+- **Connection Status**: Indicador visual (LIVE/RECONNECTING/FALLBACK/OFFLINE)
+- **API Client**: Timeout handling (10s), `combineAbortSignals()`, error handling
+
+### Arquivos-Chave do Dashboard
+
+```
+AuraTrackingDash/src/
+├── components/map/
+│   ├── MapView.tsx           # Componente principal do mapa
+│   ├── useDeviceStream.ts    # Hook SSE com reconnect
+│   └── offlineLayers.ts      # Layers para análise offline
+├── lib/map/
+│   ├── config.ts             # API_BASE_URL configuration
+│   └── api-client/devices.ts # Fetch com timeout
+├── services/                 # Camada de serviços Supabase
+└── middleware.ts             # Auth middleware (não modificar)
+```
+
+### Variáveis de Ambiente
+
+```bash
+# .env.local
+NEXT_PUBLIC_SUPABASE_URL=https://nucqowewuqeveocmsdnq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<key>
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080  # Ingest Worker
+```
