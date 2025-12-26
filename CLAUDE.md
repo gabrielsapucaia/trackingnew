@@ -1,32 +1,30 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Este arquivo fornece orientações ao Claude Code (claude.ai/code) para trabalhar com o código deste repositório.
 
-## Project Overview
+## Visão Geral do Projeto
 
-AuraTracking is an industrial telemetry platform for GPS/IMU tracking of mining fleet equipment. The system collects data from Android devices, ingests it via MQTT, stores in TimescaleDB, and provides visualization dashboards.
+AuraTracking é uma plataforma de telemetria industrial para rastreamento GPS/IMU de equipamentos de frota de mineração. O sistema coleta dados de dispositivos Android, ingere via MQTT, armazena em TimescaleDB e fornece dashboards de visualização.
 
-## Repository Structure
+## Estrutura do Repositório
 
-This is a monorepo containing four main components:
+Este é um monorepo contendo quatro componentes principais:
 
 ```
 trackingnew/
-├── AuraTracking/          # Android app (Kotlin) - GPS/IMU data collection
-├── AuraTrackingServer/    # Docker stack - EMQX, TimescaleDB, Ingest Worker, Grafana
-├── AuraTrackingDash/      # Next.js 16 dashboard - main web interface (consolidated)
-└── BackTest/              # Python analysis tools - cycle detection, data processing
+├── AuraTracking/          # App Android (Kotlin) - coleta de dados GPS/IMU
+├── AuraTrackingServer/    # Stack Docker - EMQX, TimescaleDB, Ingest Worker, Grafana
+├── AuraTrackingDash/      # Dashboard Next.js 16 - interface web principal (consolidado)
+└── BackTest/              # Ferramentas de análise Python - detecção de ciclos, processamento
 ```
 
-> **Note:** AuraTrackingFrontend foi consolidado no AuraTrackingDash (Dez 2024)
-
-## Architecture
+## Arquitetura
 
 ```
-Android App (AuraTracking)
-    │ MQTT (QoS1, port 1883)
+App Android (AuraTracking)
+    │ MQTT (QoS1, porta 1883)
     ▼
-EMQX Broker (Docker)
+Broker EMQX (Docker)
     │
     ▼
 Ingest Worker (Python/FastAPI)
@@ -34,145 +32,261 @@ Ingest Worker (Python/FastAPI)
     ▼
 TimescaleDB (PostgreSQL 15)
     │
-    ├──▶ Grafana Dashboards
-    └──▶ Next.js Dashboards (Supabase connection)
+    ├──▶ Dashboards Grafana
+    └──▶ Dashboards Next.js (conexão Supabase)
 ```
 
-## Development Commands
+## Comandos de Desenvolvimento
 
-### AuraTrackingDash (Main Dashboard)
+### AuraTrackingDash (Dashboard Principal)
 ```bash
 cd AuraTrackingDash
 npm install
-npm run dev          # Starts on http://localhost:3000
-npm run build        # Production build
+npm run dev          # Inicia em http://localhost:3000
+npm run build        # Build de produção
 npm run lint         # ESLint
 ```
 
-### AuraTrackingServer (Docker Stack)
+### AuraTrackingServer (Stack Docker)
 ```bash
 cd AuraTrackingServer
-docker compose up -d      # Start all services
-docker compose logs -f    # View logs
-docker compose down       # Stop services
-./deploy.sh               # Full deployment script
-./test.sh                 # Run MQTT tests
+docker compose up -d      # Inicia todos os serviços
+docker compose logs -f    # Ver logs
+docker compose down       # Para serviços
+./deploy.sh               # Script de deploy completo
+./test.sh                 # Executar testes MQTT
 ```
 
-### AuraTracking (Android App)
+### AuraTracking (App Android)
 ```bash
 cd AuraTracking
-./gradlew assembleDebug   # Build debug APK
-./gradlew installDebug    # Install on connected device
+./gradlew assembleDebug   # Build APK debug
+./gradlew installDebug    # Instalar no dispositivo conectado
 ```
 
-### BackTest (Analysis Tools)
+### BackTest (Ferramentas de Análise)
 ```bash
 cd BackTest
-python 0_exportador/exportar_telemetria.py     # Export telemetry data
-python 2_deteccao/detect_carregamento.py       # Detect loading events
-python 3_processamento/gerar_extrato_ciclos.py # Generate cycle reports
-python 4_servidor/server.py                     # Run analysis server
+python 0_exportador/exportar_telemetria.py     # Exportar dados de telemetria
+python 2_deteccao/detect_carregamento.py       # Detectar eventos de carregamento
+python 3_processamento/gerar_extrato_ciclos.py # Gerar relatórios de ciclos
+python 4_servidor/server.py                     # Executar servidor de análise
 ```
 
-## Key Technologies
+## Tecnologias Principais
 
 - **Android**: Kotlin, Room, Ktor, Play Services Location, MQTT (Paho)
-- **Server Stack**: EMQX 5.x, TimescaleDB (PostgreSQL 15), Grafana 11.x
+- **Stack Servidor**: EMQX 5.8.3, TimescaleDB (PostgreSQL 15), Grafana 11.3
 - **Ingest Worker**: Python 3.12, FastAPI, paho-mqtt, asyncpg, Pydantic
 - **Dashboard**: Next.js 16, React 19, TypeScript, Tailwind CSS v4, deck.gl, MapLibre GL
-- **Database**: Supabase (operators, equipment), TimescaleDB (telemetry hypertable)
+- **Banco de Dados**: Supabase (operadores, equipamentos), TimescaleDB (hypertable telemetria)
 
-## Server Stack Ports
+## Portas dos Serviços
 
-| Service     | Port  | Description          |
-|-------------|-------|----------------------|
-| EMQX        | 1883  | MQTT TCP             |
-| EMQX        | 18083 | Dashboard Web        |
-| TimescaleDB | 5432  | PostgreSQL           |
-| Ingest      | 8080  | Health API           |
-| Grafana     | 3000  | Dashboards           |
+| Serviço     | Porta | Descrição              |
+|-------------|-------|------------------------|
+| EMQX        | 1883  | MQTT TCP               |
+| EMQX        | 8083  | MQTT WebSocket         |
+| EMQX        | 18083 | Dashboard Web          |
+| TimescaleDB | 5432  | PostgreSQL             |
+| Ingest      | 8080  | API REST/SSE           |
+| Grafana     | 3000  | Dashboards             |
 
-## Environment Configuration
+## Configuração de Ambiente
 
-- **AuraTrackingDash**: Copy `.env.example` to `.env.local` and set Supabase credentials
-- **AuraTrackingServer**: Credentials in `.env` file (default: admin/aura2025)
-- **AuraTracking**: Supabase credentials in `gradle.properties`
+- **AuraTrackingDash**: Copiar `.env.example` para `.env.local` e configurar credenciais Supabase
+- **AuraTrackingServer**: Credenciais em `.env` (padrão: admin/aura2025)
+- **AuraTracking**: Credenciais Supabase em `gradle.properties`
 
-## Database Schema
+---
 
-### TimescaleDB (Telemetry)
-- `telemetry` (hypertable): device_id, operator_id, latitude, longitude, altitude, speed, bearing, gps_accuracy, accel_x/y/z, gyro_x/y/z, time
-- Compression policy: data > 3 days compressed (~90% savings)
-- Retention policy: data > 180 days removed
+## API Endpoints
 
-### Supabase (Configuration Data)
-| Table | Description | Key Columns |
-|-------|-------------|-------------|
-| `operators` | Operator registry | id, name, registration, pin, status |
-| `equipment` | Equipment registry | id, tag, type_id, status, fleet |
-| `geofence` | Geographic zones | id, name, zone_type, polygon_json, color, is_active |
+### Ingest Worker (porta 8080)
 
-**Geofence zone_type values:** `loading`, `unloading`, `parking`, `maintenance`, `fuel`, `restricted`, `custom`
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/health` | GET | Status e métricas do serviço |
+| `/stats` | GET | Estatísticas detalhadas (mensagens, latência, erros) |
+| `/ready` | GET | Readiness probe para Kubernetes/Docker |
+| `/api/events/stream` | GET | Stream SSE tempo real (throttle 5s/device) |
+| `/api/devices` | GET | Dispositivos ativos (últimos 5 minutos) |
+| `/api/history` | GET | Telemetria histórica (params: device_id, start, end, limit=20000) |
+| `/api/telemetry` | GET | Histórico com granularidade (raw, 1min, 1hour) |
+| `/api/events` | GET | Busca de eventos (device, type, date range) |
+| `/api/summary` | GET | Resumo do sistema últimas 24h |
 
-**Geofence polygon_json format:** `[[lat, lng], [lat, lng], ...]` (closed polygon)
+### Dashboard API Routes (Next.js)
 
-## Android App Architecture (AuraTracking)
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/api/offline/positions` | POST | Proxy para histórico do Ingest (converte timezone UTC-3) |
+| `/api/profiles` | GET | Perfis de usuário (admin) |
+| `/api/material-types` | POST | CRUD tipos de materiais |
+| `/api/liberacoes` | POST | CRUD liberações |
+
+---
+
+## Tópicos MQTT
+
+### Estrutura de Tópicos
+```
+aura/tracking/{deviceId}/telemetry  - Dados de telemetria (1Hz)
+aura/tracking/{deviceId}/events     - Eventos discretos (login, impactos)
+aura/tracking/{deviceId}/geofence   - Eventos de entrada/saída de zonas
+```
+
+### Payload Telemetria (exemplo)
+```json
+{
+  "messageId": "550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": "2024-12-26T10:30:00Z",
+  "deviceId": "samsung_a52_001",
+  "operatorId": "op_12345",
+  "gps": {
+    "latitude": -11.695,
+    "longitude": -47.159,
+    "altitude": 280.5,
+    "speed": 25.3,
+    "bearing": 180.0,
+    "accuracy": 3.5,
+    "satellites": 12,
+    "hdop": 0.8
+  },
+  "imu": {
+    "accel": {"x": 0.1, "y": -0.2, "z": 9.8, "magnitude": 9.81},
+    "gyro": {"x": 0.01, "y": -0.02, "z": 0.005, "magnitude": 0.023}
+  },
+  "system": {
+    "battery": {"level": 85, "temp": 28.5, "status": "charging"},
+    "wifi": {"rssi": -45, "ssid": "AuraMine"}
+  }
+}
+```
+
+### Configuração MQTT
+- **Broker**: EMQX 5.8.3
+- **QoS**: 1 (at least once)
+- **Clean Session**: false (persistência de sessão)
+- **Keepalive**: 30 segundos
+
+---
+
+## Schema do Banco de Dados
+
+### TimescaleDB (Telemetria)
+
+#### Tabela `telemetry` (Hypertable - chunks de 1 dia)
+
+| Categoria | Campos |
+|-----------|--------|
+| **Metadados** | time, device_id, operator_id, message_id, topic, transmission_mode, received_at |
+| **GPS Básico** | latitude, longitude, altitude, speed, bearing, gps_accuracy |
+| **GPS Detalhado** | satellites, h_accuracy, v_accuracy, speed_accuracy, hdop, vdop, pdop |
+| **IMU Básico** | accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z |
+| **IMU Magnitude** | accel_magnitude, gyro_magnitude |
+| **Magnetômetro** | mag_x, mag_y, mag_z, mag_magnitude, mag_accuracy |
+| **Aceleração Linear** | linear_accel_x, linear_accel_y, linear_accel_z |
+| **Gravidade** | gravity_x, gravity_y, gravity_z |
+| **Rotation Vector** | rotation_x, rotation_y, rotation_z, rotation_w, rotation_heading_accuracy |
+| **Orientação** | azimuth, pitch, roll |
+| **Bateria** | battery_level, battery_temp, battery_status, battery_voltage, battery_health, battery_technology, charge_counter, full_capacity |
+| **WiFi** | wifi_rssi, wifi_ssid, wifi_bssid, wifi_frequency, wifi_channel |
+| **Celular** | network_type, operator_name, signal_strength, rsrp, rsrq, rssnr, cell_id, pci, tac, earfcn, bands |
+| **Raw** | raw_payload (JSONB) |
+
+#### Tabela `events` (Hypertable)
+- time, device_id, operator_id, event_type, event_data (JSONB), topic, received_at
+
+#### Continuous Aggregates
+- `telemetry_1min` - Médias por minuto
+- `telemetry_1hour` - Médias por hora
+
+#### Políticas
+- **Compressão**: após 3 dias (segmentação por device_id, ~90% economia)
+- **Retenção**: telemetry 180 dias, events 365 dias, ingest_stats 30 dias
+
+#### Índices Otimizados
+- `device_time` - Busca por dispositivo e período
+- `operator_time` - Busca por operador
+- `location` - Busca geográfica (GIST)
+- `high_speed` - Alertas de velocidade (>80 km/h)
+- `high_accel` - Alertas de aceleração (>15 m/s²)
+
+### Supabase (Dados de Configuração)
+
+| Tabela | Descrição | Colunas Principais |
+|--------|-----------|-------------------|
+| `operators` | Cadastro de operadores | id, name, registration, pin, status |
+| `equipment` | Cadastro de equipamentos | id, tag, type_id, status, fleet |
+| `equipment_types` | Tipos de equipamentos | id, name, description |
+| `geofences` | Zonas geográficas | id, name, zone_type, polygon_json, color, is_active |
+| `profiles` | Usuários do dashboard | id, email, status, role, permission |
+| `material_types` | Tipos de materiais | id, name |
+| `liberacoes` | Liberações | id, tipo, responsavel |
+
+**Valores de zone_type (geofences):** `loading`, `unloading`, `parking`, `maintenance`, `fuel`, `restricted`, `custom`
+
+**Formato polygon_json:** `[[lat, lng], [lat, lng], ...]` (polígono fechado)
+
+---
+
+## Arquitetura do App Android (AuraTracking)
 
 ### Room Database (v6)
-| Table | Purpose |
-|-------|---------|
-| `config` | Device configuration (equipment_name, tracking_enabled) |
-| `operators` | Cached operators from Supabase |
-| `telemetry_queue` | Offline telemetry queue (up to 30 days, ~3M records) |
-| `zones` | Cached geofences from Supabase |
-| `geofence_events` | Entry/exit events pending upload |
-| `sync_state` | Sync status per data type |
+| Tabela | Propósito |
+|--------|-----------|
+| `config` | Configuração do dispositivo (equipment_name, tracking_enabled) |
+| `operators` | Operadores cacheados do Supabase |
+| `telemetry_queue` | Fila offline de telemetria (até 30 dias, ~3M registros) |
+| `zones` | Geofences cacheadas do Supabase |
+| `geofence_events` | Eventos de entrada/saída pendentes de upload |
+| `sync_state` | Status de sincronização por tipo de dado |
 
 ### SyncOrchestrator (sync/)
-Unified sync system with guardrails for intermittent connectivity (truck in rural areas).
+Sistema de sincronização unificado com guardrails para conectividade intermitente (caminhão em área rural).
 
-**Architecture:**
+**Arquitetura:**
 ```
-UnifiedSyncWorker (every 15 min)
+UnifiedSyncWorker (a cada 15 min)
     │
     ▼
 SyncOrchestrator
     │
     ├── FASE 1: DOWNLOAD (Supabase → App)
-    │   ├── Fetch operators, geofences
-    │   ├── Validate (SyncValidator guardrails)
-    │   └── Atomic commit (Room withTransaction)
+    │   ├── Fetch operadores, geofences
+    │   ├── Validar (SyncValidator guardrails)
+    │   └── Commit atômico (Room withTransaction)
     │
     └── FASE 2: UPLOAD (App → MQTT)
-        ├── Flush telemetry queue (batches of 50)
-        └── Flush geofence events (batches of 50)
+        ├── Flush fila telemetria (lotes de 50)
+        └── Flush eventos geofence (lotes de 50)
 ```
 
 **Guardrails (SyncValidator):**
-- Operators: minimum 1 active, valid IDs, non-blank names
-- Geofences: polygon >= 3 points, valid JSON structure
-- Retry: 3 attempts with exponential backoff
-- Timeout: 30s per fetch operation
-- Mutex: prevents concurrent sync executions
+- Operadores: mínimo 1 ativo, IDs válidos, nomes não-vazios
+- Geofences: polígono >= 3 pontos, estrutura JSON válida
+- Retry: 3 tentativas com backoff exponencial (máx 120s)
+- Timeout: 30s por operação de fetch
+- Mutex: previne execuções concorrentes de sync
 
-**Key files:**
-- `sync/SyncOrchestrator.kt` - Main orchestrator logic
-- `sync/SyncValidator.kt` - Data validation guardrails
-- `sync/UnifiedSyncWorker.kt` - WorkManager wrapper
-- `sync/SyncStateEntity.kt` - Persistent sync state
+**Arquivos-chave:**
+- `sync/SyncOrchestrator.kt` - Lógica principal do orquestrador
+- `sync/SyncValidator.kt` - Guardrails de validação de dados
+- `sync/UnifiedSyncWorker.kt` - Wrapper WorkManager
+- `sync/SyncStateEntity.kt` - Estado persistente de sync
 
 ### Logging (AuraLog)
-Persistent file logging with components: GPS, IMU, MQTT, Service, Queue, Watchdog, Analytics, Geofence, Sync
+Logging persistente em arquivo com componentes: GPS, IMU, MQTT, Service, Queue, Watchdog, Analytics, Geofence, Sync
 
-Logs saved to: `/storage/emulated/0/Android/data/com.aura.tracking/files/logs/`
+Logs salvos em: `/storage/emulated/0/Android/data/com.aura.tracking/files/logs/`
 
 ### Geofencing
-- `GeofenceManager`: Point-in-polygon detection for loading/unloading zones
-- `ZoneSyncWorker`: (deprecated) Replaced by UnifiedSyncWorker
-- `GeofenceEventFlushWorker`: (deprecated) Replaced by UnifiedSyncWorker
+- `GeofenceManager`: Detecção ponto-em-polígono para zonas de carga/descarga
+- Hysteresis de 10m para evitar flapping
+- Dwell time mínimo de 5s para confirmar entrada
 
-### UI/UX Design System (Dec 2024)
+### Sistema de Design UI/UX (Dez 2024)
 
 **Tema Industrial/Corporativo** implementado com Material Design 3:
 
@@ -207,20 +321,22 @@ Logs saved to: `/storage/emulated/0/Android/data/com.aura.tracking/files/logs/`
 | `SupabaseConfigActivity` | Sync de tabelas Supabase |
 | `DiagnosticsActivity` | Diagnósticos e logs |
 
-## Supabase Project
+---
+
+## Projeto Supabase
 - **Project ID:** `nucqowewuqeveocmsdnq`
-- **Region:** us-east-1
-- **API:** REST via Ktor HTTP Client in Android app
+- **Região:** us-east-1
+- **API:** REST via Ktor HTTP Client no app Android
 
-## Dashboard Consolidation (Dec 2024)
+---
 
-Os projetos AuraTrackingDash e AuraTrackingFrontend foram consolidados em um único dashboard.
+## Dashboard Web (AuraTrackingDash)
 
-### Arquitetura de Dados Unificada
+### Arquitetura de Dados
 
 ```
 ┌──────────────────────────────────────────────┐
-│        AuraTrackingDash (Consolidado)        │
+│           AuraTrackingDash                   │
 ├──────────────────────────────────────────────┤
 │  Autenticação: Supabase                      │
 │  Dados de Configuração: Supabase             │
@@ -228,7 +344,7 @@ Os projetos AuraTrackingDash e AuraTrackingFrontend foram consolidados em um ún
 │    • equipment_types, material_types         │
 │    • profiles (usuários)                     │
 ├──────────────────────────────────────────────┤
-│  Telemetria: Ingest Worker (port 8080)       │
+│  Telemetria: Ingest Worker (porta 8080)      │
 │    • SSE: /api/events/stream                 │
 │    • REST: /api/devices                      │
 │    • Histórico: /api/offline/positions       │
@@ -245,14 +361,14 @@ Os projetos AuraTrackingDash e AuraTrackingFrontend foram consolidados em um ún
 | Cadastro | `/cadastro/*` | CRUD de operadores, equipamentos, tipos |
 | Admin | `/admin/usuarios` | Gerenciamento de usuários |
 
-### Melhorias Técnicas Incorporadas
+### Melhorias Técnicas
 
 - **SSE Connection**: Singleton global, idle timeout (30s), auto-reconnect com delay
 - **DeviceTooltip**: Segue dispositivo em pan/zoom do mapa
 - **Connection Status**: Indicador visual (LIVE/RECONNECTING/FALLBACK/OFFLINE)
 - **API Client**: Timeout handling (10s), `combineAbortSignals()`, error handling
 
-### Arquivos-Chave do Dashboard
+### Arquivos-Chave
 
 ```
 AuraTrackingDash/src/
@@ -261,7 +377,7 @@ AuraTrackingDash/src/
 │   ├── useDeviceStream.ts    # Hook SSE com reconnect
 │   └── offlineLayers.ts      # Layers para análise offline
 ├── lib/map/
-│   ├── config.ts             # API_BASE_URL configuration
+│   ├── config.ts             # Configuração API_BASE_URL
 │   └── api-client/devices.ts # Fetch com timeout
 ├── services/                 # Camada de serviços Supabase
 └── middleware.ts             # Auth middleware (não modificar)
@@ -273,5 +389,71 @@ AuraTrackingDash/src/
 # .env.local
 NEXT_PUBLIC_SUPABASE_URL=https://nucqowewuqeveocmsdnq.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<key>
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080  # Ingest Worker
 ```
+
+---
+
+## BackTest (Análise Python)
+
+### Estrutura
+```
+BackTest/
+├── 0_exportador/           # Exportar telemetria do TimescaleDB
+│   ├── exportar_telemetria.py
+│   └── config_db.yaml
+├── 1_configuracao/         # Configurações de análise
+│   ├── config.yaml
+│   └── areas_carregamento.json
+├── 2_deteccao/             # Detecção de eventos
+│   └── detect_carregamento.py
+├── 3_processamento/        # Processamento de ciclos
+│   └── gerar_extrato_ciclos.py
+├── 4_servidor/             # Servidor web Flask
+│   └── server.py
+└── 5_visualizacao/         # Dashboards HTML/JS
+    ├── index.html
+    ├── visualizacao_ciclos.html
+    ├── distribuicao_fases.html
+    └── editor_poligonos.html
+```
+
+### Algoritmo de Detecção de Carregamento
+- Velocidade < 0.5 km/h
+- Duração: 90-320 segundos
+- Variância de vibração: 0.012-0.04
+
+### Comandos Úteis
+```bash
+# Exportar telemetria de um período
+python 0_exportador/exportar_telemetria.py --device CAM01 --start 2024-12-01 --end 2024-12-07
+
+# Detectar carregamentos
+python 2_deteccao/detect_carregamento.py --input data/telemetria.csv
+
+# Gerar extrato de ciclos
+python 3_processamento/gerar_extrato_ciclos.py --input data/eventos.csv
+
+# Iniciar servidor de visualização
+python 4_servidor/server.py  # http://localhost:5000
+```
+
+---
+
+## Troubleshooting
+
+| Problema | Causa Provável | Solução |
+|----------|----------------|---------|
+| SSE não conecta | Ingest Worker offline | `docker compose logs ingest` |
+| Mapa em branco | Falta ortho.webp | Verificar `public/ortho.webp` existe |
+| Dados não aparecem | Filtro de tempo incorreto | Ajustar range de datas no seletor |
+| Build falha com env | Variáveis faltando | Verificar `.env.local` com Supabase keys |
+| MQTT desconecta | Keepalive timeout | Verificar logs EMQX: `docker compose logs emqx` |
+| Android não sincroniza | Sem conectividade | Verificar `DiagnosticsActivity` no app |
+| Queue crescendo | MQTT offline | Verificar conexão e fazer flush manual |
+| GPS impreciso | Poucos satélites | Verificar céu aberto, hdop > 2.0 é ruim |
+| Login falha | Domínio incorreto | Usar email @auraminerals.com |
+| Página /aguardando | Perfil pendente | Admin aprovar em /admin/usuarios |
+| Telemetria duplicada | message_id faltando | Verificar envio de UUID único |
+| Compressão falha | Chunks muito novos | Aguardar 3 dias para compressão automática |
